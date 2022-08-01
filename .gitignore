@@ -1,3 +1,7 @@
+# Local dev data
+.data/*/**
+!.data/*/.gitkeep
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

@@ -1,7 +1,29 @@
 version: '3.9'
 services:
+    db:
+        container_name: bpow_postgres
+        image: postgres:14
+        ports:
+            - '127.0.0.1:5433:5432'
+        restart: unless-stopped
+        environment:
+            - POSTGRES_DB=boompow
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - PGDATA=/var/lib/postgresql/data/dev
+        volumes:
+            - .data/postgres:/var/lib/postgresql/data:delegated # Delegated indicates the containers view of the volume takes priority
+        networks: ['app-network']
+
     app:
         container_name: boompow_dev
+        environment:
+            - DB_HOST=db
+            - DB_PORT=5432
+            - DB_USER=postgres
+            - DB_PASS=postgres
+            - DB_NAME=boompow
+            - DB_SSLMODE=disable
         ports:
             - '127.0.0.1:8080:8080'
         build:
