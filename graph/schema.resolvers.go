@@ -28,6 +28,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 		ID:        user.ID.String(),
 		CreatedAt: utils.GenerateISOString(user.CreatedAt),
 		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
+		Type:      input.Type,
 	}
 	return userCreated, nil
 }
@@ -105,6 +106,7 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 			Email:     user.Email,
 			CreatedAt: utils.GenerateISOString(user.CreatedAt),
 			UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
+			Type:      model.UserType(user.Type),
 		})
 	}
 	return gqlUsers, nil

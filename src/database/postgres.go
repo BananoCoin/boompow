@@ -30,5 +30,26 @@ func NewConnection(config *Config) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(&models.User{})
+	createTypes(db)
+	return db.AutoMigrate(&models.User{}, &models.WorkRequest{})
+}
+
+// Create types in postgres
+func createTypes(db *gorm.DB) error {
+	result := db.Exec(fmt.Sprintf("SELECT 1 FROM pg_type WHERE typname = '%s';", models.PG_USER_TYPE_NAME))
+
+	switch {
+	case result.RowsAffected == 0:
+		if err := db.Exec(fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s', '%s');", models.PG_USER_TYPE_NAME, models.PROVIDER, models.REQUESTER)).Error; err != nil {
+			fmt.Printf("Error creating %s ENUM", models.PG_USER_TYPE_NAME)
+			return err
+		}
+
+		return nil
+	case result.Error != nil:
+		return result.Error
+
+	default:
+		return nil
+	}
 }

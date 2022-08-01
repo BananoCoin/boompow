@@ -1,8 +1,14 @@
+enum UserType {
+  PROVIDER
+  REQUESTER
+}
+
 type User {
   id: ID!
   email: String!
   createdAt: String!
   updatedAt: String!
+  type: UserType!
 }
 
 input RefreshTokenInput {
@@ -12,6 +18,7 @@ input RefreshTokenInput {
 input UserInput {
   email: String!
   password: String!
+  type: UserType!
 }
 
 input Login {

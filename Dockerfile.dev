@@ -22,6 +22,6 @@ WORKDIR /app
 
 EXPOSE  3000
 
-RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && go install github.com/99designs/gqlgen@latest
 
 CMD [ "/bin/zsh", "-c" ]

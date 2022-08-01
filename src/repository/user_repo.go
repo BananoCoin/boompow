@@ -47,6 +47,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, erro
 	user := &models.User{
 		Email:    userInput.Email,
 		Password: hashedPassword,
+		Type:     models.UserType(userInput.Type),
 	}
 	err = s.Db.Create(&user).Error
 
