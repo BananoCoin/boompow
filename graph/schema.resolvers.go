@@ -5,11 +5,15 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/bbedward/boompow-server-ng/graph/generated"
 	"github.com/bbedward/boompow-server-ng/graph/model"
-	"github.com/bbedward/boompow-server-ng/src/utils"
+	"github.com/bbedward/boompow-server-ng/src/middleware"
+	"github.com/bbedward/boompow-server-ng/src/models"
+	"github.com/bbedward/boompow-server-ng/src/utils/auth"
+	utils "github.com/bbedward/boompow-server-ng/src/utils/format"
 	"github.com/google/uuid"
 )
 
@@ -61,12 +65,29 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	correct := r.UserRepo.Authenticate(&input)
+	if !correct {
+		// 1
+		return "", errors.New("invalid username or password")
+	}
+	token, err := auth.GenerateToken(input.Username)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 // RefreshToken is the resolver for the refreshToken field.
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	username, err := auth.ParseToken(input.Token)
+	if err != nil {
+		return "", fmt.Errorf("access denied")
+	}
+	token, err := auth.GenerateToken(username)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 // GetAllUsers is the resolver for the GetAllUsers field.
@@ -89,22 +110,37 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 	return gqlUsers, nil
 }
 
-// GetOneUser is the resolver for the GetOneUser field.
-func (r *queryResolver) GetOneUser(ctx context.Context, id string) (*model.User, error) {
-	uuid, err := uuid.Parse((id))
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context, id *string, username *string) (*model.User, error) {
+	var err error
+	var user *models.User
+
+	// ! TODO - remove me, test for authentication
+	user = middleware.ForContext(ctx)
+	if user == nil {
+		return &model.User{}, fmt.Errorf("access denied")
+	}
+
+	if id != nil {
+		userID, err := uuid.Parse(*id)
+		if err != nil {
+			return nil, err
+		}
+		user, err = r.UserRepo.GetUser(&userID, nil)
+	}
+	if username != nil {
+		user, err = r.UserRepo.GetUser(nil, username)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := r.UserRepo.GetOneUser(uuid)
 	selectedUser := &model.User{
 		ID:        user.ID.String(),
 		Username:  user.Username,
 		CreatedAt: utils.GenerateISOString(user.CreatedAt),
 		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
-	}
-	if err != nil {
-		return nil, err
 	}
 	return selectedUser, nil
 }

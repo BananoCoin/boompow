@@ -11,8 +11,10 @@ import (
 	"github.com/bbedward/boompow-server-ng/graph"
 	"github.com/bbedward/boompow-server-ng/graph/generated"
 	"github.com/bbedward/boompow-server-ng/src/database"
+	"github.com/bbedward/boompow-server-ng/src/middleware"
 	"github.com/bbedward/boompow-server-ng/src/repository"
 	"github.com/bitfield/script"
+	"github.com/go-chi/chi"
 )
 
 const defaultPort = "8080"
@@ -41,16 +43,21 @@ func runServer() {
 		port = defaultPort
 	}
 
+	// Create repositories
 	userRepo := repository.NewUserService((db))
+
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		UserRepo: userRepo,
 	}}))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	// Setup router
+	router := chi.NewRouter()
+	router.Use(middleware.Middleware(userRepo))
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
 
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
 func main() {

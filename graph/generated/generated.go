@@ -54,7 +54,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetAllUsers func(childComplexity int) int
-		GetOneUser  func(childComplexity int, id string) int
+		GetUser     func(childComplexity int, id *string, username *string) int
 	}
 
 	User struct {
@@ -74,7 +74,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllUsers(ctx context.Context) ([]*model.User, error)
-	GetOneUser(ctx context.Context, id string) (*model.User, error)
+	GetUser(ctx context.Context, id *string, username *string) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -159,17 +159,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAllUsers(childComplexity), true
 
-	case "Query.getOneUser":
-		if e.complexity.Query.GetOneUser == nil {
+	case "Query.getUser":
+		if e.complexity.Query.GetUser == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getOneUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getUser_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOneUser(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.GetUser(childComplexity, args["id"].(*string), args["username"].(*string)), true
 
 	case "User.createdAt":
 		if e.complexity.User.CreatedAt == nil {
@@ -301,7 +301,7 @@ type Mutation {
 
 type Query {
   getAllUsers: [User!]!
-  getOneUser(id: String!): User!
+  getUser(id: String, username: String): User!
 }
 `, BuiltIn: false},
 }
@@ -410,18 +410,27 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getOneUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["id"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["username"] = arg1
 	return args, nil
 }
 
@@ -802,8 +811,8 @@ func (ec *executionContext) fieldContext_Query_getAllUsers(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getOneUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getOneUser(ctx, field)
+func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUser(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -816,7 +825,7 @@ func (ec *executionContext) _Query_getOneUser(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOneUser(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(*string), fc.Args["username"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -833,7 +842,7 @@ func (ec *executionContext) _Query_getOneUser(ctx context.Context, field graphql
 	return ec.marshalNUser2ᚖgithubᚗcomᚋbbedwardᚋboompowᚑserverᚑngᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getOneUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -860,7 +869,7 @@ func (ec *executionContext) fieldContext_Query_getOneUser(ctx context.Context, f
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getOneUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_getUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3170,7 +3179,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getOneUser":
+		case "getUser":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3179,7 +3188,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getOneUser(ctx, field)
+				res = ec._Query_getUser(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
