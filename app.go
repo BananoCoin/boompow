@@ -11,6 +11,7 @@ import (
 	"github.com/bbedward/boompow-server-ng/graph"
 	"github.com/bbedward/boompow-server-ng/graph/generated"
 	"github.com/bbedward/boompow-server-ng/src/database"
+	"github.com/bbedward/boompow-server-ng/src/repository"
 	"github.com/bitfield/script"
 )
 
@@ -40,7 +41,10 @@ func runServer() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	userRepo := repository.NewUserService((db))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+		UserRepo: userRepo,
+	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

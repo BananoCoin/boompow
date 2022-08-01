@@ -17,6 +17,8 @@ services:
 
     app:
         container_name: boompow_dev
+        security_opt:
+            - "seccomp:unconfined"        
         environment:
             - DB_HOST=db
             - DB_PORT=5432
@@ -26,6 +28,7 @@ services:
             - DB_SSLMODE=disable
         ports:
             - '127.0.0.1:8080:8080'
+            - '127.0.0.1:2345:2345'
         build:
             context: .
             dockerfile: Dockerfile.dev

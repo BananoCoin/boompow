@@ -1,0 +1,17 @@
+// Run in container:
+// dlv debug --headless --listen=:2345 --api-version=2 --log app.go --server
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "remotePath": "/app",
+      "port": 2345,
+      "showLog": true,
+      "trace": "verbose"
+    }
+  ]
+}

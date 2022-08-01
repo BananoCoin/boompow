@@ -20,14 +20,14 @@ input Login {
 }
 
 type Mutation {
-  CreateUser(input: UserInput!): User!
-  DeleteUser(id: String!): String!
-  UpdateUser(id: String!, input: UserInput!): String!
-  Login(input: Login!): String!
-  RefreshToken(input: RefreshTokenInput!): String!
+  createUser(input: UserInput!): User!
+  deleteUser(id: String!): String!
+  updateUser(id: String!, input: UserInput!): String!
+  login(input: Login!): String!
+  refreshToken(input: RefreshTokenInput!): String!
 }
 
 type Query {
-  GetAllUsers: [User!]!
-  GetOneUser(id: String!): User!
+  getAllUsers: [User!]!
+  getOneUser(id: String!): User!
 }

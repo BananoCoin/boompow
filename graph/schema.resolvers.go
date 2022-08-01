@@ -17,8 +17,10 @@ import (
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput) (*model.User, error) {
 	user, err := r.UserRepo.CreateUser(&input)
 	userCreated := &model.User{
-		Username: user.Username,
-		ID:       user.ID.String(),
+		Username:  user.Username,
+		ID:        user.ID.String(),
+		CreatedAt: utils.GenerateISOString(user.CreatedAt),
+		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
 	}
 	if err != nil {
 		return nil, err
