@@ -28,14 +28,14 @@ func Middleware(userRepo *repository.UserService) func(http.Handler) http.Handle
 
 			//validate jwt token
 			tokenStr := header
-			username, err := auth.ParseToken(tokenStr)
+			email, err := auth.ParseToken(tokenStr)
 			if err != nil {
 				http.Error(w, "Invalid token", http.StatusForbidden)
 				return
 			}
 
 			// create user and check if user exists in db
-			user, err := userRepo.GetUser(nil, &username)
+			user, err := userRepo.GetUser(nil, &email)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return

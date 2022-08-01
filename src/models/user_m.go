@@ -2,6 +2,7 @@ package models
 
 type User struct {
 	Base
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Email         string `json:"email" gorm:"unique;not null"`
+	Password      string `json:"password" gorm:"not null"`
+	EmailVerified bool   `json:"emailVerfied" gorm:"default:false;not null"`
 }

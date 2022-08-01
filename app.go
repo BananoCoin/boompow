@@ -72,6 +72,9 @@ func main() {
 		fmt.Printf("🤖 Running graphql generate...")
 		script.Exec("bash -c 'go run github.com/99designs/gqlgen generate --verbose'").Stdout()
 		script.Exec("bash -c 'go get github.com/99designs/gqlgen'").Stdout()
+	case "db:reset":
+		fmt.Printf("💥 Nuking database...")
+		script.Exec("bash -c './scripts/reset_db.sh'").Stdout()
 	case "server":
 		runServer()
 	default:

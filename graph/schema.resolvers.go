@@ -20,14 +20,14 @@ import (
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput) (*model.User, error) {
 	user, err := r.UserRepo.CreateUser(&input)
+	if err != nil {
+		return nil, err
+	}
 	userCreated := &model.User{
-		Username:  user.Username,
+		Email:     user.Email,
 		ID:        user.ID.String(),
 		CreatedAt: utils.GenerateISOString(user.CreatedAt),
 		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
-	}
-	if err != nil {
-		return nil, err
 	}
 	return userCreated, nil
 }
@@ -68,9 +68,9 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 	correct := r.UserRepo.Authenticate(&input)
 	if !correct {
 		// 1
-		return "", errors.New("invalid username or password")
+		return "", errors.New("invalid email or password")
 	}
-	token, err := auth.GenerateToken(input.Username)
+	token, err := auth.GenerateToken(input.Email)
 	if err != nil {
 		return "", err
 	}
@@ -79,11 +79,11 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 
 // RefreshToken is the resolver for the refreshToken field.
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	username, err := auth.ParseToken(input.Token)
+	email, err := auth.ParseToken(input.Token)
 	if err != nil {
 		return "", fmt.Errorf("access denied")
 	}
-	token, err := auth.GenerateToken(username)
+	token, err := auth.GenerateToken(email)
 	if err != nil {
 		return "", err
 	}
@@ -102,7 +102,7 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 	for _, user := range users {
 		gqlUsers = append(gqlUsers, &model.User{
 			ID:        user.ID.String(),
-			Username:  user.Username,
+			Email:     user.Email,
 			CreatedAt: utils.GenerateISOString(user.CreatedAt),
 			UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
 		})
@@ -111,7 +111,7 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 }
 
 // GetUser is the resolver for the getUser field.
-func (r *queryResolver) GetUser(ctx context.Context, id *string, username *string) (*model.User, error) {
+func (r *queryResolver) GetUser(ctx context.Context, id *string, email *string) (*model.User, error) {
 	var err error
 	var user *models.User
 
@@ -128,8 +128,8 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string, username *strin
 		}
 		user, err = r.UserRepo.GetUser(&userID, nil)
 	}
-	if username != nil {
-		user, err = r.UserRepo.GetUser(nil, username)
+	if email != nil {
+		user, err = r.UserRepo.GetUser(nil, email)
 	}
 
 	if err != nil {
@@ -138,7 +138,7 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string, username *strin
 
 	selectedUser := &model.User{
 		ID:        user.ID.String(),
-		Username:  user.Username,
+		Email:     user.Email,
 		CreatedAt: utils.GenerateISOString(user.CreatedAt),
 		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
 	}

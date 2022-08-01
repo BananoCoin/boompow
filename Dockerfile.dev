@@ -3,7 +3,7 @@ FROM golang:1.18.4
 ARG ZSH_IN_DOCKER_VERSION=1.1.2
 
 # Install useful tools
-RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg nano zsh-syntax-highlighting less && \
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg nano zsh-syntax-highlighting less postgresql-client && \
   rm -rf /var/lib/apt/lists/*
 
 # Install zsh-in-docker

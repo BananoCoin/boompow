@@ -54,14 +54,14 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetAllUsers func(childComplexity int) int
-		GetUser     func(childComplexity int, id *string, username *string) int
+		GetUser     func(childComplexity int, id *string, email *string) int
 	}
 
 	User struct {
 		CreatedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
 		ID        func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
-		Username  func(childComplexity int) int
 	}
 }
 
@@ -74,7 +74,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllUsers(ctx context.Context) ([]*model.User, error)
-	GetUser(ctx context.Context, id *string, username *string) (*model.User, error)
+	GetUser(ctx context.Context, id *string, email *string) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -169,7 +169,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUser(childComplexity, args["id"].(*string), args["username"].(*string)), true
+		return e.complexity.Query.GetUser(childComplexity, args["id"].(*string), args["email"].(*string)), true
 
 	case "User.createdAt":
 		if e.complexity.User.CreatedAt == nil {
@@ -177,6 +177,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.CreatedAt(childComplexity), true
+
+	case "User.email":
+		if e.complexity.User.Email == nil {
+			break
+		}
+
+		return e.complexity.User.Email(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -191,13 +198,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.UpdatedAt(childComplexity), true
-
-	case "User.username":
-		if e.complexity.User.Username == nil {
-			break
-		}
-
-		return e.complexity.User.Username(childComplexity), true
 
 	}
 	return 0, false
@@ -272,7 +272,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../schema.graphqls", Input: `type User {
   id: ID!
-  username: String!
+  email: String!
   createdAt: String!
   updatedAt: String!
 }
@@ -282,12 +282,12 @@ input RefreshTokenInput {
 }
 
 input UserInput {
-  username: String!
+  email: String!
   password: String!
 }
 
 input Login {
-  username: String!
+  email: String!
   password: String!
 }
 
@@ -301,7 +301,7 @@ type Mutation {
 
 type Query {
   getAllUsers: [User!]!
-  getUser(id: String, username: String): User!
+  getUser(id: String, email: String): User!
 }
 `, BuiltIn: false},
 }
@@ -423,14 +423,14 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 	}
 	args["id"] = arg0
 	var arg1 *string
-	if tmp, ok := rawArgs["username"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
 		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["username"] = arg1
+	args["email"] = arg1
 	return args, nil
 }
 
@@ -513,8 +513,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
-			case "username":
-				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "updatedAt":
@@ -798,8 +798,8 @@ func (ec *executionContext) fieldContext_Query_getAllUsers(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
-			case "username":
-				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "updatedAt":
@@ -825,7 +825,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(*string), fc.Args["username"].(*string))
+		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(*string), fc.Args["email"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -852,8 +852,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
-			case "username":
-				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "updatedAt":
@@ -1049,8 +1049,8 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_username(ctx, field)
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_email(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1063,7 +1063,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Username, nil
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1080,7 +1080,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_username(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_email(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -2961,18 +2961,18 @@ func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interfa
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "password"}
+	fieldsInOrder := [...]string{"email", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "username":
+		case "email":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
-			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3025,18 +3025,18 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "password"}
+	fieldsInOrder := [...]string{"email", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "username":
+		case "email":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
-			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3242,9 +3242,9 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "username":
+		case "email":
 
-			out.Values[i] = ec._User_username(ctx, field, obj)
+			out.Values[i] = ec._User_email(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

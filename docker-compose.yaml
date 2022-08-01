@@ -26,6 +26,7 @@ services:
             - DB_PASS=postgres
             - DB_NAME=boompow
             - DB_SSLMODE=disable
+            - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
         ports:
             - '127.0.0.1:8080:8080'
             - '127.0.0.1:2345:2345'
