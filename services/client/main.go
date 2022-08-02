@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/golang/glog"
+	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/recws-org/recws"
 )
 
@@ -25,48 +26,52 @@ func init() {
 	flag.Parse()
 }
 
+// SetupCloseHandler creates a 'listener' on a new goroutine which will notify the
+// program if it receives an interrupt from the OS. We then handle this by calling
+// our clean up procedure and exiting the program.
+func SetupCloseHandler(ctx context.Context, cancel context.CancelFunc) {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
+	go func() {
+		<-c
+		fmt.Print("👋 Exiting...\n")
+		cancel()
+		os.Exit(0)
+	}()
+}
+
 func main() {
 	// Start the websocket connection
 	ctx, cancel := context.WithCancel(context.Background())
 	ws := recws.RecConn{}
 	ws.Dial("ws://localhost:8080/ws/worker", nil)
 
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-	defer func() {
-		signal.Stop(sigc)
-		cancel()
-	}()
+	// Handle interrupts gracefully
+	SetupCloseHandler(ctx, cancel)
 
 	for {
 		select {
-		case <-sigc:
-			cancel()
-			return
 		case <-ctx.Done():
 			go ws.Close()
-			glog.Infof("Websocket closed %s", ws.GetURL())
+			fmt.Printf("Websocket closed %s", ws.GetURL())
 			return
 		default:
 			if !ws.IsConnected() {
-				glog.Infof("Websocket disconnected %s", ws.GetURL())
+				fmt.Printf("Websocket disconnected %s", ws.GetURL())
 				time.Sleep(2 * time.Second)
 				continue
 			}
 
-			_, msg, err := ws.ReadMessage()
+			var ClientWorkRequest serializableModels.ClientWorkRequest
+			err := ws.ReadJSON(&ClientWorkRequest)
 			if err != nil {
-				glog.Infof("Error: ReadJSON %s", ws.GetURL())
+				fmt.Printf("Error: ReadJSON %s", ws.GetURL())
 				continue
 			}
+			fmt.Printf("Received work request %s", ClientWorkRequest.Hash)
 
-			// Trigger callback
-
-			glog.Infof("Received message %s", string(msg))
+			// Write response
+			ws.WriteJSON(serializableModels.ClientWorkResponse{Hash: ClientWorkRequest.Hash, Result: "hello world"})
 		}
 	}
 }

@@ -5,10 +5,10 @@ package graph
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
+	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/bbedward/boompow-ng/libs/utils/auth"
 	utils "github.com/bbedward/boompow-ng/libs/utils/format"
 	"github.com/bbedward/boompow-ng/services/server/graph/generated"
@@ -95,18 +95,17 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 
 // WorkGenerate is the resolver for the workGenerate field.
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
-	workRequest := &controller.ClientWorkRequest{
+	workRequest := &serializableModels.ClientWorkRequest{
 		Hash:                 input.Hash,
 		DifficutlyMultiplier: input.DifficultyMultiplier,
 	}
 
-	bytes, err := json.Marshal(workRequest)
+	resp, err := controller.BroadcastWorkRequestAndWait(workRequest)
 	if err != nil {
 		return "", err
 	}
-	controller.ActiveHub.Broadcast <- bytes
 
-	return "sent", nil
+	return resp.Result, nil
 }
 
 // GetAllUsers is the resolver for the GetAllUsers field.

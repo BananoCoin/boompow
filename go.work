@@ -1,6 +1,7 @@
 go 1.18
 
 use (
+	./libs/models
 	./libs/utils
 	./services/client
 	./services/server

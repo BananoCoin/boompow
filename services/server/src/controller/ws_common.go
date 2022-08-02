@@ -1,20 +1,17 @@
 package controller
 
 import (
+	"encoding/json"
+	"errors"
 	"time"
 
+	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/bbedward/boompow-ng/services/server/src/database"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
 
 var ActiveHub *Hub
-
-// What a work request looks like from the client perspective
-type ClientWorkRequest struct {
-	Hash                 string `json:"hash"`
-	DifficutlyMultiplier int    `json:"difficulty_multiplier"`
-}
 
 const (
 	// Time allowed to write a message to the peer.
@@ -55,6 +52,9 @@ type Hub struct {
 	// Outbound messages to the client
 	Broadcast chan []byte
 
+	// Inbound messages from client
+	Response chan []byte
+
 	// Register requests from the clients.
 	Register chan *Client
 
@@ -65,6 +65,7 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		Broadcast:  make(chan []byte),
+		Response:   make(chan []byte),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Clients:    make(map[*Client]bool),
@@ -85,6 +86,21 @@ func (h *Hub) Run() {
 				// Keep global state of connected clients
 				database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
 			}
+		case message := <-h.Response:
+			// Try to unmarshal as ClientWorkResponse
+			var workResponse serializableModels.ClientWorkResponse
+			err := json.Unmarshal(message, &workResponse)
+			// If this channel exists, send response
+			if val, ok := ActiveChannels[workResponse.Hash]; ok {
+				val <- message
+			} else {
+				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
+			}
+			// Error de-serializing
+			if err != nil {
+				glog.Errorf("Error unmarshalling work response: %s", err)
+				continue
+			}
 		case message := <-h.Broadcast:
 			glog.Info(string(message))
 			for client := range h.Clients {
@@ -96,5 +112,43 @@ func (h *Hub) Run() {
 				}
 			}
 		}
+	}
+}
+
+// Channels for reach specific work request
+var ActiveChannels = make(map[string]chan []byte)
+
+// Timeout waiting for work response from client
+const WORK_TIMEOUT_S = time.Second * 30
+
+// Method to handle a work request response
+// 1) Broadcast to every client
+// 2) Create a channel for the response
+// 3) Wait for response on the channel until timeout
+func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientWorkRequest) (*serializableModels.ClientWorkResponse, error) {
+	// Serialize
+	bytes, err := json.Marshal(workRequest)
+	if err != nil {
+		return nil, err
+	}
+	// Create channel for this hash
+	ActiveChannels[workRequest.Hash] = make(chan []byte)
+	go func() { ActiveHub.Broadcast <- bytes }()
+	select {
+	case response := <-ActiveChannels[workRequest.Hash]:
+		var workResponse serializableModels.ClientWorkResponse
+		err := json.Unmarshal(response, &workResponse)
+		if err != nil {
+			return nil, err
+		}
+		// Close channel
+		close(ActiveChannels[workRequest.Hash])
+		return &workResponse, nil
+	// 30
+	case <-time.After(WORK_TIMEOUT_S):
+		glog.Errorf("Work request timed out %s", workRequest.Hash)
+		// Close channel
+		close(ActiveChannels[workRequest.Hash])
+		return nil, errors.New("timeout")
 	}
 }
