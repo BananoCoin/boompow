@@ -3,17 +3,18 @@ package main
 import (
 	"bufio"
 	"context"
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bbedward/boompow-ng/libs/utils/validation"
 	"github.com/bbedward/boompow-ng/services/client/gql"
-	"github.com/inkeliz/nanopow"
+	"github.com/bbedward/boompow-ng/services/client/websocket"
+	"github.com/go-co-op/gocron"
 	"github.com/mbndr/figlet4go"
 	"golang.org/x/term"
 )
@@ -109,21 +110,20 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("\n\n🔓 Successfully logged in as %s\n\n", email)
-		fmt.Println(resp.Login.Token)
+		websocket.AuthToken = resp.Login.Token
 		break
 	}
-}
 
-func WorkToString(w nanopow.Work) string {
-	n := make([]byte, 8)
-	copy(n, w[:])
+	// Setup a cron job to auto-update auth tokens
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.Every(10).Seconds().Do(func() {
+		authToken, err := gql.RefreshToken(ctx, websocket.AuthToken)
+		if err == nil {
+			websocket.UpdateAuthToken(authToken)
+		}
+	})
+	scheduler.StartAsync()
 
-	reverse(n)
-
-	return hex.EncodeToString(n)
-}
-
-func reverse(v []byte) {
-	// binary.LittleEndian.PutUint64(v, binary.BigEndian.Uint64(v))
-	v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7] = v[7], v[6], v[5], v[4], v[3], v[2], v[1], v[0] // It's works. LOL
+	fmt.Printf("\n⚙️ Initiating connectiont to BoomPOW...")
+	websocket.StartWSClient(ctx)
 }

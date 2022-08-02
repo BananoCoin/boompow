@@ -3,3 +3,7 @@ mutation loginUser($input: LoginInput!) {
     token
   }
 }
+
+mutation refreshToken($input: RefreshTokenInput!) {
+  refreshToken(input: $input)
+}

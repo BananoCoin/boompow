@@ -19,6 +19,13 @@ func (v *LoginInput) GetEmail() string { return v.Email }
 // GetPassword returns LoginInput.Password, and is useful for accessing the field via an interface.
 func (v *LoginInput) GetPassword() string { return v.Password }
 
+type RefreshTokenInput struct {
+	Token string `json:"token"`
+}
+
+// GetToken returns RefreshTokenInput.Token, and is useful for accessing the field via an interface.
+func (v *RefreshTokenInput) GetToken() string { return v.Token }
+
 // __loginUserInput is used internally by genqlient
 type __loginUserInput struct {
 	Input LoginInput `json:"input"`
@@ -26,6 +33,14 @@ type __loginUserInput struct {
 
 // GetInput returns __loginUserInput.Input, and is useful for accessing the field via an interface.
 func (v *__loginUserInput) GetInput() LoginInput { return v.Input }
+
+// __refreshTokenInput is used internally by genqlient
+type __refreshTokenInput struct {
+	Input RefreshTokenInput `json:"input"`
+}
+
+// GetInput returns __refreshTokenInput.Input, and is useful for accessing the field via an interface.
+func (v *__refreshTokenInput) GetInput() RefreshTokenInput { return v.Input }
 
 // loginUserLoginLoginResponse includes the requested fields of the GraphQL type LoginResponse.
 type loginUserLoginLoginResponse struct {
@@ -42,6 +57,14 @@ type loginUserResponse struct {
 
 // GetLogin returns loginUserResponse.Login, and is useful for accessing the field via an interface.
 func (v *loginUserResponse) GetLogin() loginUserLoginLoginResponse { return v.Login }
+
+// refreshTokenResponse is returned by refreshToken on success.
+type refreshTokenResponse struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+// GetRefreshToken returns refreshTokenResponse.RefreshToken, and is useful for accessing the field via an interface.
+func (v *refreshTokenResponse) GetRefreshToken() string { return v.RefreshToken }
 
 func loginUser(
 	ctx context.Context,
@@ -64,6 +87,36 @@ mutation loginUser ($input: LoginInput!) {
 	var err error
 
 	var data loginUserResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func refreshToken(
+	ctx context.Context,
+	client graphql.Client,
+	input RefreshTokenInput,
+) (*refreshTokenResponse, error) {
+	req := &graphql.Request{
+		OpName: "refreshToken",
+		Query: `
+mutation refreshToken ($input: RefreshTokenInput!) {
+	refreshToken(input: $input)
+}
+`,
+		Variables: &__refreshTokenInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data refreshTokenResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

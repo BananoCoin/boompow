@@ -38,3 +38,17 @@ func Login(ctx context.Context, email string, password string) (*loginUserRespon
 
 	return resp, ""
 }
+
+func RefreshToken(ctx context.Context, token string) (string, error) {
+	resp, err := refreshToken(ctx, client, RefreshTokenInput{
+		Token: token,
+	})
+
+	if err != nil {
+		fmt.Printf("Error refreshing authentication token! You may need to restart the client and re-login %v", err)
+		return "", err
+	}
+	fmt.Printf("👮 Refreshed authentication token\n")
+
+	return resp.RefreshToken, nil
+}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bbedward/boompow-ng/libs/utils/net"
+	"github.com/bbedward/boompow-ng/services/server/src/middleware"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
@@ -89,6 +90,12 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	user := middleware.ForContext(r.Context())
+	if user == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("401 - Unauthorized"))
+		return
+	}
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		glog.Error(err)
