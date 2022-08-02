@@ -91,6 +91,11 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	return token, nil
 }
 
+// WorkGenerate is the resolver for the workGenerate field.
+func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // GetAllUsers is the resolver for the GetAllUsers field.
 func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserRepo.GetAllUsers()

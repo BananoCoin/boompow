@@ -50,6 +50,7 @@ type ComplexityRoot struct {
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
 		UpdateUser   func(childComplexity int, id string, input model.UserInput) int
+		WorkGenerate func(childComplexity int, input model.WorkGenerateInput) int
 	}
 
 	Query struct {
@@ -73,6 +74,7 @@ type MutationResolver interface {
 	UpdateUser(ctx context.Context, id string, input model.UserInput) (string, error)
 	Login(ctx context.Context, input model.Login) (string, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
+	WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error)
 }
 type QueryResolver interface {
 	GetAllUsers(ctx context.Context) ([]*model.User, error)
@@ -155,6 +157,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.UserInput)), true
 
+	case "Mutation.workGenerate":
+		if e.complexity.Mutation.WorkGenerate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_workGenerate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.WorkGenerate(childComplexity, args["input"].(model.WorkGenerateInput)), true
+
 	case "Query.getAllUsers":
 		if e.complexity.Query.GetAllUsers == nil {
 			break
@@ -233,6 +247,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRefreshTokenInput,
 		ec.unmarshalInputUserInput,
 		ec.unmarshalInputVerifyEmailInput,
+		ec.unmarshalInputWorkGenerateInput,
 	)
 	first := true
 
@@ -326,15 +341,25 @@ input Login {
   password: String!
 }
 
+input WorkGenerateInput {
+  userID: ID!
+  apiKey: String!
+  hash: String!
+  difficultyMultiplier: Int!
+}
+
 type Mutation {
+  # Related to user authentication and authorization
   createUser(input: UserInput!): User!
   deleteUser(id: String!): String!
   updateUser(id: String!, input: UserInput!): String!
   login(input: Login!): String!
   refreshToken(input: RefreshTokenInput!): String!
+  workGenerate(input: WorkGenerateInput!): String!
 }
 
 type Query {
+  # User queries
   getAllUsers: [User!]!
   getUser(id: String, email: String): User!
   verifyEmail(input: VerifyEmailInput!): Boolean!
@@ -428,6 +453,21 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_workGenerate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.WorkGenerateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNWorkGenerateInput2githubᚗcomᚋbbedwardᚋboompowᚑserverᚑngᚋgraphᚋmodelᚐWorkGenerateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -804,6 +844,61 @@ func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_refreshToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_workGenerate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_workGenerate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().WorkGenerate(rctx, fc.Args["input"].(model.WorkGenerateInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_workGenerate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_workGenerate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3254,6 +3349,58 @@ func (ec *executionContext) unmarshalInputVerifyEmailInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputWorkGenerateInput(ctx context.Context, obj interface{}) (model.WorkGenerateInput, error) {
+	var it model.WorkGenerateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"userID", "apiKey", "hash", "difficultyMultiplier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "userID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			it.UserID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "apiKey":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("apiKey"))
+			it.APIKey, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hash":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+			it.Hash, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "difficultyMultiplier":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyMultiplier"))
+			it.DifficultyMultiplier, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3321,6 +3468,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_refreshToken(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "workGenerate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_workGenerate(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -3852,6 +4008,21 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋbbedwardᚋboompowᚑserverᚑngᚋgraphᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
 	res, err := ec.unmarshalInputLogin(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3952,6 +4123,11 @@ func (ec *executionContext) marshalNUserType2githubᚗcomᚋbbedwardᚋboompow�
 
 func (ec *executionContext) unmarshalNVerifyEmailInput2githubᚗcomᚋbbedwardᚋboompowᚑserverᚑngᚋgraphᚋmodelᚐVerifyEmailInput(ctx context.Context, v interface{}) (model.VerifyEmailInput, error) {
 	res, err := ec.unmarshalInputVerifyEmailInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNWorkGenerateInput2githubᚗcomᚋbbedwardᚋboompowᚑserverᚑngᚋgraphᚋmodelᚐWorkGenerateInput(ctx context.Context, v interface{}) (model.WorkGenerateInput, error) {
+	res, err := ec.unmarshalInputWorkGenerateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

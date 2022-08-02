@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bbedward/boompow-server-ng/graph"
 	"github.com/bbedward/boompow-server-ng/graph/generated"
+	"github.com/bbedward/boompow-server-ng/src/controller"
 	"github.com/bbedward/boompow-server-ng/src/database"
 	"github.com/bbedward/boompow-server-ng/src/middleware"
 	"github.com/bbedward/boompow-server-ng/src/repository"
@@ -20,7 +22,21 @@ import (
 
 const defaultPort = "8080"
 
+func usage() {
+	flag.PrintDefaults()
+	os.Exit(2)
+}
+
+func init() {
+	flag.Usage = usage
+	flag.Set("logtostderr", "true")
+	flag.Set("stderrthreshold", "INFO")
+	flag.Set("v", "2")
+	flag.Parse()
+}
+
 func runServer() {
+	database.GetRedisDB().WipeAllConnectedClients()
 	godotenv.Load()
 	// Setup database conn
 	config := &database.Config{
@@ -58,10 +74,16 @@ func runServer() {
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", srv)
 
+	// Setup WS endpoint
+	hub := controller.NewHub()
+	go hub.Run()
+	router.HandleFunc("/ws/worker", func(w http.ResponseWriter, r *http.Request) {
+		controller.WorkerChl(hub, w, r)
+	})
+
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
-
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Printf("Error: must specify at least 1 argument")

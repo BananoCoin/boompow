@@ -31,15 +31,25 @@ input Login {
   password: String!
 }
 
+input WorkGenerateInput {
+  userID: ID!
+  apiKey: String!
+  hash: String!
+  difficultyMultiplier: Int!
+}
+
 type Mutation {
+  # Related to user authentication and authorization
   createUser(input: UserInput!): User!
   deleteUser(id: String!): String!
   updateUser(id: String!, input: UserInput!): String!
   login(input: Login!): String!
   refreshToken(input: RefreshTokenInput!): String!
+  workGenerate(input: WorkGenerateInput!): String!
 }
 
 type Query {
+  # User queries
   getAllUsers: [User!]!
   getUser(id: String, email: String): User!
   verifyEmail(input: VerifyEmailInput!): Boolean!

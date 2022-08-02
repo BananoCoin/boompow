@@ -25,7 +25,6 @@ type redisManager struct {
 var singleton *redisManager
 var once sync.Once
 
-// TODO - In prod we would probably want a 3+ server redis cluster, which means these connection options would change
 func GetRedisDB() *redisManager {
 	once.Do(func() {
 
@@ -112,4 +111,21 @@ func (r *redisManager) GetUserIDForConfirmationToken(email string) (string, erro
 // Delete conf token
 func (r *redisManager) DeleteConfirmationToken(email string) (int64, error) {
 	return r.Del(fmt.Sprintf("emailconfirmation:%s", email))
+}
+
+// Functions for keeping track of connected clients
+func (r *redisManager) AddConnectedClient(clientID string) error {
+	return r.Hset("clients", clientID, "1")
+}
+
+func (r *redisManager) RemoveConnectedClient(clientID string) error {
+	return r.Hdel("clients", clientID)
+}
+
+func (r *redisManager) GetNumberConnectedClients() (int64, error) {
+	return r.Hlen("clients")
+}
+
+func (r *redisManager) WipeAllConnectedClients() (int64, error) {
+	return r.Del("clients")
 }
