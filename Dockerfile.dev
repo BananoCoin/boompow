@@ -17,11 +17,17 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -p https://github.com/zsh-users/zsh-completions
 RUN echo "source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> /root/.zshrc
 
+# Temporary for private repo
+ADD .data/ssh/id_rsa /root/.ssh/id_rsa
+RUN chmod 700 /root/.ssh/id_rsa
+RUN echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+RUN git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+
 # Working directory inside container
 WORKDIR /app
 
 EXPOSE  3000
 
-RUN go install github.com/go-delve/delve/cmd/dlv@latest && go install github.com/99designs/gqlgen@latest
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && go install github.com/99designs/gqlgen@latest && go install github.com/Khan/genqlient@latest
 
 CMD [ "/bin/zsh", "-c" ]

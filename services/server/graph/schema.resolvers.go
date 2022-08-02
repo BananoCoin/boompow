@@ -67,17 +67,18 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 }
 
 // Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
 	correct := r.UserRepo.Authenticate(&input)
 	if !correct {
-		// 1
-		return "", errors.New("invalid email or password")
+		return nil, errors.New("invalid email or password")
 	}
 	token, err := auth.GenerateToken(input.Email)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return token, nil
+	return &model.LoginResponse{
+		Token: token,
+	}, nil
 }
 
 // RefreshToken is the resolver for the refreshToken field.

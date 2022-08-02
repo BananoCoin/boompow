@@ -19,7 +19,7 @@ type UserRepo interface {
 	DeleteUser(id uuid.UUID) error
 	GetUser(id *uuid.UUID, email *string) (*models.User, error)
 	GetAllUsers() ([]*models.User, error)
-	Authenticate(loginInput *model.Login) bool
+	Authenticate(loginInput *model.LoginInput) bool
 	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
 }
 
@@ -131,7 +131,7 @@ func (s *UserService) GetAllUsers() ([]*models.User, error) {
 }
 
 // Compare password to hashed password, return true if match false otherwise
-func (s *UserService) Authenticate(loginInput *model.Login) bool {
+func (s *UserService) Authenticate(loginInput *model.LoginInput) bool {
 	user := &models.User{}
 	err := s.Db.Where("email = ?", &loginInput.Email).First(user).Error
 
