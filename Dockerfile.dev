@@ -18,10 +18,8 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 RUN echo "source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> /root/.zshrc
 
 # Temporary for private repo
-ADD .data/ssh/id_rsa /root/.ssh/id_rsa
-RUN chmod 700 /root/.ssh/id_rsa
-RUN echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
-RUN git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+ADD .data/netrc/netrc /root/.netrc
+RUN chmod 700 /root/.netrc
 
 # Working directory inside container
 WORKDIR /app

@@ -96,6 +96,7 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("401 - Unauthorized"))
 		return
 	}
+
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		glog.Error(err)

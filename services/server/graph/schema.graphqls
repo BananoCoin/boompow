@@ -32,8 +32,6 @@ input LoginInput {
 }
 
 input WorkGenerateInput {
-  userID: ID!
-  apiKey: String!
   hash: String!
   difficultyMultiplier: Int!
 }

@@ -353,8 +353,6 @@ input LoginInput {
 }
 
 input WorkGenerateInput {
-  userID: ID!
-  apiKey: String!
   hash: String!
   difficultyMultiplier: Int!
 }
@@ -3419,29 +3417,13 @@ func (ec *executionContext) unmarshalInputWorkGenerateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userID", "apiKey", "hash", "difficultyMultiplier"}
+	fieldsInOrder := [...]string{"hash", "difficultyMultiplier"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "userID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-			it.UserID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "apiKey":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("apiKey"))
-			it.APIKey, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "hash":
 			var err error
 

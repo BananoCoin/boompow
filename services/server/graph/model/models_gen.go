@@ -41,8 +41,6 @@ type VerifyEmailInput struct {
 }
 
 type WorkGenerateInput struct {
-	UserID               string `json:"userID"`
-	APIKey               string `json:"apiKey"`
 	Hash                 string `json:"hash"`
 	DifficultyMultiplier int    `json:"difficultyMultiplier"`
 }

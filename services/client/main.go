@@ -116,7 +116,7 @@ func main() {
 
 	// Setup a cron job to auto-update auth tokens
 	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.Every(10).Seconds().Do(func() {
+	scheduler.Every(1).Hour().Do(func() {
 		authToken, err := gql.RefreshToken(ctx, websocket.AuthToken)
 		if err == nil {
 			websocket.UpdateAuthToken(authToken)
@@ -124,6 +124,6 @@ func main() {
 	})
 	scheduler.StartAsync()
 
-	fmt.Printf("\n⚙️ Initiating connectiont to BoomPOW...")
+	fmt.Printf("\n🚀 Initiating connection to BoomPOW...")
 	websocket.StartWSClient(ctx)
 }

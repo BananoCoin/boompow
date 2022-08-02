@@ -22,8 +22,6 @@ func UpdateAuthToken(authToken string) {
 }
 
 func StartWSClient(ctx context.Context) {
-	fmt.Println("🚀 Starting websocket client...")
-
 	// Start the websocket connection
 	ws = &RecConn{}
 	ws.Dial("ws://localhost:8080/ws/worker", http.Header{
@@ -49,11 +47,15 @@ func StartWSClient(ctx context.Context) {
 				fmt.Printf("Error: ReadJSON %s", ws.GetURL())
 				continue
 			}
-			fmt.Printf("🦋 Received work request %s", ClientWorkRequest.Hash)
+			fmt.Printf("\n🦋 Received work request %s with difficulty %dx\n", ClientWorkRequest.Hash, ClientWorkRequest.DifficutlyMultiplier)
+
+			if len(ClientWorkRequest.Hash) != 64 {
+				fmt.Printf("\nReceived invalid hash, skipping\n")
+			}
 
 			// Write response
-			decoded, err := hex.DecodeString("782E7799FBFFBD13A5133DB42FCB64D1EBCAEF85E219FE37627B4660C4AF2A4A")
-			work, err := nanopow.GenerateWork(decoded, nanopow.V1BaseDifficult)
+			decoded, err := hex.DecodeString(ClientWorkRequest.Hash)
+			work, err := nanopow.GenerateWork(decoded, nanopow.CalculateDifficulty(int64(ClientWorkRequest.DifficutlyMultiplier)))
 			if err != nil {
 				fmt.Printf("Error: GenerateWork")
 				continue

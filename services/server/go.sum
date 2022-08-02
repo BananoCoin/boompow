@@ -13,6 +13,10 @@ github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNg
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0 h1:jfIu9sQUG6Ig+0+Ap1h4unLjW6YQJpKZVmUzxsD4E/Q=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
+github.com/bbedward/boompow-ng/libs/models v0.0.0-20220802195333-f3a7378a65af h1:ISvyE3nAljqbjh5vemws/HCAc/4xsZWaMOd9KvHazT8=
+github.com/bbedward/boompow-ng/libs/models v0.0.0-20220802195333-f3a7378a65af/go.mod h1:Cf7bmCEB3UdcQvNQiGRYJ4rVM9G03W/c/xId7ruq1+I=
+github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220802195333-f3a7378a65af h1:MRpQizLmlu8VRTX+eeg6R9lsmQGgCuqg6DoGH95WR8M=
+github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220802195333-f3a7378a65af/go.mod h1:38QRmdnuTU7lcPe1wdkVQMiZbAOLMuGGpQ3/moV0M1E=
 github.com/bitfield/script v0.20.2 h1:4DexsRtBILVMEn3EZwHbtJdDqdk43sXI8gM3F04JXgs=
 github.com/bitfield/script v0.20.2/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
