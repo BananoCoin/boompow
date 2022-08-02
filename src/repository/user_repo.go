@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/bbedward/boompow-server-ng/graph/model"
+	"github.com/bbedward/boompow-server-ng/src/database"
+	"github.com/bbedward/boompow-server-ng/src/email"
 	"github.com/bbedward/boompow-server-ng/src/models"
 	"github.com/bbedward/boompow-server-ng/src/utils/auth"
 	"github.com/bbedward/boompow-server-ng/src/utils/validation"
@@ -18,6 +20,7 @@ type UserRepo interface {
 	GetUser(id *uuid.UUID, email *string) (*models.User, error)
 	GetAllUsers() ([]*models.User, error)
 	Authenticate(loginInput *model.Login) bool
+	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
 }
 
 type UserService struct {
@@ -51,7 +54,37 @@ func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, erro
 	}
 	err = s.Db.Create(&user).Error
 
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate confirmation token and store in database
+	confirmationToken, err := auth.GenerateRandHexString()
+	if err != nil {
+		return nil, err
+	}
+
+	database.GetRedisDB().SetConfirmationToken(userInput.Email, confirmationToken)
+	// Send email with confirmation token
+	email.SendConfirmationEmail(userInput.Email, confirmationToken)
+
 	return user, err
+}
+
+func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {
+	dbVerificationCode, err := database.GetRedisDB().GetUserIDForConfirmationToken(verifyEmail.Email)
+	if err != nil {
+		return false, err
+	} else if dbVerificationCode != verifyEmail.Token {
+		return false, errors.New("Invalid verification code")
+	}
+
+	if res := s.Db.Model(&models.User{}).Where("email = ?", verifyEmail.Email).Update("email_verified", true); res.RowsAffected > 0 {
+		// Email has been marked verified, delete the token
+		database.GetRedisDB().DeleteConfirmationToken(verifyEmail.Email)
+		return true, nil
+	}
+	return false, errors.New("Could not verify email")
 }
 
 func (s *UserService) UpdateUser(userInput *model.UserInput, id uuid.UUID) error {

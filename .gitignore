@@ -1,6 +1,7 @@
 # Local dev data
 .data/*/**
 !.data/*/.gitkeep
+.env
 
 # Binaries for programs and plugins
 *.exe

@@ -15,11 +15,13 @@ import (
 	"github.com/bbedward/boompow-server-ng/src/repository"
 	"github.com/bitfield/script"
 	"github.com/go-chi/chi"
+	"github.com/joho/godotenv"
 )
 
 const defaultPort = "8080"
 
 func runServer() {
+	godotenv.Load()
 	// Setup database conn
 	config := &database.Config{
 		Host:     os.Getenv("DB_HOST"),
@@ -53,8 +55,8 @@ func runServer() {
 	// Setup router
 	router := chi.NewRouter()
 	router.Use(middleware.Middleware(userRepo))
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	router.Handle("/graphql", srv)
 
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))

@@ -31,6 +31,11 @@ type UserInput struct {
 	Type     UserType `json:"type"`
 }
 
+type VerifyEmailInput struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
+}
+
 type UserType string
 
 const (

@@ -147,6 +147,11 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string, email *string) 
 	return selectedUser, nil
 }
 
+// VerifyEmail is the resolver for the verifyEmail field.
+func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error) {
+	return r.UserRepo.VerifyEmailToken(&input)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

@@ -1,0 +1,5 @@
+{{define "body"}}
+<p style="margin: 0;">Click the following link to confirm your BoomPOW Email Address</p>
+<p style="margin: 0;"><strong><a target="_blank" href="{{ .ConfirmationCode }}">{{ .ConfirmationCode }}</a></strong></p>
+<p style="margin: 0;">This code will expire in {{ .ConfirmCodeExpirationDuration  }} minutes</p>
+{{end}}

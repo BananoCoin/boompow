@@ -1,15 +1,18 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"log"
 	"time"
 
+	"github.com/bbedward/boompow-server-ng/src/utils"
 	"github.com/dgrijalva/jwt-go"
 )
 
 // secret key being used to sign tokens
 var (
-	SecretKey = []byte("secret")
+	SecretKey = utils.GetJwtKey()
 )
 
 // GenerateToken generates a jwt token and assign a email to it's claims and return it
@@ -39,4 +42,13 @@ func ParseToken(tokenStr string) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+// Generate random 32-byte hex string
+func GenerateRandHexString() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }

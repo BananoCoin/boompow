@@ -1,5 +1,13 @@
 version: '3.9'
 services:
+    redis:
+        container_name: bpow_redis
+        image: redis:7-alpine
+        restart: unless-stopped
+        ports:
+          - '127.0.0.1:6379:6379'
+        networks: ['app-network']
+
     db:
         container_name: bpow_postgres
         image: postgres:14
@@ -27,6 +35,7 @@ services:
             - DB_NAME=boompow
             - DB_SSLMODE=disable
             - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
+            - REDIS_HOST=redis
         ports:
             - '127.0.0.1:8080:8080'
             - '127.0.0.1:2345:2345'
