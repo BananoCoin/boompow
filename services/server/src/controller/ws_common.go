@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
@@ -92,7 +93,7 @@ func (h *Hub) Run() {
 			err := json.Unmarshal(message, &workResponse)
 			// If this channel exists, send response
 			if val, ok := ActiveChannels[workResponse.Hash]; ok {
-				val <- message
+				WriteChannelSafe(val, message)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
@@ -113,6 +114,25 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+// Recover from panic if the channel is closed
+func WriteChannelSafe(out chan []byte, msg []byte) (err error) {
+
+	defer func() {
+		// recover from panic caused by writing to a closed channel
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			glog.Errorf("write: error writing %s on channel: %v\n", string(msg), err)
+			return
+		}
+
+		fmt.Printf("write: wrote %s on channel\n", string(msg))
+	}()
+
+	out <- msg // write on possibly closed channel
+
+	return err
 }
 
 // Channels for reach specific work request
@@ -143,12 +163,14 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientWorkReque
 		}
 		// Close channel
 		close(ActiveChannels[workRequest.Hash])
+		delete(ActiveChannels, workRequest.Hash)
 		return &workResponse, nil
 	// 30
 	case <-time.After(WORK_TIMEOUT_S):
 		glog.Errorf("Work request timed out %s", workRequest.Hash)
 		// Close channel
 		close(ActiveChannels[workRequest.Hash])
+		delete(ActiveChannels, workRequest.Hash)
 		return nil, errors.New("timeout")
 	}
 }

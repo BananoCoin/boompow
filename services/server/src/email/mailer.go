@@ -37,7 +37,7 @@ func sendEmail(destination string, subject string, t *template.Template, templat
 	auth := smtp.PlainAuth("", smtpCredentials.Username, smtpCredentials.Password, smtpCredentials.Server)
 	from := mail.Address{
 		Name:    "Banano",
-		Address: "noreply@plausible.banano.cc",
+		Address: "noreply@mail.banano.cc",
 	}
 	to := mail.Address{
 		Name:    "Your Name",

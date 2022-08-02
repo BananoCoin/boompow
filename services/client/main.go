@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
+	"github.com/inkeliz/nanopow"
 	"github.com/recws-org/recws"
 )
 
@@ -71,7 +73,28 @@ func main() {
 			fmt.Printf("Received work request %s", ClientWorkRequest.Hash)
 
 			// Write response
-			ws.WriteJSON(serializableModels.ClientWorkResponse{Hash: ClientWorkRequest.Hash, Result: "hello world"})
+			decoded, err := hex.DecodeString("782E7799FBFFBD13A5133DB42FCB64D1EBCAEF85E219FE37627B4660C4AF2A4A")
+			work, err := nanopow.GenerateWork(decoded, nanopow.V1BaseDifficult)
+			if err != nil {
+				fmt.Printf("Error: GenerateWork")
+				continue
+			}
+
+			ws.WriteJSON(serializableModels.ClientWorkResponse{Hash: ClientWorkRequest.Hash, Result: WorkToString(work)})
 		}
 	}
+}
+
+func WorkToString(w nanopow.Work) string {
+	n := make([]byte, 8)
+	copy(n, w[:])
+
+	reverse(n)
+
+	return hex.EncodeToString(n)
+}
+
+func reverse(v []byte) {
+	// binary.LittleEndian.PutUint64(v, binary.BigEndian.Uint64(v))
+	v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7] = v[7], v[6], v[5], v[4], v[3], v[2], v[1], v[0] // It's works. LOL
 }
