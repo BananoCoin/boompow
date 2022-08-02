@@ -3,7 +3,7 @@ package controller
 import (
 	"time"
 
-	"github.com/bbedward/boompow-server-ng/src/database"
+	"github.com/bbedward/boompow-ng/services/server/src/database"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )

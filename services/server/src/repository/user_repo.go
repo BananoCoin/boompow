@@ -3,12 +3,12 @@ package repository
 import (
 	"errors"
 
-	"github.com/bbedward/boompow-server-ng/graph/model"
-	"github.com/bbedward/boompow-server-ng/src/database"
-	"github.com/bbedward/boompow-server-ng/src/email"
-	"github.com/bbedward/boompow-server-ng/src/models"
-	"github.com/bbedward/boompow-server-ng/src/utils/auth"
-	"github.com/bbedward/boompow-server-ng/src/utils/validation"
+	"github.com/bbedward/boompow-ng/libs/utils/auth"
+	"github.com/bbedward/boompow-ng/libs/utils/validation"
+	"github.com/bbedward/boompow-ng/services/server/graph/model"
+	"github.com/bbedward/boompow-ng/services/server/src/database"
+	"github.com/bbedward/boompow-ng/services/server/src/email"
+	"github.com/bbedward/boompow-ng/services/server/src/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

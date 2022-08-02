@@ -9,13 +9,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bbedward/boompow-server-ng/graph/generated"
-	"github.com/bbedward/boompow-server-ng/graph/model"
-	"github.com/bbedward/boompow-server-ng/src/controller"
-	"github.com/bbedward/boompow-server-ng/src/middleware"
-	"github.com/bbedward/boompow-server-ng/src/models"
-	"github.com/bbedward/boompow-server-ng/src/utils/auth"
-	utils "github.com/bbedward/boompow-server-ng/src/utils/format"
+	"github.com/bbedward/boompow-ng/libs/utils/auth"
+	utils "github.com/bbedward/boompow-ng/libs/utils/format"
+	"github.com/bbedward/boompow-ng/services/server/graph/generated"
+	"github.com/bbedward/boompow-ng/services/server/graph/model"
+	"github.com/bbedward/boompow-ng/services/server/src/controller"
+	"github.com/bbedward/boompow-ng/services/server/src/middleware"
+	"github.com/bbedward/boompow-ng/services/server/src/models"
 	"github.com/google/uuid"
 )
 

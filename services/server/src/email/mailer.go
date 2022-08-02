@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/bbedward/boompow-server-ng/src/config"
-	"github.com/bbedward/boompow-server-ng/src/utils"
+	"github.com/bbedward/boompow-ng/libs/utils"
+	"github.com/bbedward/boompow-ng/services/server/src/config"
 	"github.com/golang/glog"
 )
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/bbedward/boompow-server-ng/src/utils"
+	"github.com/bbedward/boompow-ng/libs/utils"
 	"github.com/dgrijalva/jwt-go"
 )
 

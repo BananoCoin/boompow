@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/bbedward/boompow-server-ng/src/models"
-	"github.com/bbedward/boompow-server-ng/src/repository"
-	"github.com/bbedward/boompow-server-ng/src/utils/auth"
+	"github.com/bbedward/boompow-ng/libs/utils/auth"
+	"github.com/bbedward/boompow-ng/services/server/src/models"
+	"github.com/bbedward/boompow-ng/services/server/src/repository"
 )
 
 var userCtxKey = &contextKey{"user"}

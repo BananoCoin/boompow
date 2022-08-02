@@ -1,4 +1,4 @@
-module github.com/bbedward/boompow-server-ng
+module github.com/bbedward/boompow-ng/services/server
 
 go 1.18
 

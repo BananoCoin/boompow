@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bbedward/boompow-server-ng/src/utils/net"
+	"github.com/bbedward/boompow-ng/libs/utils/net"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
