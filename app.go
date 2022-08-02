@@ -75,10 +75,10 @@ func runServer() {
 	router.Handle("/graphql", srv)
 
 	// Setup WS endpoint
-	hub := controller.NewHub()
-	go hub.Run()
+	controller.ActiveHub = controller.NewHub()
+	go controller.ActiveHub.Run()
 	router.HandleFunc("/ws/worker", func(w http.ResponseWriter, r *http.Request) {
-		controller.WorkerChl(hub, w, r)
+		controller.WorkerChl(controller.ActiveHub, w, r)
 	})
 
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)

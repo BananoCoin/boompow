@@ -8,6 +8,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var ActiveHub *Hub
+
+// What a work request looks like from the client perspective
+type ClientWorkRequest struct {
+	Hash                 string `json:"hash"`
+	DifficutlyMultiplier int    `json:"difficulty_multiplier"`
+}
+
 const (
 	// Time allowed to write a message to the peer.
 	WriteWait = 10 * time.Second
@@ -44,7 +52,7 @@ type Hub struct {
 	// Registered clients.
 	Clients map[*Client]bool
 
-	// Inbound messages from the clients.
+	// Outbound messages to the client
 	Broadcast chan []byte
 
 	// Register requests from the clients.

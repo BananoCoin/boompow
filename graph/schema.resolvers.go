@@ -5,11 +5,13 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/bbedward/boompow-server-ng/graph/generated"
 	"github.com/bbedward/boompow-server-ng/graph/model"
+	"github.com/bbedward/boompow-server-ng/src/controller"
 	"github.com/bbedward/boompow-server-ng/src/middleware"
 	"github.com/bbedward/boompow-server-ng/src/models"
 	"github.com/bbedward/boompow-server-ng/src/utils/auth"
@@ -93,7 +95,18 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 
 // WorkGenerate is the resolver for the workGenerate field.
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	workRequest := &controller.ClientWorkRequest{
+		Hash:                 input.Hash,
+		DifficutlyMultiplier: input.DifficultyMultiplier,
+	}
+
+	bytes, err := json.Marshal(workRequest)
+	if err != nil {
+		return "", err
+	}
+	controller.ActiveHub.Broadcast <- bytes
+
+	return "sent", nil
 }
 
 // GetAllUsers is the resolver for the GetAllUsers field.
