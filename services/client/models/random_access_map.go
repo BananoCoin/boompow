@@ -11,57 +11,64 @@ import (
 // This helps workers clears backlogs of work more evenly
 // If there is 20 items on 3 workers, each worker will access the next unit of work randomly
 type RandomAccessMap struct {
-	Data   sync.Map
 	mu     sync.Mutex
-	Hashes []string
+	Hashes []serializableModels.ClientWorkRequest
 }
 
 func NewRandomAccessMap() *RandomAccessMap {
 	return &RandomAccessMap{
-		Data:   sync.Map{},
-		Hashes: []string{},
+		Hashes: []serializableModels.ClientWorkRequest{},
 	}
 }
 
-func (r *RandomAccessMap) Put(key string, value serializableModels.ClientWorkRequest) {
-	r.Data.Store(key, value)
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.Hashes = append(r.Hashes, key)
+// See if element exists
+func (r *RandomAccessMap) Exists(hash string) bool {
+	for _, v := range r.Hashes {
+		if v.Hash == hash {
+			return true
+		}
+	}
+	return false
 }
 
-// Removes and returns a random value from the map
+// Put value into map - synchronized
+func (r *RandomAccessMap) Put(value serializableModels.ClientWorkRequest) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.Exists(value.Hash) {
+		r.Hashes = append(r.Hashes, value)
+	}
+}
+
+// Removes and returns a random value from the map - synchronized
 func (r *RandomAccessMap) PopRandom() *serializableModels.ClientWorkRequest {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	index := rand.Intn(len(r.Hashes))
-	val, ok := r.Data.Load(r.Hashes[index])
-	if !ok {
+	if len(r.Hashes) == 0 {
 		return nil
 	}
-	ret := val.(serializableModels.ClientWorkRequest)
-	r.Data.Delete(r.Hashes[index])
+	index := rand.Intn(len(r.Hashes))
+	ret := r.Hashes[index]
 	r.Hashes = remove(r.Hashes, index)
 
 	return &ret
 }
 
-// Gets a value from the map
+// Gets a value from the map - synchronized
 func (r *RandomAccessMap) Get(hash string) *serializableModels.ClientWorkRequest {
-	val, ok := r.Data.Load(hash)
-	if !ok {
-		return nil
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.Exists(hash) {
+		return &r.Hashes[r.IndexOf(hash)]
 	}
-	ret := val.(serializableModels.ClientWorkRequest)
 
-	return &ret
+	return nil
 }
 
-// Removes specified hash
+// Removes specified hash - synchronized
 func (r *RandomAccessMap) Delete(hash string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.Data.Delete(hash)
 	index := r.IndexOf(hash)
 	if index > -1 {
 		r.Hashes = remove(r.Hashes, r.IndexOf(hash))
@@ -70,23 +77,14 @@ func (r *RandomAccessMap) Delete(hash string) {
 
 func (r *RandomAccessMap) IndexOf(hash string) int {
 	for i, v := range r.Hashes {
-		if v == hash {
+		if v.Hash == hash {
 			return i
 		}
 	}
 	return -1
 }
 
-func (r *RandomAccessMap) DataLen() int {
-	var i int
-	r.Data.Range(func(k, v interface{}) bool {
-		i++
-		return true
-	})
-	return i
-}
-
-func remove(s []string, i int) []string {
+func remove(s []serializableModels.ClientWorkRequest, i int) []serializableModels.ClientWorkRequest {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }

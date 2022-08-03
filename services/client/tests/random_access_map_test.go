@@ -16,15 +16,15 @@ func TestRandomAccessMap(t *testing.T) {
 	accessMap := models.NewRandomAccessMap()
 
 	// Add a few items
-	accessMap.Put("1", serializableModels.ClientWorkRequest{
+	accessMap.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "1",
 		DifficutlyMultiplier: 1,
 	})
-	accessMap.Put("2", serializableModels.ClientWorkRequest{
+	accessMap.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "2",
 		DifficutlyMultiplier: 2,
 	})
-	accessMap.Put("3", serializableModels.ClientWorkRequest{
+	accessMap.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "3",
 		DifficutlyMultiplier: 3,
 	})
@@ -40,5 +40,4 @@ func TestRandomAccessMap(t *testing.T) {
 
 	// Check length
 	utils.AssertEqual(t, 2, len(accessMap.Hashes))
-	utils.AssertEqual(t, 2, accessMap.DataLen())
 }
