@@ -103,8 +103,6 @@ func (h *Hub) Run() {
 				continue
 			}
 		case message := <-h.Broadcast:
-			glog.Info("BROADCASTING")
-			glog.Info(string(message))
 			for client := range h.Clients {
 				select {
 				case client.Send <- message:
