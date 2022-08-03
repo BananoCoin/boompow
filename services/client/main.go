@@ -11,9 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/bbedward/boompow-ng/libs/utils/validation"
 	"github.com/bbedward/boompow-ng/services/client/gql"
 	"github.com/bbedward/boompow-ng/services/client/websocket"
+	"github.com/bbedward/boompow-ng/services/client/work"
 	"github.com/go-co-op/gocron"
 	"github.com/mbndr/figlet4go"
 	"golang.org/x/term"
@@ -132,5 +134,21 @@ func main() {
 	scheduler.StartAsync()
 
 	fmt.Printf("\n🚀 Initiating connection to BoomPOW...")
-	websocket.StartWSClient(ctx)
+
+	// Create channel to receive work requests
+	// This channel is larger than the actual channel that processes results
+	workRequestChannel := make(chan *serializableModels.ClientWorkRequest, 100)
+	// Create channel to generate work
+	workGenerateChannel := make(chan bool, NConcurrentWorkers)
+
+	// Create work processor
+	// ! TODO - clean this up
+	// It's a little wonky to the way creating the websocket and passing this stuff around works
+	// Being able to access the authToken in another go-routine made it a little tricky
+	websocket.CreateWS()
+	workProcessor := work.NewWorkProcessor(websocket.WS, workGenerateChannel)
+	go workProcessor.StartRequestQueueWorker(workRequestChannel)
+	go workProcessor.StartWorkProcessor(workGenerateChannel)
+
+	websocket.StartWSClient(ctx, &workRequestChannel)
 }

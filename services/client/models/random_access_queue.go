@@ -84,6 +84,7 @@ func (r *RandomAccessQueue) IndexOf(hash string) int {
 	return -1
 }
 
+// NOT thread safe, must be called from within a locked section
 func remove(s []serializableModels.ClientWorkRequest, i int) []serializableModels.ClientWorkRequest {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
