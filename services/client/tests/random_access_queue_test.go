@@ -13,31 +13,31 @@ import (
 func TestRandomAccessMap(t *testing.T) {
 	// Seed random for consistency
 	rand.Seed(1)
-	accessMap := models.NewRandomAccessMap()
+	queue := models.NewRandomAccessQueue()
 
 	// Add a few items
-	accessMap.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "1",
 		DifficutlyMultiplier: 1,
 	})
-	accessMap.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "2",
 		DifficutlyMultiplier: 2,
 	})
-	accessMap.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientWorkRequest{
 		Hash:                 "3",
 		DifficutlyMultiplier: 3,
 	})
 
 	// Check that we can access these items
-	utils.AssertEqual(t, "1", accessMap.Get("1").Hash)
+	utils.AssertEqual(t, "1", queue.Get("1").Hash)
 
 	// Check that we can pop a random item
-	utils.AssertEqual(t, "3", accessMap.PopRandom().Hash)
+	utils.AssertEqual(t, "3", queue.PopRandom().Hash)
 
 	// Check that popped item is removed
-	utils.AssertEqual(t, (*serializableModels.ClientWorkRequest)(nil), accessMap.Get("3"))
+	utils.AssertEqual(t, (*serializableModels.ClientWorkRequest)(nil), queue.Get("3"))
 
 	// Check length
-	utils.AssertEqual(t, 2, len(accessMap.Hashes))
+	utils.AssertEqual(t, 2, len(queue.Hashes))
 }

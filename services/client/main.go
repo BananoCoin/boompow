@@ -42,7 +42,6 @@ func init() {
 	flag.Set("logtostderr", "true")
 	flag.Set("stderrthreshold", "INFO")
 	flag.Set("v", "2")
-	flag.Parse()
 }
 
 // SetupCloseHandler creates a 'listener' on a new goroutine which will notify the
@@ -59,7 +58,15 @@ func SetupCloseHandler(ctx context.Context, cancel context.CancelFunc) {
 	}()
 }
 
+// Represents the number of simultaneous work calculations we will run
+var NConcurrentWorkers int
+
 func main() {
+	// Parse flags
+	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
+	flag.Parse()
+	NConcurrentWorkers = *threadCount
+
 	printBanner()
 	gql.InitGQLClient()
 
