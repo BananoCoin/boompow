@@ -12,6 +12,8 @@ type User struct {
 	ServiceWebsite     string   `json:"serviceWebsite"`
 	CanRequestWork     bool     `json:"canRequestWork" gorm:"default:false;not null"`
 	InvalidResultCount int      `json:"invalidResultCount" gorm:"default:0;not null"`
+	// For reward payments
+	BanAddress string `json:"banAddress"`
 	// The work this user provider
 	WorkResults        []WorkRequest `gorm:"foreignKey:ProvidedBy"`
 	LastProvidedWorkAt time.Time     `json:"lastProvidedWorkAt"`

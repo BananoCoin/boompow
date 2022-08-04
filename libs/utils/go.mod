@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/Inkeliz/go-opencl v0.0.0-20200513154410-b275e70a49ac // indirect
-	golang.org/x/exp/errors v0.0.0-20200513190911-00229845015e // indirect
-	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
+	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
+	golang.org/x/exp/errors v0.0.0-20220722155223-a9213eeb770e // indirect
+	golang.org/x/sys v0.0.0-20220803195053-6e608f9ce704 // indirect
 )

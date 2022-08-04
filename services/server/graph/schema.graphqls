@@ -9,6 +9,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   type: UserType!
+  banAddress: String
 }
 
 input RefreshTokenInput {
@@ -24,6 +25,7 @@ input UserInput {
   email: String!
   password: String!
   type: UserType!
+  banAddress: String
 }
 
 input LoginInput {
