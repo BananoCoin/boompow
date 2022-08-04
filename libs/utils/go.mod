@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
+	github.com/bananocoin/boompow-next/libs/crypto v0.0.0-20220804200104-8712fd160362 // indirect
 	golang.org/x/exp/errors v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/sys v0.0.0-20220804182731-e052cef7d300 // indirect
 )
