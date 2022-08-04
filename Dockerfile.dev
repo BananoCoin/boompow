@@ -17,10 +17,6 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -p https://github.com/zsh-users/zsh-completions
 RUN echo "source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> /root/.zshrc
 
-# Temporary for private repo
-ADD .data/netrc/netrc /root/.netrc
-RUN chmod 700 /root/.netrc
-
 # Working directory inside container
 WORKDIR /app
 
