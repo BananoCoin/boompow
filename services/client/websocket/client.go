@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
-	"github.com/bbedward/boompow-ng/services/client/models"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow-next/services/client/models"
 )
 
 type WebsocketService struct {

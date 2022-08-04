@@ -1,4 +1,4 @@
-module github.com/bbedward/boompow-ng/libs/utils
+module github.com/bananocoin/boompow-next/libs/utils
 
 go 1.18
 

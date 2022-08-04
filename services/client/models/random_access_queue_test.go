@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"testing"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
-	utils "github.com/bbedward/boompow-ng/libs/utils/testing"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 )
 
 // Test random access map

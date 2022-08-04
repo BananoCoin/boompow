@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	utils "github.com/bbedward/boompow-ng/libs/utils/testing"
+	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 )
 
 func TestReverseOrder(t *testing.T) {

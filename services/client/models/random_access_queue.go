@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"sync"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
 )
 
 // RandomAccessQueue provides a data struture that can be access randomly

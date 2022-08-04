@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
-	"github.com/bbedward/boompow-ng/libs/utils/validation"
-	"github.com/bbedward/boompow-ng/services/server/src/database"
-	"github.com/bbedward/boompow-ng/services/server/src/models"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow-next/libs/utils/validation"
+	"github.com/bananocoin/boompow-next/services/server/src/database"
+	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )

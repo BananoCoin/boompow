@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
 	"github.com/golang/glog"
 	"github.com/inkeliz/nanopow"
 )

@@ -1,11 +1,11 @@
-module github.com/bbedward/boompow-ng/services/server
+module github.com/bananocoin/boompow-next/services/server
 
 go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.13
-	github.com/bbedward/boompow-ng/libs/models v0.0.0-20220804183308-3e75024058dd
-	github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220804183308-3e75024058dd
+	github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804183308-3e75024058dd
+	github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804183308-3e75024058dd
 	github.com/bitfield/script v0.20.2
 	github.com/go-chi/chi v1.5.4
 	github.com/go-redis/redis/v9 v9.0.0-beta.2

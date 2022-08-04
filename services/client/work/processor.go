@@ -3,9 +3,9 @@ package work
 import (
 	"fmt"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
-	"github.com/bbedward/boompow-ng/services/client/models"
-	"github.com/bbedward/boompow-ng/services/client/websocket"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow-next/services/client/models"
+	"github.com/bananocoin/boompow-next/services/client/websocket"
 )
 
 type WorkProcessor struct {

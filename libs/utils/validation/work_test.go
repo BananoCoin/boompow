@@ -3,7 +3,7 @@ package validation
 import (
 	"testing"
 
-	utils "github.com/bbedward/boompow-ng/libs/utils/testing"
+	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 )
 
 func TestWorkValidation(t *testing.T) {

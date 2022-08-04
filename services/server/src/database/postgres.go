@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/bbedward/boompow-ng/services/server/src/models"
+	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

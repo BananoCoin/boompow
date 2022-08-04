@@ -13,10 +13,10 @@ github.com/alexflint/go-scalar v1.0.0/go.mod h1:GpHzbCOZXEKMEcygYQ5n/aa4Aq84zbxj
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
-github.com/bbedward/boompow-ng/libs/models v0.0.0-20220804183308-3e75024058dd h1:wHhR4EAdlvVadKip/br+F9fvF3M3CS7WsyaohioB4KE=
-github.com/bbedward/boompow-ng/libs/models v0.0.0-20220804183308-3e75024058dd/go.mod h1:Cf7bmCEB3UdcQvNQiGRYJ4rVM9G03W/c/xId7ruq1+I=
-github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220804183308-3e75024058dd h1:xFwr6VE+ZK53CCVbcNS7LssvmqHj6qJrlPg/hU/+BQw=
-github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220804183308-3e75024058dd/go.mod h1:UbkUY/4qo+7c0Bgrg0u9QHJRygyNwmIe67YrqiZ2kkI=
+github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804183308-3e75024058dd h1:wHhR4EAdlvVadKip/br+F9fvF3M3CS7WsyaohioB4KE=
+github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804183308-3e75024058dd/go.mod h1:Cf7bmCEB3UdcQvNQiGRYJ4rVM9G03W/c/xId7ruq1+I=
+github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804183308-3e75024058dd h1:xFwr6VE+ZK53CCVbcNS7LssvmqHj6qJrlPg/hU/+BQw=
+github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804183308-3e75024058dd/go.mod h1:UbkUY/4qo+7c0Bgrg0u9QHJRygyNwmIe67YrqiZ2kkI=
 github.com/bradleyjkemp/cupaloy/v2 v2.6.0/go.mod h1:bm7JXdkRd4BHJk9HpwqAI8BoAY1lps46Enkdqw6aRX0=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
