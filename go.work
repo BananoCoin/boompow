@@ -1,7 +1,6 @@
 go 1.18
 
 use (
-	./libs/crypto
 	./libs/models
 	./libs/utils
 	./services/client

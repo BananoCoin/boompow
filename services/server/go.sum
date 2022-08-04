@@ -16,12 +16,10 @@ github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNg
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0 h1:jfIu9sQUG6Ig+0+Ap1h4unLjW6YQJpKZVmUzxsD4E/Q=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
-github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804190551-712d59f864e7 h1:GiePJYeqUUPdPGGZyw/j59ObWMZU+DRRwLk7LBcCm4Y=
-github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804190551-712d59f864e7/go.mod h1:8KkHP6eDzurg1G/06baS1+fedRGQ4a+KITLrHohY1Wk=
-github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804190551-712d59f864e7 h1:TWmiOh45Oye0vqiRqQ7CToL9aafAJ0LoTFVhmhTs/9g=
-github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804190551-712d59f864e7/go.mod h1:/nPFJp/QWqzoGgoSPOittbl6cmHdrP4WKo9mfuXkaT8=
-github.com/bbedward/crypto/ed25519 v0.0.0-20200408160247-f3ed4859f246 h1:bXA9NXNjNAYLXiNMx5LVPyOVNX4h19/7LWRBgFLCaD8=
-github.com/bbedward/crypto/ed25519 v0.0.0-20200408160247-f3ed4859f246/go.mod h1:5S+eGk8KWIs2q5VGnL8fTro5peOB8562AOX1+K50KWM=
+github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f h1:toPefEHt2OK4X+Tzw3fIdC12MIQ8TYNPmR2hGgsC+dU=
+github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f/go.mod h1:8KkHP6eDzurg1G/06baS1+fedRGQ4a+KITLrHohY1Wk=
+github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f h1:hQ9q9fkqfqA05xSdsn37XfaRPX1CSkizeBC3ktZNp50=
+github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f/go.mod h1:Pz/hSa0pSllDUXgIY94rFxLtuJ2iqw6hXD22nrQ294I=
 github.com/bitfield/script v0.20.2 h1:4DexsRtBILVMEn3EZwHbtJdDqdk43sXI8gM3F04JXgs=
 github.com/bitfield/script v0.20.2/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
@@ -210,7 +208,6 @@ golang.org/x/crypto v0.0.0-20190411191339-88737f569e3a/go.mod h1:WFFai1msRO1wXaE
 golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
-golang.org/x/crypto v0.0.0-20200406173513-056763e48d71/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c/go.mod h1:jdWPYTVW3xRLrWPugEBEK3UY2ZEsg3UU495nc5E+M+I=
@@ -254,8 +251,8 @@ golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211019181941-9d821ace8654/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20220803195053-6e608f9ce704 h1:Y7NOhdqIOU8kYI7BxsgL38d0ot0raxvcW+EMQU2QrT4=
-golang.org/x/sys v0.0.0-20220803195053-6e608f9ce704/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220804182731-e052cef7d300 h1:ymzm2lKPkdNE1FM0FAss9EdyGB+YzDN2P3jMJODYr2M=
+golang.org/x/sys v0.0.0-20220804182731-e052cef7d300/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

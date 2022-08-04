@@ -36,6 +36,7 @@ services:
             - DB_SSLMODE=disable
             - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
             - REDIS_HOST=redis
+            - GOPRIVATE=github.com/bananocoin
         ports:
             - '127.0.0.1:8080:8080'
             - '127.0.0.1:2345:2345'

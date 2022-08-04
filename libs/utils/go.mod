@@ -6,7 +6,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/glog v1.0.0
 	github.com/inkeliz/nanopow v0.0.0-20210531083139-73484259580f
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 )
 
 require (
