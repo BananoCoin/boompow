@@ -5,5 +5,5 @@ type ClientWorkRequest struct {
 	// We attach a unique request ID to each request, this links it to user requesting work
 	RequestID            string `json:"request_id"`
 	Hash                 string `json:"hash"`
-	DifficutlyMultiplier int    `json:"difficulty_multiplier"`
+	DifficultyMultiplier int    `json:"difficulty_multiplier"`
 }

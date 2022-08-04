@@ -5,8 +5,9 @@ go 1.18
 require (
 	github.com/Khan/genqlient v0.5.0
 	github.com/bbedward/boompow-ng/libs/models v0.0.0-20220802195333-f3a7378a65af
-	github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220802195333-f3a7378a65af
+	github.com/bbedward/boompow-ng/libs/utils v0.0.0-20220804131635-7afb4f4f6155
 	github.com/go-co-op/gocron v1.16.1
+	github.com/golang/glog v1.0.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/inkeliz/nanopow v0.0.0-20210531083139-73484259580f
 	github.com/jpillora/backoff v1.0.0

@@ -15,6 +15,7 @@ import (
 	utils "github.com/bbedward/boompow-ng/libs/utils/format"
 	"github.com/bbedward/boompow-ng/services/server/graph/generated"
 	"github.com/bbedward/boompow-ng/services/server/graph/model"
+	"github.com/bbedward/boompow-ng/services/server/src/config"
 	"github.com/bbedward/boompow-ng/services/server/src/controller"
 	"github.com/bbedward/boompow-ng/services/server/src/middleware"
 	"github.com/bbedward/boompow-ng/services/server/src/models"
@@ -100,12 +101,27 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
 	reqID := make([]byte, 32)
 	if _, err := rand.Read(reqID); err != nil {
-		return "", errors.New("Error occured processing request")
+		return "", errors.New("server_error:error occured processing request")
 	}
+
+	// Check that this request is valid
+	_, err := hex.DecodeString(input.Hash)
+	if err != nil {
+		return "", errors.New("bad_request:invalid hash")
+	}
+
+	// Alter our difficulty to be in a valid range if it isn't
+	if input.DifficultyMultiplier < -8 {
+		// -8 is NANO receive and banano base difficulty
+		input.DifficultyMultiplier = -8
+	} else if input.DifficultyMultiplier > config.MAX_WORK_DIFFICULTY_MULTIPLIER {
+		input.DifficultyMultiplier = config.MAX_WORK_DIFFICULTY_MULTIPLIER
+	}
+
 	workRequest := &serializableModels.ClientWorkRequest{
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
-		DifficutlyMultiplier: input.DifficultyMultiplier,
+		DifficultyMultiplier: input.DifficultyMultiplier,
 	}
 
 	resp, err := controller.BroadcastWorkRequestAndWait(workRequest)

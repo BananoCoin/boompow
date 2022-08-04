@@ -1,4 +1,4 @@
-package tests
+package models
 
 import (
 	"math/rand"
@@ -6,30 +6,29 @@ import (
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	utils "github.com/bbedward/boompow-ng/libs/utils/testing"
-	"github.com/bbedward/boompow-ng/services/client/models"
 )
 
 // Test random access map
 func TestRandomAccessMap(t *testing.T) {
 	// Seed random for consistency
 	rand.Seed(1)
-	queue := models.NewRandomAccessQueue()
+	queue := NewRandomAccessQueue()
 
 	// Add a few items
 	queue.Put(serializableModels.ClientWorkRequest{
 		RequestID:            "1",
 		Hash:                 "1",
-		DifficutlyMultiplier: 1,
+		DifficultyMultiplier: 1,
 	})
 	queue.Put(serializableModels.ClientWorkRequest{
 		RequestID:            "2",
 		Hash:                 "2",
-		DifficutlyMultiplier: 2,
+		DifficultyMultiplier: 2,
 	})
 	queue.Put(serializableModels.ClientWorkRequest{
 		RequestID:            "3",
 		Hash:                 "3",
-		DifficutlyMultiplier: 3,
+		DifficultyMultiplier: 3,
 	})
 
 	// Check that we can access these items

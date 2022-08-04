@@ -7,6 +7,7 @@ import (
 	"time"
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
+	"github.com/bbedward/boompow-ng/libs/utils/validation"
 	"github.com/bbedward/boompow-ng/services/server/src/database"
 	"github.com/bbedward/boompow-ng/services/server/src/models"
 	"github.com/golang/glog"
@@ -95,6 +96,12 @@ func (h *Hub) Run() {
 			// If this channel exists, send response
 			activeChannel := ActiveChannels.Get(workResponse.RequestID)
 			if activeChannel != nil {
+				// Validate this work
+				if !validation.IsWorkValid(activeChannel.Hash, activeChannel.DifficultyMultiplier, workResponse.Result) {
+					glog.Errorf("Received invalid work for %s", activeChannel.Hash)
+					// ! TODO - penalize this bad client
+					continue
+				}
 				WriteChannelSafe(activeChannel.Chan, message)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
@@ -154,9 +161,10 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientWorkReque
 	}
 	// Create channel for this hash
 	activeChannelObj := models.ActiveChannelObject{
-		RequestID: workRequest.RequestID,
-		Hash:      workRequest.Hash,
-		Chan:      make(chan []byte),
+		RequestID:            workRequest.RequestID,
+		Hash:                 workRequest.Hash,
+		DifficultyMultiplier: workRequest.DifficultyMultiplier,
+		Chan:                 make(chan []byte),
 	}
 	ActiveChannels.Put(activeChannelObj)
 	go func() { ActiveHub.Broadcast <- bytes }()

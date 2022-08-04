@@ -5,9 +5,10 @@ import (
 )
 
 type ActiveChannelObject struct {
-	RequestID string
-	Hash      string
-	Chan      chan []byte
+	RequestID            string
+	Hash                 string
+	DifficultyMultiplier int
+	Chan                 chan []byte
 }
 
 // SyncArray builds an thread-safe array with some handy methods

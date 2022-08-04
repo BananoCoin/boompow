@@ -48,7 +48,7 @@ func StartWSClient(ctx context.Context, requestChan *chan *serializableModels.Cl
 				fmt.Printf("Error: ReadJSON %s", WS.GetURL())
 				continue
 			}
-			fmt.Printf("\n🦋 Received work request %s with difficulty %dx\n", ClientWorkRequest.Hash, ClientWorkRequest.DifficutlyMultiplier)
+			fmt.Printf("\n🦋 Received work request %s with difficulty %dx\n", ClientWorkRequest.Hash, ClientWorkRequest.DifficultyMultiplier)
 
 			if len(ClientWorkRequest.Hash) != 64 {
 				fmt.Printf("\nReceived invalid hash, skipping\n")
