@@ -5,6 +5,8 @@ package graph
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -96,7 +98,12 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 
 // WorkGenerate is the resolver for the workGenerate field.
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
+	reqID := make([]byte, 32)
+	if _, err := rand.Read(reqID); err != nil {
+		return "", errors.New("Error occured processing request")
+	}
 	workRequest := &serializableModels.ClientWorkRequest{
+		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
 		DifficutlyMultiplier: input.DifficultyMultiplier,
 	}

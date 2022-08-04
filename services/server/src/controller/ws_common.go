@@ -8,6 +8,7 @@ import (
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/bbedward/boompow-ng/services/server/src/database"
+	"github.com/bbedward/boompow-ng/services/server/src/models"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
@@ -92,8 +93,9 @@ func (h *Hub) Run() {
 			var workResponse serializableModels.ClientWorkResponse
 			err := json.Unmarshal(message, &workResponse)
 			// If this channel exists, send response
-			if val, ok := ActiveChannels[workResponse.Hash]; ok {
-				WriteChannelSafe(val, message)
+			activeChannel := ActiveChannels.Get(workResponse.RequestID)
+			if activeChannel != nil {
+				WriteChannelSafe(activeChannel.Chan, message)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
@@ -135,7 +137,7 @@ func WriteChannelSafe(out chan []byte, msg []byte) (err error) {
 }
 
 // Channels for reach specific work request
-var ActiveChannels = make(map[string]chan []byte)
+var ActiveChannels = models.NewSyncArray()
 
 // Timeout waiting for work response from client
 const WORK_TIMEOUT_S = time.Second * 30
@@ -151,25 +153,30 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientWorkReque
 		return nil, err
 	}
 	// Create channel for this hash
-	ActiveChannels[workRequest.Hash] = make(chan []byte)
+	activeChannelObj := models.ActiveChannelObject{
+		RequestID: workRequest.RequestID,
+		Hash:      workRequest.Hash,
+		Chan:      make(chan []byte),
+	}
+	ActiveChannels.Put(activeChannelObj)
 	go func() { ActiveHub.Broadcast <- bytes }()
 	select {
-	case response := <-ActiveChannels[workRequest.Hash]:
+	case response := <-activeChannelObj.Chan:
 		var workResponse serializableModels.ClientWorkResponse
 		err := json.Unmarshal(response, &workResponse)
 		if err != nil {
 			return nil, err
 		}
 		// Close channel
-		close(ActiveChannels[workRequest.Hash])
-		delete(ActiveChannels, workRequest.Hash)
+		close(activeChannelObj.Chan)
+		ActiveChannels.Delete(workRequest.RequestID)
 		return &workResponse, nil
 	// 30
 	case <-time.After(WORK_TIMEOUT_S):
 		glog.Errorf("Work request timed out %s", workRequest.Hash)
 		// Close channel
-		close(ActiveChannels[workRequest.Hash])
-		delete(ActiveChannels, workRequest.Hash)
+		close(activeChannelObj.Chan)
+		ActiveChannels.Delete(workRequest.RequestID)
 		return nil, errors.New("timeout")
 	}
 }

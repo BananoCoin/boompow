@@ -22,7 +22,16 @@ func NewRandomAccessQueue() *RandomAccessQueue {
 }
 
 // See if element exists
-func (r *RandomAccessQueue) Exists(hash string) bool {
+func (r *RandomAccessQueue) Exists(requestID string) bool {
+	for _, v := range r.Hashes {
+		if v.RequestID == requestID {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *RandomAccessQueue) HashExists(hash string) bool {
 	for _, v := range r.Hashes {
 		if v.Hash == hash {
 			return true
@@ -35,7 +44,7 @@ func (r *RandomAccessQueue) Exists(hash string) bool {
 func (r *RandomAccessQueue) Put(value serializableModels.ClientWorkRequest) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if !r.Exists(value.Hash) {
+	if !r.Exists(value.RequestID) {
 		r.Hashes = append(r.Hashes, value)
 	}
 }
@@ -55,29 +64,29 @@ func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientWorkRequest {
 }
 
 // Gets a value from the map - synchronized
-func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientWorkRequest {
+func (r *RandomAccessQueue) Get(requestID string) *serializableModels.ClientWorkRequest {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if r.Exists(hash) {
-		return &r.Hashes[r.IndexOf(hash)]
+	if r.Exists(requestID) {
+		return &r.Hashes[r.IndexOf(requestID)]
 	}
 
 	return nil
 }
 
 // Removes specified hash - synchronized
-func (r *RandomAccessQueue) Delete(hash string) {
+func (r *RandomAccessQueue) Delete(requestID string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	index := r.IndexOf(hash)
+	index := r.IndexOf(requestID)
 	if index > -1 {
-		r.Hashes = remove(r.Hashes, r.IndexOf(hash))
+		r.Hashes = remove(r.Hashes, r.IndexOf(requestID))
 	}
 }
 
-func (r *RandomAccessQueue) IndexOf(hash string) int {
+func (r *RandomAccessQueue) IndexOf(requestID string) int {
 	for i, v := range r.Hashes {
-		if v.Hash == hash {
+		if v.RequestID == requestID {
 			return i
 		}
 	}

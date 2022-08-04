@@ -49,8 +49,9 @@ func (wp *WorkProcessor) StartWorkProcessor(workProcessChan <-chan bool) {
 			}
 			// Send result back to server
 			clientWorkResult := serializableModels.ClientWorkResponse{
-				Hash:   workItem.Hash,
-				Result: result,
+				RequestID: workItem.RequestID,
+				Hash:      workItem.Hash,
+				Result:    result,
 			}
 			wp.ws.WriteJSON(clientWorkResult)
 		}

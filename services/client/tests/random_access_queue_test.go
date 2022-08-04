@@ -17,14 +17,17 @@ func TestRandomAccessMap(t *testing.T) {
 
 	// Add a few items
 	queue.Put(serializableModels.ClientWorkRequest{
+		RequestID:            "1",
 		Hash:                 "1",
 		DifficutlyMultiplier: 1,
 	})
 	queue.Put(serializableModels.ClientWorkRequest{
+		RequestID:            "2",
 		Hash:                 "2",
 		DifficutlyMultiplier: 2,
 	})
 	queue.Put(serializableModels.ClientWorkRequest{
+		RequestID:            "3",
 		Hash:                 "3",
 		DifficutlyMultiplier: 3,
 	})
