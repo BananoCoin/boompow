@@ -9,22 +9,26 @@ import (
 )
 
 type WorkProcessor struct {
-	Queue           *models.RandomAccessQueue
-	workProcessChan chan bool
-	ws              *websocket.RecConn
+	Queue *models.RandomAccessQueue
+	// WorkQueueChan is where we write requests from the websocket
+	WorkQueueChan chan *serializableModels.ClientRequest
+	// WorkProcessChan is where we actually read from the queue and compute work
+	WorkProcessChan chan bool
+	WSService       *websocket.WebsocketService
 }
 
-func NewWorkProcessor(ws *websocket.RecConn, workProcessChan chan bool) *WorkProcessor {
+func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int) *WorkProcessor {
 	return &WorkProcessor{
 		Queue:           models.NewRandomAccessQueue(),
-		workProcessChan: workProcessChan,
-		ws:              ws,
+		WorkQueueChan:   make(chan *serializableModels.ClientRequest, 100),
+		WorkProcessChan: make(chan bool, nWorkProcesses),
+		WSService:       ws,
 	}
 }
 
 // RequestQueueWorker - is a worker that receives work requests directly from the websocket, adds them to the queue, and determines what should be worked on next
-func (wp *WorkProcessor) StartRequestQueueWorker(requestChan <-chan *serializableModels.ClientRequest) {
-	for c := range requestChan {
+func (wp *WorkProcessor) StartRequestQueueWorker() {
+	for c := range wp.WorkQueueChan {
 		// If the backlog is too large, no-op
 		if len(wp.Queue.Hashes) > 100 {
 			continue
@@ -32,13 +36,13 @@ func (wp *WorkProcessor) StartRequestQueueWorker(requestChan <-chan *serializabl
 		// Add to queue
 		wp.Queue.Put(*c)
 		// Add to work processing channel
-		wp.workProcessChan <- true
+		wp.WorkProcessChan <- true
 	}
 }
 
 // WorkProcessor - is a worker that actually generates work and sends the result  back over the websocket
-func (wp *WorkProcessor) StartWorkProcessor(workProcessChan <-chan bool) {
-	for range workProcessChan {
+func (wp *WorkProcessor) StartWorkProcessor() {
+	for range wp.WorkProcessChan {
 		// Get random work item
 		workItem := wp.Queue.PopRandom()
 		if workItem != nil {
@@ -53,7 +57,13 @@ func (wp *WorkProcessor) StartWorkProcessor(workProcessChan <-chan bool) {
 				Hash:      workItem.Hash,
 				Result:    result,
 			}
-			wp.ws.WriteJSON(clientWorkResult)
+			wp.WSService.WS.WriteJSON(clientWorkResult)
 		}
 	}
+}
+
+// Start both workers
+func (wp *WorkProcessor) StartAsync() {
+	go wp.StartRequestQueueWorker()
+	go wp.StartWorkProcessor()
 }

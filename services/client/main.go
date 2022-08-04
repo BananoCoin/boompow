@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	serializableModels "github.com/bbedward/boompow-ng/libs/models"
 	"github.com/bbedward/boompow-ng/libs/utils/validation"
 	"github.com/bbedward/boompow-ng/services/client/gql"
 	"github.com/bbedward/boompow-ng/services/client/websocket"
@@ -63,6 +62,9 @@ func SetupCloseHandler(ctx context.Context, cancel context.CancelFunc) {
 // Represents the number of simultaneous work calculations we will run
 var NConcurrentWorkers int
 
+// Instance of websocket service
+var WSService *websocket.WebsocketService
+
 func main() {
 	// Parse flags
 	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
@@ -77,6 +79,9 @@ func main() {
 
 	// Handle interrupts gracefully
 	SetupCloseHandler(ctx, cancel)
+
+	// Create WS Service
+	WSService = websocket.NewWebsockerService()
 
 	// Loop to get username and password and login
 	for {
@@ -119,36 +124,26 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("\n\n🔓 Successfully logged in as %s\n\n", email)
-		websocket.AuthToken = resp.Login.Token
+		WSService.SetAuthToken(resp.Login.Token)
 		break
 	}
 
 	// Setup a cron job to auto-update auth tokens
 	scheduler := gocron.NewScheduler(time.UTC)
 	scheduler.Every(1).Hour().Do(func() {
-		authToken, err := gql.RefreshToken(ctx, websocket.AuthToken)
+		authToken, err := gql.RefreshToken(ctx, WSService.AuthToken)
 		if err == nil {
-			websocket.UpdateAuthToken(authToken)
+			WSService.SetAuthToken(authToken)
 		}
 	})
+	scheduler.StartAt(time.Now().Add(time.Hour))
 	scheduler.StartAsync()
 
 	fmt.Printf("\n🚀 Initiating connection to BoomPOW...")
 
-	// Create channel to receive work requests
-	// This channel is larger than the actual channel that processes results
-	workRequestChannel := make(chan *serializableModels.ClientRequest, 100)
-	// Create channel to generate work
-	workGenerateChannel := make(chan bool, NConcurrentWorkers)
-
 	// Create work processor
-	// ! TODO - clean this up
-	// It's a little wonky to the way creating the websocket and passing this stuff around works
-	// Being able to access the authToken in another go-routine made it a little tricky
-	websocket.CreateWS()
-	workProcessor := work.NewWorkProcessor(websocket.WS, workGenerateChannel)
-	go workProcessor.StartRequestQueueWorker(workRequestChannel)
-	go workProcessor.StartWorkProcessor(workGenerateChannel)
+	workProcessor := work.NewWorkProcessor(WSService, NConcurrentWorkers)
+	workProcessor.StartAsync()
 
-	websocket.StartWSClient(ctx, &workRequestChannel, workProcessor.Queue)
+	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue)
 }

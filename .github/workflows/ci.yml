@@ -1,4 +1,4 @@
-name: CI
+name: 💫 CI
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: ☔️ Tests
     runs-on: ubuntu-latest
     env:
      GOPRIVATE: github.com/bbedward/boompow-ng
