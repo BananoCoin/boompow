@@ -1,8 +1,6 @@
 github.com/Inkeliz/go-opencl v0.0.0-20200513154410-b275e70a49ac/go.mod h1:9ILtD1/UTP/Y7JMCU8loWZMDvhrQuTgHzHatG6z9ZdQ=
 github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 h1:TKWkFaRW5EPQyrS1pM0vm3vvqw/jmHu+FkV8gRD+7/w=
 github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006/go.mod h1:9ILtD1/UTP/Y7JMCU8loWZMDvhrQuTgHzHatG6z9ZdQ=
-github.com/bbedward/crypto/ed25519 v0.0.0-20200408160247-f3ed4859f246 h1:bXA9NXNjNAYLXiNMx5LVPyOVNX4h19/7LWRBgFLCaD8=
-github.com/bbedward/crypto/ed25519 v0.0.0-20200408160247-f3ed4859f246/go.mod h1:5S+eGk8KWIs2q5VGnL8fTro5peOB8562AOX1+K50KWM=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
