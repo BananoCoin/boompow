@@ -40,6 +40,9 @@ func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, erro
 	if !validation.IsValidEmail(userInput.Email) {
 		return nil, errors.New("Invalid email")
 	}
+	if userInput.BanAddress != nil && !validation.ValidateAddress(*userInput.BanAddress) {
+		return nil, errors.New("Invalid ban_ address")
+	}
 
 	// Hash password
 	hashedPassword, err := auth.HashPassword(userInput.Password)
@@ -51,6 +54,9 @@ func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, erro
 		Email:    userInput.Email,
 		Password: hashedPassword,
 		Type:     models.UserType(userInput.Type),
+	}
+	if userInput.BanAddress != nil {
+		user.BanAddress = *userInput.BanAddress
 	}
 	err = s.Db.Create(&user).Error
 

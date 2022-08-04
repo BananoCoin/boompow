@@ -22,17 +22,19 @@ type RefreshTokenInput struct {
 }
 
 type User struct {
-	ID        string   `json:"id"`
-	Email     string   `json:"email"`
-	CreatedAt string   `json:"createdAt"`
-	UpdatedAt string   `json:"updatedAt"`
-	Type      UserType `json:"type"`
+	ID         string   `json:"id"`
+	Email      string   `json:"email"`
+	CreatedAt  string   `json:"createdAt"`
+	UpdatedAt  string   `json:"updatedAt"`
+	Type       UserType `json:"type"`
+	BanAddress *string  `json:"banAddress"`
 }
 
 type UserInput struct {
-	Email    string   `json:"email"`
-	Password string   `json:"password"`
-	Type     UserType `json:"type"`
+	Email      string   `json:"email"`
+	Password   string   `json:"password"`
+	Type       UserType `json:"type"`
+	BanAddress *string  `json:"banAddress"`
 }
 
 type VerifyEmailInput struct {

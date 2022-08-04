@@ -29,11 +29,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 		return nil, err
 	}
 	userCreated := &model.User{
-		Email:     user.Email,
-		ID:        user.ID.String(),
-		CreatedAt: utils.GenerateISOString(user.CreatedAt),
-		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
-		Type:      input.Type,
+		Email:      user.Email,
+		ID:         user.ID.String(),
+		CreatedAt:  utils.GenerateISOString(user.CreatedAt),
+		UpdatedAt:  utils.GenerateISOString(user.UpdatedAt),
+		Type:       input.Type,
+		BanAddress: input.BanAddress,
 	}
 	return userCreated, nil
 }

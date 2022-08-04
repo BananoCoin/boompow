@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
+	github.com/bbedward/crypto/ed25519 v0.0.0-20200408160247-f3ed4859f246 // indirect
 	golang.org/x/exp/errors v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/sys v0.0.0-20220803195053-6e608f9ce704 // indirect
 )
