@@ -102,6 +102,17 @@ func (h *Hub) Run() {
 					// ! TODO - penalize this bad client
 					continue
 				}
+				// Send work cancel command to all clients
+				workCancel := &serializableModels.ClientRequest{
+					RequestType: "work_cancel",
+					Hash:        activeChannel.Hash,
+				}
+				bytes, err := json.Marshal(workCancel)
+				if err != nil {
+					glog.Errorf("Failed to marshal work cancel command: %v", err)
+				} else {
+					go func() { ActiveHub.Broadcast <- bytes }()
+				}
 				WriteChannelSafe(activeChannel.Chan, message)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
@@ -153,7 +164,7 @@ const WORK_TIMEOUT_S = time.Second * 30
 // 1) Broadcast to every client
 // 2) Create a channel for the response
 // 3) Wait for response on the channel until timeout
-func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientWorkRequest) (*serializableModels.ClientWorkResponse, error) {
+func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientRequest) (*serializableModels.ClientWorkResponse, error) {
 	// Serialize
 	bytes, err := json.Marshal(workRequest)
 	if err != nil {

@@ -15,17 +15,17 @@ func TestRandomAccessMap(t *testing.T) {
 	queue := NewRandomAccessQueue()
 
 	// Add a few items
-	queue.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientRequest{
 		RequestID:            "1",
 		Hash:                 "1",
 		DifficultyMultiplier: 1,
 	})
-	queue.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientRequest{
 		RequestID:            "2",
 		Hash:                 "2",
 		DifficultyMultiplier: 2,
 	})
-	queue.Put(serializableModels.ClientWorkRequest{
+	queue.Put(serializableModels.ClientRequest{
 		RequestID:            "3",
 		Hash:                 "3",
 		DifficultyMultiplier: 3,
@@ -38,7 +38,7 @@ func TestRandomAccessMap(t *testing.T) {
 	utils.AssertEqual(t, "3", queue.PopRandom().Hash)
 
 	// Check that popped item is removed
-	utils.AssertEqual(t, (*serializableModels.ClientWorkRequest)(nil), queue.Get("3"))
+	utils.AssertEqual(t, (*serializableModels.ClientRequest)(nil), queue.Get("3"))
 
 	// Check length
 	utils.AssertEqual(t, 2, len(queue.Hashes))

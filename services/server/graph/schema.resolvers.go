@@ -118,7 +118,8 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		input.DifficultyMultiplier = config.MAX_WORK_DIFFICULTY_MULTIPLIER
 	}
 
-	workRequest := &serializableModels.ClientWorkRequest{
+	workRequest := &serializableModels.ClientRequest{
+		RequestType:          "work_generate",
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
 		DifficultyMultiplier: input.DifficultyMultiplier,

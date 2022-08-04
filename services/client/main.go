@@ -137,7 +137,7 @@ func main() {
 
 	// Create channel to receive work requests
 	// This channel is larger than the actual channel that processes results
-	workRequestChannel := make(chan *serializableModels.ClientWorkRequest, 100)
+	workRequestChannel := make(chan *serializableModels.ClientRequest, 100)
 	// Create channel to generate work
 	workGenerateChannel := make(chan bool, NConcurrentWorkers)
 
@@ -150,5 +150,5 @@ func main() {
 	go workProcessor.StartRequestQueueWorker(workRequestChannel)
 	go workProcessor.StartWorkProcessor(workGenerateChannel)
 
-	websocket.StartWSClient(ctx, &workRequestChannel)
+	websocket.StartWSClient(ctx, &workRequestChannel, workProcessor.Queue)
 }

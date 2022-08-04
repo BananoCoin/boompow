@@ -7,6 +7,7 @@ import (
 	"time"
 
 	serializableModels "github.com/bbedward/boompow-ng/libs/models"
+	"github.com/bbedward/boompow-ng/services/client/models"
 )
 
 var WS *RecConn
@@ -23,7 +24,7 @@ func UpdateAuthToken(authToken string) {
 	})
 }
 
-func StartWSClient(ctx context.Context, requestChan *chan *serializableModels.ClientWorkRequest) {
+func StartWSClient(ctx context.Context, requestChan *chan *serializableModels.ClientRequest, queue *models.RandomAccessQueue) {
 	// Start the websocket connection
 	WS.Dial("ws://localhost:8080/ws/worker", http.Header{
 		"Authorization": {AuthToken},
@@ -42,20 +43,31 @@ func StartWSClient(ctx context.Context, requestChan *chan *serializableModels.Cl
 				continue
 			}
 
-			var ClientWorkRequest serializableModels.ClientWorkRequest
-			err := WS.ReadJSON(&ClientWorkRequest)
+			var serverMsg serializableModels.ClientRequest
+			err := WS.ReadJSON(&serverMsg)
 			if err != nil {
 				fmt.Printf("Error: ReadJSON %s", WS.GetURL())
 				continue
 			}
-			fmt.Printf("\n🦋 Received work request %s with difficulty %dx\n", ClientWorkRequest.Hash, ClientWorkRequest.DifficultyMultiplier)
 
-			if len(ClientWorkRequest.Hash) != 64 {
-				fmt.Printf("\nReceived invalid hash, skipping\n")
+			// Determine type of message
+			if serverMsg.RequestType == "work_generate" {
+				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
+
+				if len(serverMsg.Hash) != 64 {
+					fmt.Printf("\nReceived invalid hash, skipping")
+				}
+
+				// Queue
+				*requestChan <- &serverMsg
+			} else if serverMsg.RequestType == "work_cancel" {
+				// Delete pending work from queue
+				// ! TODO - can we cancel currently runing work calculations?
+				var workCancelCmd serializableModels.ClientRequest
+				queue.Delete(workCancelCmd.Hash)
+			} else {
+				fmt.Printf("\n🦋 Received unknown message %s\n", serverMsg.RequestType)
 			}
-
-			// Queue
-			*requestChan <- &ClientWorkRequest
 		}
 	}
 }

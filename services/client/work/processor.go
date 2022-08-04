@@ -9,28 +9,28 @@ import (
 )
 
 type WorkProcessor struct {
-	queue           *models.RandomAccessQueue
+	Queue           *models.RandomAccessQueue
 	workProcessChan chan bool
 	ws              *websocket.RecConn
 }
 
 func NewWorkProcessor(ws *websocket.RecConn, workProcessChan chan bool) *WorkProcessor {
 	return &WorkProcessor{
-		queue:           models.NewRandomAccessQueue(),
+		Queue:           models.NewRandomAccessQueue(),
 		workProcessChan: workProcessChan,
 		ws:              ws,
 	}
 }
 
 // RequestQueueWorker - is a worker that receives work requests directly from the websocket, adds them to the queue, and determines what should be worked on next
-func (wp *WorkProcessor) StartRequestQueueWorker(requestChan <-chan *serializableModels.ClientWorkRequest) {
+func (wp *WorkProcessor) StartRequestQueueWorker(requestChan <-chan *serializableModels.ClientRequest) {
 	for c := range requestChan {
 		// If the backlog is too large, no-op
-		if len(wp.queue.Hashes) > 100 {
+		if len(wp.Queue.Hashes) > 100 {
 			continue
 		}
 		// Add to queue
-		wp.queue.Put(*c)
+		wp.Queue.Put(*c)
 		// Add to work processing channel
 		wp.workProcessChan <- true
 	}
@@ -40,7 +40,7 @@ func (wp *WorkProcessor) StartRequestQueueWorker(requestChan <-chan *serializabl
 func (wp *WorkProcessor) StartWorkProcessor(workProcessChan <-chan bool) {
 	for range workProcessChan {
 		// Get random work item
-		workItem := wp.queue.PopRandom()
+		workItem := wp.Queue.PopRandom()
 		if workItem != nil {
 			// Generate work
 			result, err := WorkGenerate(workItem)
