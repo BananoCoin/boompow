@@ -20,7 +20,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/bananocoin/boompow-next/libs/crypto/ed25519/edwards25519"
+	"github.com/bananocoin/boompow-next/libs/utils/ed25519/edwards25519"
 	"golang.org/x/crypto/blake2b"
 )
 

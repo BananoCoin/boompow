@@ -5,7 +5,7 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/bananocoin/boompow-next/libs/crypto/ed25519"
+	"github.com/bananocoin/boompow-next/libs/utils/ed25519"
 	"golang.org/x/crypto/blake2b"
 )
 
