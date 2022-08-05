@@ -8,7 +8,8 @@ import (
 )
 
 func TestFormatTime(t *testing.T) {
-	formatted := GenerateISOString(time.Unix(1659715327, 0))
+	time := time.Unix(1659715327, 0)
+	formatted := GenerateISOString(time.UTC())
 
-	utils.AssertEqual(t, "2022-08-05T12:02:07-04:00", formatted)
+	utils.AssertEqual(t, "2022-08-05T16:02:07Z", formatted)
 }

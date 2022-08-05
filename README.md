@@ -67,6 +67,12 @@ Once you have docker installed and running, as well as docker-compose, you can s
 > dcgo run github.com/bananocoin/boompow-next/services/client
 ```
 
+To get an interactive shell in the container
+
+```
+dczsh
+```
+
 ## Issues
 
 For issues, create tickets on the [Issues Page](https://github.com/BananoCoin/boompow-next/issues)

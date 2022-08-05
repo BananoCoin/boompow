@@ -17,7 +17,7 @@ func TestGenerateToken(t *testing.T) {
 	os.Setenv("PRIV_KEY", "value")
 	defer os.Unsetenv("PRIV_KEY")
 	token, _ := GenerateToken("joe@gmail.com", now)
-	utils.AssertEqual(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvZUBnbWFpbC5jb20iLCJleHAiOjg2NDAwfQ.RFch0gPLF_uW4WdjBX_KHb35nTv1-lURJdKa91siN7k", token)
+	utils.AssertEqual(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvZUBnbWFpbC5jb20iLCJleHAiOjg2NDAwfQ.4EWNyTndi4_6yT8JlA9RWjVIC6p2BiKAJx3BHGA4qYM", token)
 }
 
 func TestParseToken(t *testing.T) {
