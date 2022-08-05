@@ -5,6 +5,7 @@ import (
 )
 
 type ActiveChannelObject struct {
+	RequesterEmail       string
 	RequestID            string
 	Hash                 string
 	DifficultyMultiplier int

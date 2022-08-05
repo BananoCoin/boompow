@@ -17,6 +17,7 @@ import (
 	"github.com/bananocoin/boompow-next/services/server/graph/model"
 	"github.com/bananocoin/boompow-next/services/server/src/config"
 	"github.com/bananocoin/boompow-next/services/server/src/controller"
+	"github.com/bananocoin/boompow-next/services/server/src/database"
 	"github.com/bananocoin/boompow-next/services/server/src/middleware"
 	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"github.com/google/uuid"
@@ -100,6 +101,12 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 
 // WorkGenerate is the resolver for the workGenerate field.
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
+	// Require authentication for service
+	contextValue := middleware.ForContext(ctx)
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+		return "", fmt.Errorf("access denied")
+	}
+
 	reqID := make([]byte, 32)
 	if _, err := rand.Read(reqID); err != nil {
 		return "", errors.New("server_error:error occured processing request")
@@ -120,6 +127,7 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	}
 
 	workRequest := &serializableModels.ClientRequest{
+		RequesterEmail:       contextValue.User.Email,
 		RequestType:          "work_generate",
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
@@ -132,6 +140,24 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	}
 
 	return resp.Result, nil
+}
+
+// GenerateServiceToken is the resolver for the generateServiceToken field.
+func (r *mutationResolver) GenerateServiceToken(ctx context.Context) (string, error) {
+	// Require authentication
+	contextValue := middleware.ForContext(ctx)
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+		return "", fmt.Errorf("access denied")
+	}
+
+	// Generate token
+	token := r.UserRepo.GenerateServiceToken()
+
+	if err := database.GetRedisDB().AddServiceToken(contextValue.User.ID, token); err != nil {
+		return "", fmt.Errorf("error generating token")
+	}
+
+	return token, nil
 }
 
 // GetAllUsers is the resolver for the GetAllUsers field.
@@ -161,8 +187,8 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string, email *string) 
 	var user *models.User
 
 	// ! TODO - remove me, test for authentication
-	user = middleware.ForContext(ctx)
-	if user == nil {
+	contextValue := middleware.ForContext(ctx)
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" {
 		return &model.User{}, fmt.Errorf("access denied")
 	}
 

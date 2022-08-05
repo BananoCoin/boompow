@@ -63,9 +63,11 @@ func runServer() {
 
 	// Create repositories
 	userRepo := repository.NewUserService((db))
+	statsRepo := repository.NewStatsService(db, userRepo)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		UserRepo: userRepo,
+		UserRepo:  userRepo,
+		StatsRepo: statsRepo,
 	}}))
 
 	// Setup router
@@ -74,16 +76,23 @@ func runServer() {
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", srv)
 
+	// Setup channel for stats processing job
+	statsChan := make(chan repository.StatsMessage, 100)
+
 	// Setup WS endpoint
-	controller.ActiveHub = controller.NewHub()
+	controller.ActiveHub = controller.NewHub(&statsChan)
 	go controller.ActiveHub.Run()
 	router.HandleFunc("/ws/worker", func(w http.ResponseWriter, r *http.Request) {
 		controller.WorkerChl(controller.ActiveHub, w, r)
 	})
 
+	// Stats stats processing job
+	go statsRepo.StatsWorker(statsChan)
+
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Printf("Error: must specify at least 1 argument")

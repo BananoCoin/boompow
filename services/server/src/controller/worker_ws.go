@@ -7,6 +7,7 @@ import (
 
 	"github.com/bananocoin/boompow-next/libs/utils/net"
 	"github.com/bananocoin/boompow-next/services/server/src/middleware"
+	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
@@ -15,6 +16,11 @@ var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
 )
+
+type ClientWSMessage struct {
+	ClientEmail string `json:"email"`
+	msg         []byte
+}
 
 // readPump pumps messages from the websocket connection to the hub.
 //
@@ -38,7 +44,8 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Hub.Response <- message
+		msgObj := ClientWSMessage{ClientEmail: c.Email, msg: message}
+		c.Hub.Response <- msgObj
 	}
 }
 
@@ -90,8 +97,9 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	user := middleware.ForContext(r.Context())
-	if user == nil {
+	contextValue := middleware.ForContext(r.Context())
+	// Only PROVIDER type users can provide work
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || contextValue.User.Type != models.PROVIDER {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("401 - Unauthorized"))
 		return
@@ -102,7 +110,7 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		glog.Error(err)
 		return
 	}
-	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: net.GetIPAddress(r)}
+	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: net.GetIPAddress(r), Email: contextValue.User.Email}
 	client.Hub.Register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

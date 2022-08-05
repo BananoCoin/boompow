@@ -50,6 +50,7 @@ type Mutation {
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
+  generateServiceToken: String!
 }
 
 type Query {

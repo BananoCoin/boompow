@@ -10,6 +10,7 @@ import (
 	"github.com/bananocoin/boompow-next/libs/utils"
 	"github.com/bananocoin/boompow-next/services/server/src/config"
 	"github.com/go-redis/redis/v9"
+	"github.com/google/uuid"
 )
 
 var ctx = context.Background()
@@ -128,4 +129,18 @@ func (r *redisManager) GetNumberConnectedClients() (int64, error) {
 
 func (r *redisManager) WipeAllConnectedClients() (int64, error) {
 	return r.Del("clients")
+}
+
+// For service tokens
+func (r *redisManager) AddServiceToken(userID uuid.UUID, token string) error {
+	userIdStr := userID.String()
+	return r.Hset("servicetokens", token, userIdStr)
+}
+
+func (r *redisManager) GetServiceTokenUser(serviceToken string) (string, error) {
+	user, err := r.Hget("servicetokens", serviceToken)
+	if err != nil {
+		return "", err
+	}
+	return user, nil
 }

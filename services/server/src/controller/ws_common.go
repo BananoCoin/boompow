@@ -10,6 +10,7 @@ import (
 	"github.com/bananocoin/boompow-next/libs/utils/validation"
 	"github.com/bananocoin/boompow-next/services/server/src/database"
 	"github.com/bananocoin/boompow-next/services/server/src/models"
+	"github.com/bananocoin/boompow-next/services/server/src/repository"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
@@ -42,6 +43,8 @@ type Client struct {
 
 	// IP Address
 	IPAddress string
+
+	Email string
 }
 
 var Upgrader = websocket.Upgrader{}
@@ -56,22 +59,26 @@ type Hub struct {
 	Broadcast chan []byte
 
 	// Inbound messages from client
-	Response chan []byte
+	Response chan ClientWSMessage
 
 	// Register requests from the clients.
 	Register chan *Client
 
 	// Unregister requests from clients.
 	Unregister chan *Client
+
+	// Channel to broadcast stats to
+	StatsChan *chan repository.StatsMessage
 }
 
-func NewHub() *Hub {
+func NewHub(statsChan *chan repository.StatsMessage) *Hub {
 	return &Hub{
 		Broadcast:  make(chan []byte),
-		Response:   make(chan []byte),
+		Response:   make(chan ClientWSMessage),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Clients:    make(map[*Client]bool),
+		StatsChan:  statsChan,
 	}
 }
 
@@ -92,7 +99,7 @@ func (h *Hub) Run() {
 		case message := <-h.Response:
 			// Try to unmarshal as ClientWorkResponse
 			var workResponse serializableModels.ClientWorkResponse
-			err := json.Unmarshal(message, &workResponse)
+			err := json.Unmarshal(message.msg, &workResponse)
 			// If this channel exists, send response
 			activeChannel := ActiveChannels.Get(workResponse.RequestID)
 			if activeChannel != nil {
@@ -113,7 +120,16 @@ func (h *Hub) Run() {
 				} else {
 					go func() { ActiveHub.Broadcast <- bytes }()
 				}
-				WriteChannelSafe(activeChannel.Chan, message)
+				// Credit this client for this work
+				statsMessage := repository.StatsMessage{
+					ProvidedByEmail:      message.ClientEmail,
+					RequestedByEmail:     activeChannel.RequesterEmail,
+					Hash:                 activeChannel.Hash,
+					Result:               workResponse.Result,
+					DifficultyMultiplier: activeChannel.DifficultyMultiplier,
+				}
+				*h.StatsChan <- statsMessage
+				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
@@ -142,11 +158,8 @@ func WriteChannelSafe(out chan []byte, msg []byte) (err error) {
 		// recover from panic caused by writing to a closed channel
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
-			glog.Errorf("write: error writing %s on channel: %v\n", string(msg), err)
 			return
 		}
-
-		fmt.Printf("write: wrote %s on channel\n", string(msg))
 	}()
 
 	out <- msg // write on possibly closed channel
@@ -172,6 +185,7 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientRequest) 
 	}
 	// Create channel for this hash
 	activeChannelObj := models.ActiveChannelObject{
+		RequesterEmail:       workRequest.RequesterEmail,
 		RequestID:            workRequest.RequestID,
 		Hash:                 workRequest.Hash,
 		DifficultyMultiplier: workRequest.DifficultyMultiplier,

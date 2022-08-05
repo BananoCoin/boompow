@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/bananocoin/boompow-next/libs/utils/auth"
 	"github.com/bananocoin/boompow-next/libs/utils/validation"
@@ -21,6 +22,7 @@ type UserRepo interface {
 	GetAllUsers() ([]*models.User, error)
 	Authenticate(loginInput *model.LoginInput) bool
 	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
+	GenerateServiceToken() string
 }
 
 type UserService struct {
@@ -146,4 +148,9 @@ func (s *UserService) Authenticate(loginInput *model.LoginInput) bool {
 	}
 
 	return auth.CheckPasswordHash(loginInput.Password, user.Password)
+}
+
+// Generate a service token (for services to request work)
+func (s *UserService) GenerateServiceToken() string {
+	return fmt.Sprintf("service:%s", uuid.New().String())
 }

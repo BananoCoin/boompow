@@ -2,6 +2,7 @@
 .data/*/**
 !.data/*/.gitkeep
 .env
+.DS_Store
 
 # Binaries for programs and plugins
 *.exe
