@@ -20,7 +20,7 @@ func TestUserRepo(t *testing.T) {
 		Password: os.Getenv("DB_MOCK_PASS"),
 		User:     os.Getenv("DB_MOCK_USER"),
 		SSLMode:  os.Getenv("DB_SSLMODE"),
-		DBName:   os.Getenv("DB_MOCK_NAME"),
+		DBName:   "testing",
 	}, true)
 	userRepo := NewUserService(mockDb)
 
