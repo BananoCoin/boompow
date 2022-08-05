@@ -20,7 +20,7 @@ func GetJwtKey() []byte {
 	if privKey == "badKey" {
 		glog.Warningf("!!! DEFAULT JWT SIGNING KEY IS BEING USED, NOT SECURE !!!")
 	}
-	return []byte(os.Getenv("PRIV_KEY"))
+	return []byte(privKey)
 }
 
 type SmtpConnInformation struct {

@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 
 	serializableModels "github.com/bananocoin/boompow-next/libs/models"
 	"github.com/bananocoin/boompow-next/libs/utils/auth"
@@ -77,7 +78,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 	if !correct {
 		return nil, errors.New("invalid email or password")
 	}
-	token, err := auth.GenerateToken(input.Email)
+	token, err := auth.GenerateToken(input.Email, time.Now)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	if err != nil {
 		return "", fmt.Errorf("access denied")
 	}
-	token, err := auth.GenerateToken(email)
+	token, err := auth.GenerateToken(email, time.Now)
 	if err != nil {
 		return "", err
 	}
