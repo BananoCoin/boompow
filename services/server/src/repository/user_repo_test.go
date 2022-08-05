@@ -67,7 +67,7 @@ func TestUserRepo(t *testing.T) {
 	})
 	utils.AssertEqual(t, false, authenticated)
 
-	// Test deleter user
+	// Test delete user
 	userRepo.DeleteUser(user.ID)
 	dbUser, err = userRepo.GetUser(&user.ID, nil)
 	utils.AssertEqual(t, true, err != nil)

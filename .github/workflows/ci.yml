@@ -39,4 +39,4 @@ jobs:
             DB_MOCK_PASS: postgres
             DB_SSLMODE: disable
         run: |
-          go test -v $(go list -f '{{.Dir}}/...' -m | xargs)
+          go test -v -parallel 1 $(go list -f '{{.Dir}}/...' -m | xargs)
