@@ -46,7 +46,6 @@ type Mutation {
   # Related to user authentication and authorization
   createUser(input: UserInput!): User!
   deleteUser(id: String!): String!
-  updateUser(id: String!, input: UserInput!): String!
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!

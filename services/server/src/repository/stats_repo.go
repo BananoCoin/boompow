@@ -16,6 +16,7 @@ type StatsMessage struct {
 
 type StatsRepo interface {
 	SaveWorkRequest(statsMessage StatsMessage) (*models.WorkRequest, error)
+	GetStatsRecord(hash string) (*models.WorkRequest, error)
 	StatsWorker(statsChan <-chan StatsMessage)
 }
 
@@ -61,6 +62,15 @@ func (s *StatsService) SaveWorkRequest(statsMessage StatsMessage) (*models.WorkR
 	}
 
 	return workRequestDb, err
+}
+
+func (s *StatsService) GetStatsRecord(hash string) (*models.WorkRequest, error) {
+	var workRequest models.WorkRequest
+	err := s.Db.Where("hash = ?", hash).First(&workRequest).Error
+	if err != nil {
+		return nil, err
+	}
+	return &workRequest, nil
 }
 
 func (s *StatsService) StatsWorker(statsChan <-chan StatsMessage) {

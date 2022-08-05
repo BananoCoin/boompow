@@ -15,8 +15,8 @@ import (
 )
 
 type UserRepo interface {
-	CreateUser(userInput *model.UserInput) (*models.User, error)
-	UpdateUser(userInput *model.UserInput, id uuid.UUID) error
+	CreateUser(userInput *model.UserInput, doEmail bool) (*models.User, error)
+	CreateMockUsers() error
 	DeleteUser(id uuid.UUID) error
 	GetUser(id *uuid.UUID, email *string) (*models.User, error)
 	GetAllUsers() ([]*models.User, error)
@@ -37,7 +37,44 @@ func NewUserService(db *gorm.DB) *UserService {
 	}
 }
 
-func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, error) {
+func (s *UserService) CreateMockUsers() error {
+	// Hash password
+	hashedPassword, err := auth.HashPassword("password")
+	if err != nil {
+		return err
+	}
+	provider := &models.User{
+		Type:          models.PROVIDER,
+		Email:         "provider@gmail.com",
+		Password:      hashedPassword,
+		EmailVerified: true,
+		BanAddress:    "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm",
+	}
+
+	requester := &models.User{
+		Type:           models.REQUESTER,
+		Email:          "requester@gmail.com",
+		Password:       hashedPassword,
+		EmailVerified:  true,
+		CanRequestWork: true,
+	}
+
+	err = s.Db.Create(&provider).Error
+
+	if err != nil {
+		return err
+	}
+
+	err = s.Db.Create(&requester).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*models.User, error) {
 	// Validate
 	if !validation.IsValidEmail(userInput.Email) {
 		return nil, errors.New("Invalid email")
@@ -74,13 +111,14 @@ func (s *UserService) CreateUser(userInput *model.UserInput) (*models.User, erro
 
 	database.GetRedisDB().SetConfirmationToken(userInput.Email, confirmationToken)
 	// Send email with confirmation token
-	email.SendConfirmationEmail(userInput.Email, confirmationToken)
-
+	if doEmail {
+		email.SendConfirmationEmail(userInput.Email, confirmationToken)
+	}
 	return user, err
 }
 
 func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {
-	dbVerificationCode, err := database.GetRedisDB().GetUserIDForConfirmationToken(verifyEmail.Email)
+	dbVerificationCode, err := database.GetRedisDB().GetConfirmationToken(verifyEmail.Email)
 	if err != nil {
 		return false, err
 	} else if dbVerificationCode != verifyEmail.Token {
@@ -93,23 +131,6 @@ func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (boo
 		return true, nil
 	}
 	return false, errors.New("Could not verify email")
-}
-
-func (s *UserService) UpdateUser(userInput *model.UserInput, id uuid.UUID) error {
-	// Validate
-	if !validation.IsValidEmail(userInput.Email) {
-		return errors.New("Invalid email")
-	}
-
-	user := models.User{
-		Base: models.Base{
-			ID: id,
-		},
-		Email:    userInput.Email,
-		Password: userInput.Password,
-	}
-	err := s.Db.Model(&user).Where("id = ?", id).Updates(user).Error
-	return err
 }
 
 func (s *UserService) DeleteUser(id uuid.UUID) error {

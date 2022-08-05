@@ -26,7 +26,7 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput) (*model.User, error) {
-	user, err := r.UserRepo.CreateUser(&input)
+	user, err := r.UserRepo.CreateUser(&input, true)
 	if err != nil {
 		return nil, err
 	}
@@ -53,22 +53,6 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (string, e
 		return "", err
 	}
 	successMessage := fmt.Sprintf("deleted %s", id)
-	return successMessage, nil
-}
-
-// UpdateUser is the resolver for the UpdateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UserInput) (string, error) {
-	uuid, err := uuid.Parse((id))
-	if err != nil {
-		return "", err
-	}
-
-	err = r.UserRepo.UpdateUser(&input, uuid)
-	if err != nil {
-		return "nil", err
-	}
-
-	successMessage := fmt.Sprintf("updated %s", id)
 	return successMessage, nil
 }
 
@@ -103,8 +87,8 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 // WorkGenerate is the resolver for the workGenerate field.
 func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error) {
 	// Require authentication for service
-	contextValue := middleware.ForContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+	requester := middleware.AuthorizedServiceToken(ctx)
+	if requester == nil {
 		return "", fmt.Errorf("access denied")
 	}
 
@@ -128,7 +112,7 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	}
 
 	workRequest := &serializableModels.ClientRequest{
-		RequesterEmail:       contextValue.User.Email,
+		RequesterEmail:       requester.User.Email,
 		RequestType:          "work_generate",
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
@@ -146,15 +130,15 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 // GenerateServiceToken is the resolver for the generateServiceToken field.
 func (r *mutationResolver) GenerateServiceToken(ctx context.Context) (string, error) {
 	// Require authentication
-	contextValue := middleware.ForContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+	requester := middleware.AuthorizedRequester(ctx)
+	if requester == nil {
 		return "", fmt.Errorf("access denied")
 	}
 
 	// Generate token
 	token := r.UserRepo.GenerateServiceToken()
 
-	if err := database.GetRedisDB().AddServiceToken(contextValue.User.ID, token); err != nil {
+	if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != nil {
 		return "", fmt.Errorf("error generating token")
 	}
 
@@ -186,12 +170,6 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 func (r *queryResolver) GetUser(ctx context.Context, id *string, email *string) (*model.User, error) {
 	var err error
 	var user *models.User
-
-	// ! TODO - remove me, test for authentication
-	contextValue := middleware.ForContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" {
-		return &model.User{}, fmt.Errorf("access denied")
-	}
 
 	if id != nil {
 		userID, err := uuid.Parse(*id)

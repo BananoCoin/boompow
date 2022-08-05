@@ -7,7 +7,6 @@ import (
 
 	"github.com/bananocoin/boompow-next/libs/utils/net"
 	"github.com/bananocoin/boompow-next/services/server/src/middleware"
-	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )
@@ -97,9 +96,9 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	contextValue := middleware.ForContext(r.Context())
+	provider := middleware.AuthorizedProvider(r.Context())
 	// Only PROVIDER type users can provide work
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || contextValue.User.Type != models.PROVIDER {
+	if provider == nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("401 - Unauthorized"))
 		return
@@ -110,7 +109,7 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		glog.Error(err)
 		return
 	}
-	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: net.GetIPAddress(r), Email: contextValue.User.Email}
+	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: net.GetIPAddress(r), Email: provider.User.Email}
 	client.Hub.Register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

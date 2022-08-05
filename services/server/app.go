@@ -72,7 +72,7 @@ func runServer() {
 
 	// Setup router
 	router := chi.NewRouter()
-	router.Use(middleware.Middleware(userRepo))
+	router.Use(middleware.AuthMiddleware(userRepo))
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", srv)
 

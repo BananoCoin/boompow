@@ -34,6 +34,10 @@ services:
             - DB_USER=postgres
             - DB_PASS=postgres
             - DB_NAME=boompow
+            - DB_MOCK_HOST=db
+            - DB_MOCK_PORT=5432
+            - DB_MOCK_USER=postgres
+            - DB_MOCK_PASS=postgres
             - DB_SSLMODE=disable
             - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
             - REDIS_HOST=redis

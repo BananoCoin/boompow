@@ -23,6 +23,7 @@ const keyPrefix = "boompow"
 // Singleton to keep assets loaded in memory
 type redisManager struct {
 	Client *redis.Client
+	Mock   bool
 }
 
 var singleton *redisManager
@@ -38,6 +39,7 @@ func GetRedisDB() *redisManager {
 			})
 			singleton = &redisManager{
 				Client: client,
+				Mock:   true,
 			}
 		} else {
 			redis_port, err := strconv.Atoi(utils.GetEnv("REDIS_PORT", "6379"))
@@ -54,6 +56,7 @@ func GetRedisDB() *redisManager {
 			})
 			singleton = &redisManager{
 				Client: client,
+				Mock:   false,
 			}
 		}
 	})
@@ -115,7 +118,7 @@ func (r *redisManager) SetConfirmationToken(email string, token string) error {
 }
 
 // Get token for given email
-func (r *redisManager) GetUserIDForConfirmationToken(email string) (string, error) {
+func (r *redisManager) GetConfirmationToken(email string) (string, error) {
 	return r.Get(fmt.Sprintf("emailconfirmation:%s", email))
 }
 

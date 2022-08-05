@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.13
+	github.com/alicebob/miniredis/v2 v2.22.0
 	github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f
 	github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f
 	github.com/bitfield/script v0.20.2
@@ -23,7 +24,6 @@ require (
 	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.22.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
