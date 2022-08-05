@@ -31,11 +31,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@master
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.18
-
       - name: Run Tests
         env:
             DB_MOCK_HOST: db
