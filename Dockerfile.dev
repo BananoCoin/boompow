@@ -1,4 +1,4 @@
-FROM golang:1.18.4
+FROM golang:1.18.5
 
 ARG ZSH_IN_DOCKER_VERSION=1.1.2
 

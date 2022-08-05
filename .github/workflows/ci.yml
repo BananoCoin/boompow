@@ -8,6 +8,7 @@ jobs:
   test:
     name: ☔️ Tests
     runs-on: ubuntu-latest
+    container: golang:1.18.5
 
     # Setup postgres service for tests
     services:
