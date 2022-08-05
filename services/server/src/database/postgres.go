@@ -38,7 +38,7 @@ func NewConnection(config *Config, mock bool) (*gorm.DB, error) {
 
 func DropAndCreateTables(db *gorm.DB) {
 	db.Migrator().DropTable(&models.User{}, &models.WorkRequest{})
-	db.Exec(fmt.Sprintf("DROP TYPE %s", models.PG_USER_TYPE_NAME))
+	db.Exec(fmt.Sprintf("DROP TYPE IF EXISTS %s", models.PG_USER_TYPE_NAME))
 	createTypes(db)
 	db.Migrator().CreateTable(&models.User{}, &models.WorkRequest{})
 }
