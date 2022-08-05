@@ -7,9 +7,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/bananocoin/boompow-next/libs/utils"
 	"github.com/bananocoin/boompow-next/services/server/src/config"
 	"github.com/go-redis/redis/v9"
+	"github.com/golang/glog"
 	"github.com/google/uuid"
 )
 
@@ -28,23 +30,31 @@ var once sync.Once
 
 func GetRedisDB() *redisManager {
 	once.Do(func() {
-
-		redis_port, err := strconv.Atoi(utils.GetEnv("REDIS_PORT", "6379"))
-		if err != nil {
-			panic("Invalid REDIS_PORT specified")
-		}
-		redis_db, err := strconv.Atoi(utils.GetEnv("REDIS_DB", "0"))
-		if err != nil {
-			panic("Invalid REDIS_DB specified")
-		}
-		client := redis.NewClient(&redis.Options{
-			Addr: fmt.Sprintf("%s:%d", utils.GetEnv("REDIS_HOST", "localhost"), redis_port),
-			DB:   redis_db,
-		})
-		// Create locker
-		// Create object
-		singleton = &redisManager{
-			Client: client,
+		if utils.GetEnv("MOCK_REDIS", "false") == "true" {
+			glog.Infof("Using mock redis client because MOCK_REDIS=true is set in environment")
+			mr, _ := miniredis.Run()
+			client := redis.NewClient(&redis.Options{
+				Addr: mr.Addr(),
+			})
+			singleton = &redisManager{
+				Client: client,
+			}
+		} else {
+			redis_port, err := strconv.Atoi(utils.GetEnv("REDIS_PORT", "6379"))
+			if err != nil {
+				panic("Invalid REDIS_PORT specified")
+			}
+			redis_db, err := strconv.Atoi(utils.GetEnv("REDIS_DB", "0"))
+			if err != nil {
+				panic("Invalid REDIS_DB specified")
+			}
+			client := redis.NewClient(&redis.Options{
+				Addr: fmt.Sprintf("%s:%d", utils.GetEnv("REDIS_HOST", "localhost"), redis_port),
+				DB:   redis_db,
+			})
+			singleton = &redisManager{
+				Client: client,
+			}
 		}
 	})
 	return singleton

@@ -17,16 +17,31 @@ type Config struct {
 	SSLMode  string
 }
 
-func NewConnection(config *Config) (*gorm.DB, error) {
+func NewConnection(config *Config, mock bool) (*gorm.DB, error) {
+	var dbname string
+	if mock {
+		dbname = "testing"
+	} else {
+		dbname = config.DBName
+	}
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode,
+		config.Host, config.Port, config.User, config.Password, dbname, config.SSLMode,
 	)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return db, err
 	}
+	if mock {
+		// For mock drop and create
+		DropAndCreateTables(db)
+	}
 	return db, nil
+}
+
+func DropAndCreateTables(db *gorm.DB) {
+	db.Migrator().DropTable(&models.User{}, &models.WorkRequest{})
+	db.Migrator().CreateTable(&models.User{}, &models.WorkRequest{})
 }
 
 func Migrate(db *gorm.DB) error {
