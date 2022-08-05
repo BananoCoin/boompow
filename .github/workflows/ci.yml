@@ -40,6 +40,7 @@ jobs:
             DB_MOCK_HOST: db
             DB_MOCK_PORT: 5432
             DB_MOCK_USER: postgres
-            DB_MOCK_PASS: postgres        
+            DB_MOCK_PASS: postgres
+            DB_SSLMODE: disable
         run: |
           go test -v $(go list -f '{{.Dir}}/...' -m | xargs)
