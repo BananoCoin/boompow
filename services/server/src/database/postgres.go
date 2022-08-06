@@ -17,10 +17,7 @@ type Config struct {
 	SSLMode  string
 }
 
-func NewConnection(config *Config, mock bool) (*gorm.DB, error) {
-	if mock && config.DBName != "testing" {
-		panic("Mock flag can only be set for testing database")
-	}
+func NewConnection(config *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode,
@@ -29,18 +26,24 @@ func NewConnection(config *Config, mock bool) (*gorm.DB, error) {
 	if err != nil {
 		return db, err
 	}
-	if mock {
-		// For mock drop and create
-		DropAndCreateTables(db)
-	}
 	return db, nil
 }
 
-func DropAndCreateTables(db *gorm.DB) {
-	db.Migrator().DropTable(&models.User{}, &models.WorkRequest{})
-	db.Exec(fmt.Sprintf("DROP TYPE IF EXISTS %s", models.PG_USER_TYPE_NAME))
-	createTypes(db)
-	db.Migrator().CreateTable(&models.User{}, &models.WorkRequest{})
+func DropAndCreateTables(db *gorm.DB) error {
+	err := db.Migrator().DropTable(&models.User{}, &models.WorkRequest{})
+	if err != nil {
+		return err
+	}
+	err = db.Exec(fmt.Sprintf("DROP TYPE IF EXISTS %s", models.PG_USER_TYPE_NAME)).Error
+	if err != nil {
+		return err
+	}
+	err = createTypes(db)
+	if err != nil {
+		return err
+	}
+	err = db.Migrator().CreateTable(&models.User{}, &models.WorkRequest{})
+	return err
 }
 
 func Migrate(db *gorm.DB) error {

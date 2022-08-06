@@ -1,4 +1,4 @@
-package repository
+package tests
 
 import (
 	"os"
@@ -9,20 +9,24 @@ import (
 	"github.com/bananocoin/boompow-next/services/server/graph/model"
 	"github.com/bananocoin/boompow-next/services/server/src/database"
 	"github.com/bananocoin/boompow-next/services/server/src/models"
+	"github.com/bananocoin/boompow-next/services/server/src/repository"
 )
 
 // Test user repo
 func TestUserRepo(t *testing.T) {
 	os.Setenv("MOCK_REDIS", "true")
-	mockDb, _ := database.NewConnection(&database.Config{
+	mockDb, err := database.NewConnection(&database.Config{
 		Host:     os.Getenv("DB_MOCK_HOST"),
 		Port:     os.Getenv("DB_MOCK_PORT"),
 		Password: os.Getenv("DB_MOCK_PASS"),
 		User:     os.Getenv("DB_MOCK_USER"),
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 		DBName:   "testing",
-	}, true)
-	userRepo := NewUserService(mockDb)
+	})
+	utils.AssertEqual(t, nil, err)
+	err = database.DropAndCreateTables(mockDb)
+	utils.AssertEqual(t, nil, err)
+	userRepo := repository.NewUserService(mockDb)
 
 	// Create user
 	banAddress := "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm"

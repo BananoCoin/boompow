@@ -48,7 +48,7 @@ func runServer() {
 		DBName:   os.Getenv("DB_NAME"),
 	}
 	fmt.Println("🏡 Connecting to database...")
-	db, err := database.NewConnection(config, false)
+	db, err := database.NewConnection(config)
 	if err != nil {
 		panic(err)
 	}

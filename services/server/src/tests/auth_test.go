@@ -1,4 +1,4 @@
-package middleware
+package tests
 
 import (
 	"io"
@@ -10,21 +10,26 @@ import (
 	"time"
 
 	"github.com/bananocoin/boompow-next/libs/utils/auth"
+	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 	"github.com/bananocoin/boompow-next/services/server/src/database"
+	"github.com/bananocoin/boompow-next/services/server/src/middleware"
 	"github.com/bananocoin/boompow-next/services/server/src/repository"
 	"github.com/go-chi/chi"
 )
 
 func TestAuthMiddleware(t *testing.T) {
 	os.Setenv("MOCK_REDIS", "true")
-	mockDb, _ := database.NewConnection(&database.Config{
+	mockDb, err := database.NewConnection(&database.Config{
 		Host:     os.Getenv("DB_MOCK_HOST"),
 		Port:     os.Getenv("DB_MOCK_PORT"),
 		Password: os.Getenv("DB_MOCK_PASS"),
 		User:     os.Getenv("DB_MOCK_USER"),
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 		DBName:   "testing",
-	}, true)
+	})
+	utils.AssertEqual(t, nil, err)
+	err = database.DropAndCreateTables(mockDb)
+	utils.AssertEqual(t, nil, err)
 	userRepo := repository.NewUserService(mockDb)
 	userRepo.CreateMockUsers()
 
@@ -36,7 +41,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// Endpoint that requires auth from the people that provide work
 	authorizedProviderEndpoint := func(w http.ResponseWriter, r *http.Request) {
 		// Only PROVIDER type users can provide work
-		provider := AuthorizedProvider(r.Context())
+		provider := middleware.AuthorizedProvider(r.Context())
 		if provider == nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 - Unauthorized"))
@@ -49,7 +54,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// Endpoint that requires auth from the people that request work
 	authorizedRequesterEndpoint := func(w http.ResponseWriter, r *http.Request) {
 		// Only REQUESTER type users can provide work
-		requester := AuthorizedRequester(r.Context())
+		requester := middleware.AuthorizedRequester(r.Context())
 		if requester == nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 - Unauthorized"))
@@ -62,7 +67,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// Endpoint that requires a token
 	authorizedTokenEndpoint := func(w http.ResponseWriter, r *http.Request) {
 		// Only tokens work
-		requester := AuthorizedServiceToken(r.Context())
+		requester := middleware.AuthorizedServiceToken(r.Context())
 		if requester == nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 - Unauthorized"))
@@ -72,7 +77,7 @@ func TestAuthMiddleware(t *testing.T) {
 		w.Write([]byte("banano"))
 	}
 
-	authMiddleware := AuthMiddleware(userRepo)
+	authMiddleware := middleware.AuthMiddleware(userRepo)
 	router := chi.NewRouter()
 	router.Use(authMiddleware)
 	router.Get("/", publicEndpoint)

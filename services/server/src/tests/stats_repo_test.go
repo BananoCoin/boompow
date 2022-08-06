@@ -1,4 +1,4 @@
-package repository
+package tests
 
 import (
 	"os"
@@ -7,24 +7,28 @@ import (
 
 	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 	"github.com/bananocoin/boompow-next/services/server/src/database"
+	"github.com/bananocoin/boompow-next/services/server/src/repository"
 )
 
 // Test stats repo
 func TestStatsRepo(t *testing.T) {
 	os.Setenv("MOCK_REDIS", "true")
-	mockDb, _ := database.NewConnection(&database.Config{
+	mockDb, err := database.NewConnection(&database.Config{
 		Host:     os.Getenv("DB_MOCK_HOST"),
 		Port:     os.Getenv("DB_MOCK_PORT"),
 		Password: os.Getenv("DB_MOCK_PASS"),
 		User:     os.Getenv("DB_MOCK_USER"),
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 		DBName:   "testing",
-	}, true)
-	userRepo := NewUserService(mockDb)
-	statsRepo := NewStatsService(mockDb, userRepo)
+	})
+	utils.AssertEqual(t, nil, err)
+	err = database.DropAndCreateTables(mockDb)
+	utils.AssertEqual(t, nil, err)
+	userRepo := repository.NewUserService(mockDb)
+	statsRepo := repository.NewStatsService(mockDb, userRepo)
 
 	// Create some users
-	err := userRepo.CreateMockUsers()
+	err = userRepo.CreateMockUsers()
 	utils.AssertEqual(t, nil, err)
 
 	providerEmail := "provider@gmail.com"
@@ -33,7 +37,7 @@ func TestStatsRepo(t *testing.T) {
 	provider, _ := userRepo.GetUser(nil, &providerEmail)
 	requester, _ := userRepo.GetUser(nil, &requesterEmail)
 
-	_, err = statsRepo.SaveWorkRequest(StatsMessage{
+	_, err = statsRepo.SaveWorkRequest(repository.StatsMessage{
 		RequestedByEmail:     requesterEmail,
 		ProvidedByEmail:      providerEmail,
 		Hash:                 "123",
@@ -50,12 +54,12 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, provider.ID, workRequest.ProvidedBy)
 
 	// Test the worker
-	statsChan := make(chan StatsMessage, 100)
+	statsChan := make(chan repository.StatsMessage, 100)
 
 	// Stats stats processing job
 	go statsRepo.StatsWorker(statsChan)
 
-	statsChan <- StatsMessage{
+	statsChan <- repository.StatsMessage{
 		RequestedByEmail:     requesterEmail,
 		ProvidedByEmail:      providerEmail,
 		Hash:                 "321",
