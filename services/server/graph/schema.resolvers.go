@@ -113,7 +113,7 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 
 	workRequest := &serializableModels.ClientRequest{
 		RequesterEmail:       requester.User.Email,
-		RequestType:          "work_generate",
+		RequestType:          serializableModels.WorkGenerate,
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
 		DifficultyMultiplier: input.DifficultyMultiplier,

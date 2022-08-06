@@ -11,7 +11,7 @@ import (
 func TestSerializeDeserializeClientRequest(t *testing.T) {
 	workRequest := ClientRequest{
 		RequesterEmail:       "notserialized@gmail.com",
-		RequestType:          "work_generate",
+		RequestType:          WorkGenerate,
 		RequestID:            "123",
 		Hash:                 "hash",
 		DifficultyMultiplier: 3,

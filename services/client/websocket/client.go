@@ -58,7 +58,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 			}
 
 			// Determine type of message
-			if serverMsg.RequestType == "work_generate" {
+			if serverMsg.RequestType == serializableModels.WorkGenerate {
 				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
 
 				if len(serverMsg.Hash) != 64 {
@@ -67,11 +67,13 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 
 				// Queue
 				workQueueChan <- &serverMsg
-			} else if serverMsg.RequestType == "work_cancel" {
+			} else if serverMsg.RequestType == serializableModels.WorkCancel {
 				// Delete pending work from queue
 				// ! TODO - can we cancel currently runing work calculations?
 				var workCancelCmd serializableModels.ClientRequest
 				queue.Delete(workCancelCmd.Hash)
+			} else if serverMsg.RequestType == serializableModels.BlockAwarded {
+				fmt.Printf("\n💰 Received block awarded %s", serverMsg.Hash)
 			} else {
 				fmt.Printf("\n🦋 Received unknown message %s\n", serverMsg.RequestType)
 			}

@@ -111,7 +111,7 @@ func (h *Hub) Run() {
 				}
 				// Send work cancel command to all clients
 				workCancel := &serializableModels.ClientRequest{
-					RequestType: "work_cancel",
+					RequestType: serializableModels.WorkCancel,
 					Hash:        activeChannel.Hash,
 				}
 				bytes, err := json.Marshal(workCancel)
@@ -119,6 +119,23 @@ func (h *Hub) Run() {
 					glog.Errorf("Failed to marshal work cancel command: %v", err)
 				} else {
 					go func() { ActiveHub.Broadcast <- bytes }()
+				}
+				// Send work award command to the winner
+				workAward := &serializableModels.ClientRequest{
+					RequestType: serializableModels.BlockAwarded,
+				}
+				bytes, err = json.Marshal(workAward)
+				if err != nil {
+					glog.Errorf("Failed to marshal block awarded command: %v", err)
+				} else {
+					go func() {
+						for client := range h.Clients {
+							if client.Email == message.ClientEmail {
+								client.Send <- bytes
+								break
+							}
+						}
+					}()
 				}
 				// Credit this client for this work
 				statsMessage := repository.StatsMessage{
