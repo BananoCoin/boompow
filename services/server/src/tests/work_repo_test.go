@@ -26,7 +26,7 @@ func TestStatsRepo(t *testing.T) {
 	err = database.DropAndCreateTables(mockDb)
 	utils.AssertEqual(t, nil, err)
 	userRepo := repository.NewUserService(mockDb)
-	statsRepo := repository.NewStatsService(mockDb, userRepo)
+	workRepo := repository.NewWorkService(mockDb, userRepo)
 
 	// Create some users
 	err = userRepo.CreateMockUsers()
@@ -38,7 +38,7 @@ func TestStatsRepo(t *testing.T) {
 	provider, _ := userRepo.GetUser(nil, &providerEmail)
 	requester, _ := userRepo.GetUser(nil, &requesterEmail)
 
-	_, err = statsRepo.SaveWorkRequest(repository.StatsMessage{
+	_, err = workRepo.SaveOrUpdateWorkResult(repository.WorkMessage{
 		RequestedByEmail:     requesterEmail,
 		ProvidedByEmail:      providerEmail,
 		Hash:                 "123",
@@ -47,7 +47,7 @@ func TestStatsRepo(t *testing.T) {
 	})
 	utils.AssertEqual(t, nil, err)
 
-	workRequest, err := statsRepo.GetStatsRecord("123")
+	workRequest, err := workRepo.GetWorkRecord("123")
 	utils.AssertEqual(t, nil, err)
 	utils.AssertEqual(t, workRequest.DifficultyMultiplier, 5)
 	utils.AssertEqual(t, "ac", workRequest.Result)
@@ -55,21 +55,21 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, provider.ID, workRequest.ProvidedBy)
 
 	// Get other stuff
-	workRequests, err := statsRepo.GetUnpaidStats()
+	workRequests, err := workRepo.GetUnpaidWorks()
 	utils.AssertEqual(t, nil, err)
 	utils.AssertEqual(t, 1, len(workRequests))
-	workRequestsByUser, err := statsRepo.GetUnpaidStatsForUser(providerEmail)
+	workRequestsByUser, err := workRepo.GetUnpaidWorksForUser(providerEmail)
 	utils.AssertEqual(t, nil, err)
 	utils.AssertEqual(t, 1, len(workRequestsByUser))
 
 	// Test the worker
-	statsChan := make(chan repository.StatsMessage, 100)
+	statsChan := make(chan repository.WorkMessage, 100)
 	blockAwardedChan := make(chan serializableModels.ClientMessage, 100)
 
 	// Stats stats processing job
-	go statsRepo.StatsWorker(statsChan, &blockAwardedChan)
+	go workRepo.StatsWorker(statsChan, &blockAwardedChan)
 
-	statsChan <- repository.StatsMessage{
+	statsChan <- repository.WorkMessage{
 		RequestedByEmail:     requesterEmail,
 		ProvidedByEmail:      providerEmail,
 		Hash:                 "321",
@@ -78,7 +78,7 @@ func TestStatsRepo(t *testing.T) {
 	}
 
 	time.Sleep(1 * time.Second) // Arbitrary time to wait for the worker to process the message
-	workRequest, err = statsRepo.GetStatsRecord("321")
+	workRequest, err = workRepo.GetWorkRecord("321")
 	utils.AssertEqual(t, nil, err)
 	utils.AssertEqual(t, workRequest.DifficultyMultiplier, 3)
 	utils.AssertEqual(t, "fe", workRequest.Result)

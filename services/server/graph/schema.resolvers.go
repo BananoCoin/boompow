@@ -22,6 +22,7 @@ import (
 	"github.com/bananocoin/boompow-next/services/server/src/middleware"
 	"github.com/bananocoin/boompow-next/services/server/src/models"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -109,6 +110,16 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		input.DifficultyMultiplier = -8
 	} else if input.DifficultyMultiplier > config.MAX_WORK_DIFFICULTY_MULTIPLIER {
 		input.DifficultyMultiplier = config.MAX_WORK_DIFFICULTY_MULTIPLIER
+	}
+
+	// First try to retrieve from cache
+	// We only want cached results that meet the required difficulty
+	workResult, err := r.WorkRepo.RetrieveWorkFromCache(input.Hash, input.DifficultyMultiplier)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", err
+	}
+	if workResult != nil {
+		return workResult.Result, nil
 	}
 
 	workRequest := &serializableModels.ClientMessage{

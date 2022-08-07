@@ -64,11 +64,11 @@ func runServer() {
 
 	// Create repositories
 	userRepo := repository.NewUserService((db))
-	statsRepo := repository.NewStatsService(db, userRepo)
+	workRepo := repository.NewWorkService(db, userRepo)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		UserRepo:  userRepo,
-		StatsRepo: statsRepo,
+		UserRepo: userRepo,
+		WorkRepo: workRepo,
 	}}))
 
 	// Setup router
@@ -78,7 +78,7 @@ func runServer() {
 	router.Handle("/graphql", srv)
 
 	// Setup channel for stats processing job
-	statsChan := make(chan repository.StatsMessage, 100)
+	statsChan := make(chan repository.WorkMessage, 100)
 	// Setup channel for sending block awarded messages
 	blockAwardedChan := make(chan serializableModels.ClientMessage)
 
@@ -90,7 +90,7 @@ func runServer() {
 	})
 
 	// Stats stats processing job
-	go statsRepo.StatsWorker(statsChan, &blockAwardedChan)
+	go workRepo.StatsWorker(statsChan, &blockAwardedChan)
 	// Job for sending block awarded messages to user
 	go controller.ActiveHub.BlockAwardedWorker(blockAwardedChan)
 

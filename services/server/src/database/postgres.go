@@ -30,7 +30,7 @@ func NewConnection(config *Config) (*gorm.DB, error) {
 }
 
 func DropAndCreateTables(db *gorm.DB) error {
-	err := db.Migrator().DropTable(&models.User{}, &models.WorkRequest{})
+	err := db.Migrator().DropTable(&models.User{}, &models.WorkResult{})
 	if err != nil {
 		return err
 	}
@@ -42,13 +42,13 @@ func DropAndCreateTables(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	err = db.Migrator().CreateTable(&models.User{}, &models.WorkRequest{})
+	err = db.Migrator().CreateTable(&models.User{}, &models.WorkResult{})
 	return err
 }
 
 func Migrate(db *gorm.DB) error {
 	createTypes(db)
-	return db.AutoMigrate(&models.User{}, &models.WorkRequest{})
+	return db.AutoMigrate(&models.User{}, &models.WorkResult{})
 }
 
 // Create types in postgres

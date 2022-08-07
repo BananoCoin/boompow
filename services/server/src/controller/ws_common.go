@@ -68,10 +68,10 @@ type Hub struct {
 	Unregister chan *Client
 
 	// Channel to broadcast stats to
-	StatsChan *chan repository.StatsMessage
+	StatsChan *chan repository.WorkMessage
 }
 
-func NewHub(statsChan *chan repository.StatsMessage) *Hub {
+func NewHub(statsChan *chan repository.WorkMessage) *Hub {
 	return &Hub{
 		Broadcast:  make(chan []byte),
 		Response:   make(chan ClientWSMessage),
@@ -136,7 +136,7 @@ func (h *Hub) Run() {
 					go func() { ActiveHub.Broadcast <- bytes }()
 				}
 				// Credit this client for this work
-				statsMessage := repository.StatsMessage{
+				statsMessage := repository.WorkMessage{
 					ProvidedByEmail:      message.ClientEmail,
 					RequestedByEmail:     activeChannel.RequesterEmail,
 					Hash:                 activeChannel.Hash,

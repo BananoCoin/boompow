@@ -15,9 +15,9 @@ type User struct {
 	// For reward payments
 	BanAddress string `json:"banAddress"`
 	// The work this user provider
-	WorkResults        []WorkRequest `gorm:"foreignKey:ProvidedBy"`
-	LastProvidedWorkAt time.Time     `json:"lastProvidedWorkAt"`
+	WorkResults        []WorkResult `gorm:"foreignKey:ProvidedBy"`
+	LastProvidedWorkAt time.Time    `json:"lastProvidedWorkAt"`
 	// The work this user has requested
-	WorkRequests        []WorkRequest `gorm:"foreignKey:RequestedBy"`
-	LastRequestedWorkAt time.Time     `json:"lastRequestedWorkAt"`
+	WorkRequests        []WorkResult `gorm:"foreignKey:RequestedBy"`
+	LastRequestedWorkAt time.Time    `json:"lastRequestedWorkAt"`
 }
