@@ -1,6 +1,6 @@
 module github.com/bananocoin/boompow-next/apps/client
 
-go 1.18
+go 1.19
 
 require (
 	github.com/Khan/genqlient v0.5.0

@@ -1,3 +1,3 @@
 module github.com/bananocoin/boompow-next/libs/models
 
-go 1.18
+go 1.19
