@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
 	"github.com/bananocoin/boompow-next/services/server/graph"
 	"github.com/bananocoin/boompow-next/services/server/graph/generated"
 	"github.com/bananocoin/boompow-next/services/server/src/controller"
@@ -78,6 +79,8 @@ func runServer() {
 
 	// Setup channel for stats processing job
 	statsChan := make(chan repository.StatsMessage, 100)
+	// Setup channel for sending block awarded messages
+	blockAwardedChan := make(chan serializableModels.ClientMessage)
 
 	// Setup WS endpoint
 	controller.ActiveHub = controller.NewHub(&statsChan)
@@ -87,7 +90,9 @@ func runServer() {
 	})
 
 	// Stats stats processing job
-	go statsRepo.StatsWorker(statsChan)
+	go statsRepo.StatsWorker(statsChan, &blockAwardedChan)
+	// Job for sending block awarded messages to user
+	go controller.ActiveHub.BlockAwardedWorker(blockAwardedChan)
 
 	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))

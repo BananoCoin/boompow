@@ -11,7 +11,7 @@ import (
 type WorkProcessor struct {
 	Queue *models.RandomAccessQueue
 	// WorkQueueChan is where we write requests from the websocket
-	WorkQueueChan chan *serializableModels.ClientRequest
+	WorkQueueChan chan *serializableModels.ClientMessage
 	// WorkProcessChan is where we actually read from the queue and compute work
 	WorkProcessChan chan bool
 	WSService       *websocket.WebsocketService
@@ -20,7 +20,7 @@ type WorkProcessor struct {
 func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int) *WorkProcessor {
 	return &WorkProcessor{
 		Queue:           models.NewRandomAccessQueue(),
-		WorkQueueChan:   make(chan *serializableModels.ClientRequest, 100),
+		WorkQueueChan:   make(chan *serializableModels.ClientMessage, 100),
 		WorkProcessChan: make(chan bool, nWorkProcesses),
 		WSService:       ws,
 	}

@@ -111,9 +111,9 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		input.DifficultyMultiplier = config.MAX_WORK_DIFFICULTY_MULTIPLIER
 	}
 
-	workRequest := &serializableModels.ClientRequest{
+	workRequest := &serializableModels.ClientMessage{
 		RequesterEmail:       requester.User.Email,
-		RequestType:          serializableModels.WorkGenerate,
+		MessageType:          serializableModels.WorkGenerate,
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
 		DifficultyMultiplier: input.DifficultyMultiplier,

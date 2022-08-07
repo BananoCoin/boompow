@@ -82,6 +82,21 @@ func NewHub(statsChan *chan repository.StatsMessage) *Hub {
 	}
 }
 
+func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.ClientMessage) {
+	for ba := range blockAwardedChan {
+		for c := range h.Clients {
+			if c.Email == ba.ProviderEmail {
+				bytes, err := json.Marshal(ba)
+				if err != nil {
+					glog.Errorf("Error marshalling block awarded message %s", err)
+					break
+				}
+				c.Send <- bytes
+			}
+		}
+	}
+}
+
 func (h *Hub) Run() {
 	for {
 		select {
@@ -110,8 +125,8 @@ func (h *Hub) Run() {
 					continue
 				}
 				// Send work cancel command to all clients
-				workCancel := &serializableModels.ClientRequest{
-					RequestType: serializableModels.WorkCancel,
+				workCancel := &serializableModels.ClientMessage{
+					MessageType: serializableModels.WorkCancel,
 					Hash:        activeChannel.Hash,
 				}
 				bytes, err := json.Marshal(workCancel)
@@ -119,23 +134,6 @@ func (h *Hub) Run() {
 					glog.Errorf("Failed to marshal work cancel command: %v", err)
 				} else {
 					go func() { ActiveHub.Broadcast <- bytes }()
-				}
-				// Send work award command to the winner
-				workAward := &serializableModels.ClientRequest{
-					RequestType: serializableModels.BlockAwarded,
-				}
-				bytes, err = json.Marshal(workAward)
-				if err != nil {
-					glog.Errorf("Failed to marshal block awarded command: %v", err)
-				} else {
-					go func() {
-						for client := range h.Clients {
-							if client.Email == message.ClientEmail {
-								client.Send <- bytes
-								break
-							}
-						}
-					}()
 				}
 				// Credit this client for this work
 				statsMessage := repository.StatsMessage{
@@ -194,7 +192,7 @@ const WORK_TIMEOUT_S = time.Second * 30
 // 1) Broadcast to every client
 // 2) Create a channel for the response
 // 3) Wait for response on the channel until timeout
-func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientRequest) (*serializableModels.ClientWorkResponse, error) {
+func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
 	// Serialize
 	bytes, err := json.Marshal(workRequest)
 	if err != nil {

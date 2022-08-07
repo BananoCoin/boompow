@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	serializableModels "github.com/bananocoin/boompow-next/libs/models"
 	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
 	"github.com/bananocoin/boompow-next/services/server/src/database"
 	"github.com/bananocoin/boompow-next/services/server/src/repository"
@@ -53,11 +54,20 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, requester.ID, workRequest.RequestedBy)
 	utils.AssertEqual(t, provider.ID, workRequest.ProvidedBy)
 
+	// Get other stuff
+	workRequests, err := statsRepo.GetUnpaidStats()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 1, len(workRequests))
+	workRequestsByUser, err := statsRepo.GetUnpaidStatsForUser(providerEmail)
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 1, len(workRequestsByUser))
+
 	// Test the worker
 	statsChan := make(chan repository.StatsMessage, 100)
+	blockAwardedChan := make(chan serializableModels.ClientMessage, 100)
 
 	// Stats stats processing job
-	go statsRepo.StatsWorker(statsChan)
+	go statsRepo.StatsWorker(statsChan, &blockAwardedChan)
 
 	statsChan <- repository.StatsMessage{
 		RequestedByEmail:     requesterEmail,
@@ -74,4 +84,5 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, "fe", workRequest.Result)
 	utils.AssertEqual(t, requester.ID, workRequest.RequestedBy)
 	utils.AssertEqual(t, provider.ID, workRequest.ProvidedBy)
+	utils.AssertEqual(t, 1, len(blockAwardedChan))
 }

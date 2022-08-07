@@ -28,7 +28,7 @@ func (ws *WebsocketService) SetAuthToken(authToken string) {
 	})
 }
 
-func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientRequest, queue *models.RandomAccessQueue) {
+func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientMessage, queue *models.RandomAccessQueue) {
 	if ws.AuthToken == "" {
 		panic("Tired to start websocket client without auth token")
 	}
@@ -50,7 +50,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 				continue
 			}
 
-			var serverMsg serializableModels.ClientRequest
+			var serverMsg serializableModels.ClientMessage
 			err := ws.WS.ReadJSON(&serverMsg)
 			if err != nil {
 				fmt.Printf("Error: ReadJSON %s", ws.WS.GetURL())
@@ -58,7 +58,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 			}
 
 			// Determine type of message
-			if serverMsg.RequestType == serializableModels.WorkGenerate {
+			if serverMsg.MessageType == serializableModels.WorkGenerate {
 				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
 
 				if len(serverMsg.Hash) != 64 {
@@ -67,15 +67,15 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 
 				// Queue
 				workQueueChan <- &serverMsg
-			} else if serverMsg.RequestType == serializableModels.WorkCancel {
+			} else if serverMsg.MessageType == serializableModels.WorkCancel {
 				// Delete pending work from queue
 				// ! TODO - can we cancel currently runing work calculations?
-				var workCancelCmd serializableModels.ClientRequest
+				var workCancelCmd serializableModels.ClientMessage
 				queue.Delete(workCancelCmd.Hash)
-			} else if serverMsg.RequestType == serializableModels.BlockAwarded {
-				fmt.Printf("\n💰 Received block awarded %s", serverMsg.Hash)
+			} else if serverMsg.MessageType == serializableModels.BlockAwarded {
+				fmt.Printf("\n💰 Received block awarded %s, %f, %f", serverMsg.Hash, serverMsg.PercentOfPool, serverMsg.EstimatedAward)
 			} else {
-				fmt.Printf("\n🦋 Received unknown message %s\n", serverMsg.RequestType)
+				fmt.Printf("\n🦋 Received unknown message %s\n", serverMsg.MessageType)
 			}
 		}
 	}

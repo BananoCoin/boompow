@@ -12,12 +12,12 @@ import (
 // If there is 20 items on 3 workers, each worker will access the next unit of work randomly
 type RandomAccessQueue struct {
 	mu     sync.Mutex
-	Hashes []serializableModels.ClientRequest
+	Hashes []serializableModels.ClientMessage
 }
 
 func NewRandomAccessQueue() *RandomAccessQueue {
 	return &RandomAccessQueue{
-		Hashes: []serializableModels.ClientRequest{},
+		Hashes: []serializableModels.ClientMessage{},
 	}
 }
 
@@ -32,7 +32,7 @@ func (r *RandomAccessQueue) Exists(hash string) bool {
 }
 
 // Put value into map - synchronized
-func (r *RandomAccessQueue) Put(value serializableModels.ClientRequest) {
+func (r *RandomAccessQueue) Put(value serializableModels.ClientMessage) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if !r.Exists(value.Hash) {
@@ -41,7 +41,7 @@ func (r *RandomAccessQueue) Put(value serializableModels.ClientRequest) {
 }
 
 // Removes and returns a random value from the map - synchronized
-func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientRequest {
+func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientMessage {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if len(r.Hashes) == 0 {
@@ -55,7 +55,7 @@ func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientRequest {
 }
 
 // Gets a value from the map - synchronized
-func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientRequest {
+func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientMessage {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.Exists(hash) {
@@ -85,7 +85,7 @@ func (r *RandomAccessQueue) IndexOf(hash string) int {
 }
 
 // NOT thread safe, must be called from within a locked section
-func remove(s []serializableModels.ClientRequest, i int) []serializableModels.ClientRequest {
+func remove(s []serializableModels.ClientMessage, i int) []serializableModels.ClientMessage {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }

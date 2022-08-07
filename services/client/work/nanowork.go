@@ -9,7 +9,7 @@ import (
 	"github.com/inkeliz/nanopow"
 )
 
-func WorkGenerate(item *serializableModels.ClientRequest) (string, error) {
+func WorkGenerate(item *serializableModels.ClientMessage) (string, error) {
 	decoded, err := hex.DecodeString(item.Hash)
 	if err != nil {
 		return "", err
