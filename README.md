@@ -36,8 +36,8 @@ BoomPow is going to reward contributors with BANANO. Similar to mining, if you p
 
 This is a GOLang "monorepo" that contains all BoomPoW Services
 
-- [Server](https://github.com/BananoCoin/boompow-next/blob/master/services/server)
-- [Client](https://github.com/BananoCoin/boompow-next/blob/master/services/server)
+- [Server](https://github.com/BananoCoin/boompow-next/blob/master/apps/server)
+- [Client](https://github.com/BananoCoin/boompow-next/blob/master/apps/server)
 
 ## Contributing
 
@@ -52,8 +52,8 @@ alias dcbuild="docker-compose build"
 alias dczsh="docker-compose exec app /bin/zsh"
 alias dcps="docker-compose ps"
 alias dcgo="docker-compose exec app go"
-alias dcgoclient="docker-compose exec --workdir /app/services/client app go"
-alias dcgoserver="docker-compose exec --workdir /app/services/server app go"
+alias dcgoclient="docker-compose exec --workdir /app/apps/client app go"
+alias dcgoserver="docker-compose exec --workdir /app/apps/server app go"
 alias psql-boompow="PGPASSWORD=postgres psql boompow -h localhost -U postgres -p 5433"
 ```
 
@@ -62,9 +62,9 @@ Once you have docker installed and running, as well as docker-compose, you can s
 ```
 > dcup
 # To run the server
-> dcgo run github.com/bananocoin/boomow-next/services/server server
+> dcgo run github.com/bananocoin/boomow-next/apps/server server
 # To run the client
-> dcgo run github.com/bananocoin/boompow-next/services/client
+> dcgo run github.com/bananocoin/boompow-next/apps/client
 ```
 
 To get an interactive shell in the container

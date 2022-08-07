@@ -27,7 +27,7 @@ if [ "$type" != "server" ] && [ "$type" != "client" ]; then
 fi
 
 if [ "$type" == "server" ]; then
-  dlv debug --headless --listen=:2345 --api-version=2 --log github.com/bananocoin/boompow-next/services/server -- server
+  dlv debug --headless --listen=:2345 --api-version=2 --log github.com/bananocoin/boompow-next/apps/server -- server
 elif [ "$type" == "client" ]; then
-  dlv debug --headless --listen=:2345 --api-version=2 --log github.com/bananocoin/boompow-next/services/client
+  dlv debug --headless --listen=:2345 --api-version=2 --log github.com/bananocoin/boompow-next/apps/client
 fi
