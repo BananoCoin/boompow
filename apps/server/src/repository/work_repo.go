@@ -8,6 +8,7 @@ import (
 	"github.com/bananocoin/boompow-next/libs/utils"
 	"github.com/bananocoin/boompow-next/libs/utils/validation"
 	"github.com/golang/glog"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -26,6 +27,7 @@ type WorkRepo interface {
 	GetUnpaidWorksForUser(email string) ([]*models.WorkResult, error)
 	GetUnpaidWorks() ([]*models.WorkResult, error)
 	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error)
+	GetUnpaidWorkCount() ([]UnpaidWorkResult, error)
 }
 
 type WorkService struct {
@@ -119,6 +121,20 @@ func (s *WorkService) GetUnpaidWorks() ([]*models.WorkResult, error) {
 	}
 
 	return stats, nil
+}
+
+type UnpaidWorkResult struct {
+	UnpaidCount   int       `json:"unpaid_count"`
+	DifficultySum int       `json:"difficulty_sum"`
+	ProvidedBy    uuid.UUID `json:"provided_by"`
+	BanAddress    string    `json:"ban_address"`
+}
+
+func (s *WorkService) GetUnpaidWorkCount() ([]UnpaidWorkResult, error) {
+	var result []UnpaidWorkResult
+	// We add +8 to this result to account for the fact that minimum work multiplier is actually negative (-8)
+	err := s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier+8) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
+	return result, err
 }
 
 func (s *WorkService) RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error) {

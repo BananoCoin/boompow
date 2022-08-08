@@ -5,4 +5,5 @@ use (
 	./libs/utils
 	./apps/client
 	./apps/server
+	./services/moneybags
 )

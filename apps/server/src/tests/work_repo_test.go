@@ -46,6 +46,22 @@ func TestStatsRepo(t *testing.T) {
 		DifficultyMultiplier: 5,
 	})
 	utils.AssertEqual(t, nil, err)
+	_, err = workRepo.SaveOrUpdateWorkResult(repository.WorkMessage{
+		RequestedByEmail:     requesterEmail,
+		ProvidedByEmail:      providerEmail,
+		Hash:                 "566",
+		Result:               "ac",
+		DifficultyMultiplier: 5,
+	})
+	utils.AssertEqual(t, nil, err)
+	_, err = workRepo.SaveOrUpdateWorkResult(repository.WorkMessage{
+		RequestedByEmail:     providerEmail,
+		ProvidedByEmail:      requesterEmail,
+		Hash:                 "321",
+		Result:               "ac",
+		DifficultyMultiplier: 5,
+	})
+	utils.AssertEqual(t, nil, err)
 
 	workRequest, err := workRepo.GetWorkRecord("123")
 	utils.AssertEqual(t, nil, err)
@@ -57,10 +73,25 @@ func TestStatsRepo(t *testing.T) {
 	// Get other stuff
 	workRequests, err := workRepo.GetUnpaidWorks()
 	utils.AssertEqual(t, nil, err)
-	utils.AssertEqual(t, 1, len(workRequests))
+	utils.AssertEqual(t, 3, len(workRequests))
 	workRequestsByUser, err := workRepo.GetUnpaidWorksForUser(providerEmail)
 	utils.AssertEqual(t, nil, err)
-	utils.AssertEqual(t, 1, len(workRequestsByUser))
+	utils.AssertEqual(t, 2, len(workRequestsByUser))
+
+	// Test unpaid work group by
+	workResults, err := workRepo.GetUnpaidWorkCount()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 2, len(workResults))
+	for _, workResult := range workResults {
+		if workResult.ProvidedBy == provider.ID {
+			utils.AssertEqual(t, 2, workResult.UnpaidCount)
+			utils.AssertEqual(t, 26, workResult.DifficultySum)
+			utils.AssertEqual(t, "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm", workResult.BanAddress)
+		} else {
+			utils.AssertEqual(t, 1, workResult.UnpaidCount)
+			utils.AssertEqual(t, 13, workResult.DifficultySum)
+		}
+	}
 
 	// Test the worker
 	statsChan := make(chan repository.WorkMessage, 100)

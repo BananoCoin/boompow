@@ -79,7 +79,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	if !validation.IsValidEmail(userInput.Email) {
 		return nil, errors.New("Invalid email")
 	}
-	if userInput.BanAddress != nil && !validation.ValidateAddress(*userInput.BanAddress) {
+	if models.UserType(userInput.Type) == models.PROVIDER && (userInput.BanAddress == nil || !validation.ValidateAddress(*userInput.BanAddress)) {
 		return nil, errors.New("Invalid ban_ address")
 	}
 
