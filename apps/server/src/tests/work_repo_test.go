@@ -79,7 +79,7 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, 2, len(workRequestsByUser))
 
 	// Test unpaid work group by
-	workResults, err := workRepo.GetUnpaidWorkCount()
+	workResults, err := workRepo.GetUnpaidWorkCountAndMarkAllPaid(mockDb)
 	utils.AssertEqual(t, nil, err)
 	utils.AssertEqual(t, 2, len(workResults))
 	for _, workResult := range workResults {

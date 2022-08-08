@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"github.com/bananocoin/boompow-next/apps/server/src/models"
 	serializableModels "github.com/bananocoin/boompow-next/libs/models"
@@ -27,7 +28,8 @@ type WorkRepo interface {
 	GetUnpaidWorksForUser(email string) ([]*models.WorkResult, error)
 	GetUnpaidWorks() ([]*models.WorkResult, error)
 	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error)
-	GetUnpaidWorkCount() ([]UnpaidWorkResult, error)
+	GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error)
+	GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error)
 }
 
 type WorkService struct {
@@ -86,6 +88,16 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 		return nil, err
 	}
 
+	// Update timestamps
+	err = s.Db.Model(&models.User{}).Where("id = ?", provider.ID).Updates(map[string]interface{}{"last_provided_work_at": time.Now()}).Error
+	if err != nil {
+		glog.Errorf("Failed to update last_provided_work_at for provider %v", err)
+	}
+	err = s.Db.Model(&models.User{}).Where("id = ?", requester.ID).Updates(map[string]interface{}{"last_requested_work_at": time.Now()}).Error
+	if err != nil {
+		glog.Errorf("Failed to update last_requested_work_at for provider %v", err)
+	}
+
 	return workRequestDb, err
 }
 
@@ -130,10 +142,19 @@ type UnpaidWorkResult struct {
 	BanAddress    string    `json:"ban_address"`
 }
 
-func (s *WorkService) GetUnpaidWorkCount() ([]UnpaidWorkResult, error) {
+func (s *WorkService) GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error) {
 	var result []UnpaidWorkResult
 	// We add +8 to this result to account for the fact that minimum work multiplier is actually negative (-8)
-	err := s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier+8) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
+	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier+8) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
+	return result, err
+}
+
+func (s *WorkService) GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error) {
+	result, err := s.GetUnpaidWorkCount(tx)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Model(&models.WorkResult{}).Where("1=1").Update("awarded", true).Error
 	return result, err
 }
 

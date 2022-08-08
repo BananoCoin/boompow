@@ -58,3 +58,11 @@ func GetTotalPrizePool() int {
 	}
 	return totalPrize
 }
+
+func GetWalletID() string {
+	return GetEnv("BPOW_WALLET_ID", "wallet_id_not_set")
+}
+
+func GetWalletAddress() string {
+	return GetEnv("BPOW_WALLET_ADDRESS", "wallet_address_not_set")
+}

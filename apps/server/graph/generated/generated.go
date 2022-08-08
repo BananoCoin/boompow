@@ -396,7 +396,7 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	var arg0 model.UserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -426,7 +426,7 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	var arg0 model.LoginInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNLoginInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐLoginInput(ctx, tmp)
+		arg0, err = ec.unmarshalNLoginInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐLoginInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -441,7 +441,7 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 	var arg0 model.RefreshTokenInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -456,7 +456,7 @@ func (ec *executionContext) field_Mutation_workGenerate_args(ctx context.Context
 	var arg0 model.WorkGenerateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNWorkGenerateInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐWorkGenerateInput(ctx, tmp)
+		arg0, err = ec.unmarshalNWorkGenerateInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐWorkGenerateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -510,7 +510,7 @@ func (ec *executionContext) field_Query_verifyEmail_args(ctx context.Context, ra
 	var arg0 model.VerifyEmailInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNVerifyEmailInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐVerifyEmailInput(ctx, tmp)
+		arg0, err = ec.unmarshalNVerifyEmailInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐVerifyEmailInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -629,7 +629,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -753,7 +753,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.LoginResponse)
 	fc.Result = res
-	return ec.marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx, field.Selections, res)
+	return ec.marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -966,7 +966,7 @@ func (ec *executionContext) _Query_getAllUsers(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1024,7 +1024,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1453,7 +1453,7 @@ func (ec *executionContext) _User_type(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(model.UserType)
 	fc.Result = res
-	return ec.marshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserType(ctx, field.Selections, res)
+	return ec.marshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3381,7 +3381,7 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserType(ctx, v)
+			it.Type, err = ec.unmarshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4125,16 +4125,16 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐLoginInput(ctx context.Context, v interface{}) (model.LoginInput, error) {
+func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐLoginInput(ctx context.Context, v interface{}) (model.LoginInput, error) {
 	res, err := ec.unmarshalInputLoginInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNLoginResponse2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx context.Context, sel ast.SelectionSet, v model.LoginResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginResponse2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx context.Context, sel ast.SelectionSet, v model.LoginResponse) graphql.Marshaler {
 	return ec._LoginResponse(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx context.Context, sel ast.SelectionSet, v *model.LoginResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐLoginResponse(ctx context.Context, sel ast.SelectionSet, v *model.LoginResponse) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4144,7 +4144,7 @@ func (ec *executionContext) marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoin�
 	return ec._LoginResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
+func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
 	res, err := ec.unmarshalInputRefreshTokenInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4164,11 +4164,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4192,7 +4192,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboomp
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4212,7 +4212,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbananocoinᚋboomp
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4222,27 +4222,27 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋbananocoinᚋboompow�
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
+func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
 	res, err := ec.unmarshalInputUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserType(ctx context.Context, v interface{}) (model.UserType, error) {
+func (ec *executionContext) unmarshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserType(ctx context.Context, v interface{}) (model.UserType, error) {
 	var res model.UserType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐUserType(ctx context.Context, sel ast.SelectionSet, v model.UserType) graphql.Marshaler {
+func (ec *executionContext) marshalNUserType2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐUserType(ctx context.Context, sel ast.SelectionSet, v model.UserType) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNVerifyEmailInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐVerifyEmailInput(ctx context.Context, v interface{}) (model.VerifyEmailInput, error) {
+func (ec *executionContext) unmarshalNVerifyEmailInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐVerifyEmailInput(ctx context.Context, v interface{}) (model.VerifyEmailInput, error) {
 	res, err := ec.unmarshalInputVerifyEmailInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNWorkGenerateInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋservicesᚋserverᚋgraphᚋmodelᚐWorkGenerateInput(ctx context.Context, v interface{}) (model.WorkGenerateInput, error) {
+func (ec *executionContext) unmarshalNWorkGenerateInput2githubᚗcomᚋbananocoinᚋboompowᚑnextᚋappsᚋserverᚋgraphᚋmodelᚐWorkGenerateInput(ctx context.Context, v interface{}) (model.WorkGenerateInput, error) {
 	res, err := ec.unmarshalInputWorkGenerateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }

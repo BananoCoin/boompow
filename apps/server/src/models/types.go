@@ -2,7 +2,9 @@ package models
 
 // Types represent custom enums in postgres
 
-import "database/sql/driver"
+import (
+	"database/sql/driver"
+)
 
 // The name of the type as it's stored in postgres
 const PG_USER_TYPE_NAME = "user_type"

@@ -43,12 +43,13 @@ func (s *UserService) CreateMockUsers() error {
 	if err != nil {
 		return err
 	}
+	banAddress := "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm"
 	provider := &models.User{
 		Type:          models.PROVIDER,
 		Email:         "provider@gmail.com",
 		Password:      hashedPassword,
 		EmailVerified: true,
-		BanAddress:    "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm",
+		BanAddress:    &banAddress,
 	}
 
 	requester := &models.User{
@@ -95,7 +96,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 		Type:     models.UserType(userInput.Type),
 	}
 	if userInput.BanAddress != nil {
-		user.BanAddress = *userInput.BanAddress
+		user.BanAddress = userInput.BanAddress
 	}
 	err = s.Db.Create(&user).Error
 

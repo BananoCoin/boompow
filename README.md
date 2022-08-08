@@ -37,7 +37,8 @@ BoomPow is going to reward contributors with BANANO. Similar to mining, if you p
 This is a GOLang "monorepo" that contains all BoomPoW Services
 
 - [Server](https://github.com/BananoCoin/boompow-next/blob/master/apps/server)
-- [Client](https://github.com/BananoCoin/boompow-next/blob/master/apps/server)
+- [Client](https://github.com/BananoCoin/boompow-next/blob/master/apps/client)
+- [Moneybags (Payment Cron)](https://github.com/BananoCoin/boompow-next/blob/master/services/moneybags)
 
 ## Contributing
 

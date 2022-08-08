@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/bananocoin/boompow-next/apps/server/src/database"
 	"github.com/bananocoin/boompow-next/apps/server/src/models"
 	"github.com/bananocoin/boompow-next/apps/server/src/repository"
@@ -22,6 +24,14 @@ var userCtxKey = &contextKey{"user"}
 
 type contextKey struct {
 	name string
+}
+
+func formatGraphqlError(ctx context.Context, msg string) string {
+	marshalled, err := json.Marshal(graphql.ErrorResponse(ctx, "Invalid token"))
+	if err != nil {
+		return "\"errors\": [{\"message\": \"Unknown\"}]"
+	}
+	return string(marshalled)
 }
 
 func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Handler {
@@ -45,12 +55,12 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 				// Service token
 				userID, err := database.GetRedisDB().GetServiceTokenUser(header)
 				if err != nil {
-					http.Error(w, "Invalid token", http.StatusForbidden)
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
 					return
 				}
 				userUUID, err := uuid.Parse(userID)
 				if err != nil {
-					http.Error(w, "Invalid token", http.StatusForbidden)
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
 					return
 				}
 				// create user and check if user exists in db
@@ -65,7 +75,7 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 				tokenStr := header
 				email, err := auth.ParseToken(tokenStr)
 				if err != nil {
-					http.Error(w, "Invalid token", http.StatusForbidden)
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
 					return
 				}
 				// create user and check if user exists in db
