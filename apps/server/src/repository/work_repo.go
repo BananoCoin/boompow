@@ -144,8 +144,7 @@ type UnpaidWorkResult struct {
 
 func (s *WorkService) GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error) {
 	var result []UnpaidWorkResult
-	// We add +8 to this result to account for the fact that minimum work multiplier is actually negative (-8)
-	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier+8) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
+	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
 	return result, err
 }
 

@@ -4,12 +4,28 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 
-	"github.com/inkeliz/nanopow"
 	"golang.org/x/crypto/blake2b"
 )
 
+const (
+	baseMaxUint64  = uint64(1<<64 - 1)
+	baseDifficulty = baseMaxUint64 - uint64(0xfffffe0000000000)
+)
+
+func CalculateDifficulty(multiplier int64) uint64 {
+	if multiplier < 0 {
+		return baseMaxUint64 - (baseDifficulty * ((baseMaxUint64 - uint64(multiplier)) + 1))
+	}
+
+	if multiplier == 0 {
+		multiplier = 1
+	}
+
+	return baseMaxUint64 - (baseDifficulty / uint64(multiplier))
+}
+
 func IsWorkValid(previous string, difficultyMultiplier int, w string) bool {
-	difficult := nanopow.CalculateDifficulty(int64(difficultyMultiplier))
+	difficult := CalculateDifficulty(int64(difficultyMultiplier))
 	previousEnc, err := hex.DecodeString(previous)
 	if err != nil {
 		return false

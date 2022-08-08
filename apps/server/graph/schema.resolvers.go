@@ -105,9 +105,9 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	}
 
 	// Alter our difficulty to be in a valid range if it isn't
-	if input.DifficultyMultiplier < -8 {
-		// -8 is NANO receive and banano base difficulty
-		input.DifficultyMultiplier = -8
+	if input.DifficultyMultiplier < 1 {
+		// 1 is NANO receive and banano base difficulty
+		input.DifficultyMultiplier = 1
 	} else if input.DifficultyMultiplier > config.MAX_WORK_DIFFICULTY_MULTIPLIER {
 		input.DifficultyMultiplier = config.MAX_WORK_DIFFICULTY_MULTIPLIER
 	}

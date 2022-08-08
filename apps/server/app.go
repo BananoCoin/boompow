@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bananocoin/boompow-next/apps/server/graph"
 	"github.com/bananocoin/boompow-next/apps/server/graph/generated"
@@ -16,6 +18,7 @@ import (
 	"github.com/bananocoin/boompow-next/apps/server/src/middleware"
 	"github.com/bananocoin/boompow-next/apps/server/src/repository"
 	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow-next/libs/utils"
 	"github.com/bitfield/script"
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
@@ -66,15 +69,23 @@ func runServer() {
 	userRepo := repository.NewUserService((db))
 	workRepo := repository.NewWorkService(db, userRepo)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		UserRepo: userRepo,
 		WorkRepo: workRepo,
 	}}))
+	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.POST{})
+	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
+		srv.Use(extension.Introspection{})
+	}
 
 	// Setup router
 	router := chi.NewRouter()
 	router.Use(middleware.AuthMiddleware(userRepo))
-	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
+		router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+		log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
+	}
 	router.Handle("/graphql", srv)
 
 	// Setup channel for stats processing job
@@ -94,7 +105,6 @@ func runServer() {
 	// Job for sending block awarded messages to user
 	go controller.ActiveHub.BlockAwardedWorker(blockAwardedChan)
 
-	log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 

@@ -85,11 +85,11 @@ func TestStatsRepo(t *testing.T) {
 	for _, workResult := range workResults {
 		if workResult.ProvidedBy == provider.ID {
 			utils.AssertEqual(t, 2, workResult.UnpaidCount)
-			utils.AssertEqual(t, 26, workResult.DifficultySum)
+			utils.AssertEqual(t, 10, workResult.DifficultySum)
 			utils.AssertEqual(t, "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm", workResult.BanAddress)
 		} else {
 			utils.AssertEqual(t, 1, workResult.UnpaidCount)
-			utils.AssertEqual(t, 13, workResult.DifficultySum)
+			utils.AssertEqual(t, 5, workResult.DifficultySum)
 		}
 	}
 

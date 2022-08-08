@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow-next/libs/utils/validation"
 	"github.com/golang/glog"
 	"github.com/inkeliz/nanopow"
 )
@@ -14,12 +15,12 @@ func WorkGenerate(item *serializableModels.ClientMessage) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	work, err := nanopow.GenerateWork(decoded, nanopow.CalculateDifficulty(int64(item.DifficultyMultiplier)))
+	work, err := nanopow.GenerateWork(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)))
 	if err != nil {
 		return "", err
 	}
 
-	if !nanopow.IsValid(decoded, nanopow.CalculateDifficulty(int64(item.DifficultyMultiplier)), work) {
+	if !nanopow.IsValid(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)), work) {
 		glog.Errorf("⚠️ Generated invalid work for %s", item.Hash)
 		return "", errors.New("Invalid work")
 	}
