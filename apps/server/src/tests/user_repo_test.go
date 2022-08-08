@@ -43,7 +43,7 @@ func TestUserRepo(t *testing.T) {
 	utils.AssertEqual(t, user.ID, dbUser.ID)
 	utils.AssertEqual(t, "joe@gmail.com", dbUser.Email)
 	utils.AssertEqual(t, false, dbUser.EmailVerified)
-	utils.AssertEqual(t, banAddress, dbUser.BanAddress)
+	utils.AssertEqual(t, banAddress, *dbUser.BanAddress)
 	utils.AssertEqual(t, false, dbUser.CanRequestWork)
 	utils.AssertEqual(t, models.PROVIDER, dbUser.Type)
 
