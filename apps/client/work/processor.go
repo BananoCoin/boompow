@@ -1,7 +1,9 @@
 package work
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/bananocoin/boompow-next/apps/client/models"
 	"github.com/bananocoin/boompow-next/apps/client/websocket"
@@ -46,18 +48,40 @@ func (wp *WorkProcessor) StartWorkProcessor() {
 		// Get random work item
 		workItem := wp.Queue.PopRandom()
 		if workItem != nil {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 			// Generate work
-			result, err := WorkGenerate(workItem)
-			if err != nil {
-				fmt.Printf("\n❌ Error: generate work for %s\n", workItem.Hash)
+			ch := make(chan string, 1)
+			go func() {
+				result, err := WorkGenerate(workItem)
+				if err != nil {
+					result = ""
+				}
+
+				select {
+				default:
+					ch <- result
+				case <-ctx.Done():
+					fmt.Printf("\n❌ Error: took longer than 10s to generate work for %s", workItem.Hash)
+				}
+			}()
+
+			select {
+			case result := <-ch:
+				if result != "" {
+					// Send result back to server
+					clientWorkResult := serializableModels.ClientWorkResponse{
+						RequestID: workItem.RequestID,
+						Hash:      workItem.Hash,
+						Result:    result,
+					}
+					wp.WSService.WS.WriteJSON(clientWorkResult)
+				} else {
+					fmt.Printf("\n❌ Error: generate work for %s\n", workItem.Hash)
+				}
+			case <-time.After(10 * time.Second):
+				fmt.Printf("\n❌ Error: took longer than 10s to generate work for %s", workItem.Hash)
 			}
-			// Send result back to server
-			clientWorkResult := serializableModels.ClientWorkResponse{
-				RequestID: workItem.RequestID,
-				Hash:      workItem.Hash,
-				Result:    result,
-			}
-			wp.WSService.WS.WriteJSON(clientWorkResult)
 		}
 	}
 }

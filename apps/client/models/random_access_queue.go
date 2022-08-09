@@ -22,7 +22,7 @@ func NewRandomAccessQueue() *RandomAccessQueue {
 }
 
 // See if element exists
-func (r *RandomAccessQueue) Exists(hash string) bool {
+func (r *RandomAccessQueue) exists(hash string) bool {
 	for _, v := range r.Hashes {
 		if v.Hash == hash {
 			return true
@@ -35,7 +35,7 @@ func (r *RandomAccessQueue) Exists(hash string) bool {
 func (r *RandomAccessQueue) Put(value serializableModels.ClientMessage) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if !r.Exists(value.Hash) {
+	if !r.exists(value.Hash) {
 		r.Hashes = append(r.Hashes, value)
 	}
 }
@@ -58,8 +58,8 @@ func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientMessage {
 func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientMessage {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if r.Exists(hash) {
-		return &r.Hashes[r.IndexOf(hash)]
+	if r.exists(hash) {
+		return &r.Hashes[r.indexOf(hash)]
 	}
 
 	return nil
@@ -69,13 +69,13 @@ func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientMessage {
 func (r *RandomAccessQueue) Delete(hash string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	index := r.IndexOf(hash)
+	index := r.indexOf(hash)
 	if index > -1 {
-		r.Hashes = remove(r.Hashes, r.IndexOf(hash))
+		r.Hashes = remove(r.Hashes, r.indexOf(hash))
 	}
 }
 
-func (r *RandomAccessQueue) IndexOf(hash string) int {
+func (r *RandomAccessQueue) indexOf(hash string) int {
 	for i, v := range r.Hashes {
 		if v.Hash == hash {
 			return i
