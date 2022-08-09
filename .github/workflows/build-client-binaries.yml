@@ -8,10 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Set ownership
-      run: |
-        # this is to fix GIT not liking owner of the checkout dir
-        chown -R $(id -u):$(id -g) $PWD    
     - name: Compile and Release
       uses: bbedward/go-release.action@master
       env:
@@ -24,11 +20,7 @@ jobs:
     name: linux/arm64
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set ownership
-      run: |
-        # this is to fix GIT not liking owner of the checkout dir
-        chown -R $(id -u):$(id -g) $PWD       
+    - uses: actions/checkout@master      
     - name: Compile and Release
       uses: bbedward/go-release.action@master
       env:
@@ -41,11 +33,7 @@ jobs:
     name: darwin/amd64
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set ownership
-      run: |
-        # this is to fix GIT not liking owner of the checkout dir
-        chown -R $(id -u):$(id -g) $PWD       
+    - uses: actions/checkout@master    
     - name: Compile and Release
       uses: bbedward/go-release.action@master
       env:
@@ -58,11 +46,7 @@ jobs:
     name: darwin/arm64
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set ownership
-      run: |
-        # this is to fix GIT not liking owner of the checkout dir
-        chown -R $(id -u):$(id -g) $PWD       
+    - uses: actions/checkout@master 
     - name: Compile and Release
       uses: bbedward/go-release.action@master
       env:
@@ -75,11 +59,7 @@ jobs:
     name: windows/amd64
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set ownership
-      run: |
-        # this is to fix GIT not liking owner of the checkout dir
-        chown -R $(id -u):$(id -g) $PWD       
+    - uses: actions/checkout@master     
     - name: Compile and Release
       uses: bbedward/go-release.action@master
       env:
