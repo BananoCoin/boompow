@@ -100,7 +100,7 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 
 	// Check that this request is valid
 	_, err := hex.DecodeString(input.Hash)
-	if err != nil {
+	if err != nil || len(input.Hash) != 64 {
 		return "", errors.New("bad_request:invalid hash")
 	}
 
