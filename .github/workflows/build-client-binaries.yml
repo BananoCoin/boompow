@@ -1,7 +1,7 @@
 on:
     workflow_call:
         secrets:
-            GITHUB_TOKEN:
+            GH_TOKEN:
                 description: 'Github API Token'
                 required: true
 jobs:
@@ -14,7 +14,7 @@ jobs:
       uses: ngs/go-release.action@v1.0.1
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GOARCH: amd64
         GOOS: linux
         EXTRA_FILES: "LICENSE"
@@ -27,7 +27,7 @@ jobs:
       uses: ngs/go-release.action@v1.0.1
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GOARCH: arm64
         GOOS: linux
         EXTRA_FILES: "LICENSE"
@@ -40,7 +40,7 @@ jobs:
       uses: ngs/go-release.action@v1.0.1
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GOARCH: amd64
         GOOS: darwin
         EXTRA_FILES: "LICENSE"
@@ -53,7 +53,7 @@ jobs:
       uses: ngs/go-release.action@v1.0.1
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GOARCH: amd64
         GOOS: windows
         EXTRA_FILES: "LICENSE"
