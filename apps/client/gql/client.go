@@ -45,10 +45,10 @@ func RefreshToken(ctx context.Context, token string) (string, error) {
 	})
 
 	if err != nil {
-		fmt.Printf("Error refreshing authentication token! You may need to restart the client and re-login %v", err)
+		fmt.Printf("\nError refreshing authentication token! You may need to restart the client and re-login %v", err)
 		return "", err
 	}
-	fmt.Printf("👮 Refreshed authentication token\n")
+	fmt.Printf("\n👮 Refreshed authentication token")
 
 	return resp.RefreshToken, nil
 }

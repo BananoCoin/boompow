@@ -65,6 +65,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 
 				if len(serverMsg.Hash) != 64 {
 					fmt.Printf("\nReceived invalid hash, skipping")
+					continue
 				}
 
 				// Queue

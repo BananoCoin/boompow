@@ -21,7 +21,7 @@ func WorkGenerate(item *serializableModels.ClientMessage) (string, error) {
 	}
 
 	if !nanopow.IsValid(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)), work) {
-		glog.Errorf("⚠️ Generated invalid work for %s", item.Hash)
+		glog.Errorf("\n⚠️ Generated invalid work for %s", item.Hash)
 		return "", errors.New("Invalid work")
 	}
 	return WorkToString(work), nil
