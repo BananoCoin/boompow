@@ -40,10 +40,3 @@ jobs:
             DB_SSLMODE: disable
         run: |
           go test -v -parallel 1 $(go list -f '{{.Dir}}/...' -m | xargs)
-
-  build-binaries:
-      name: 💻 Build Client Binaries
-      needs: [test]
-      uses: ./.github/workflows/build-client-binaries.yml
-      secrets:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}

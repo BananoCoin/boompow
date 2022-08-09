@@ -1,12 +1,8 @@
-on:
-    workflow_call:
-        secrets:
-            GH_TOKEN:
-                description: 'Github API Token'
-                required: true
+on: release
+name: 💻 Build Client Binaries
 jobs:
   release-linux-amd64:
-    name: release linux/amd64
+    name: linux/amd64
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -19,7 +15,7 @@ jobs:
         GOOS: linux
         EXTRA_FILES: "LICENSE"
   release-linux-arm64:
-    name: release linux/amd64
+    name: linux/arm64
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -32,7 +28,7 @@ jobs:
         GOOS: linux
         EXTRA_FILES: "LICENSE"
   release-darwin-amd64:
-    name: release darwin/amd64
+    name: darwin/amd64
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -44,8 +40,21 @@ jobs:
         GOARCH: amd64
         GOOS: darwin
         EXTRA_FILES: "LICENSE"
+  release-darwin-arm64:
+    name: darwin/arm64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: compile and release
+      uses: ngs/go-release.action@v1.0.1
+      env:
+        CMD_PATH: "-o boompow_client ./apps/client"
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GOARCH: arm64
+        GOOS: darwin
+        EXTRA_FILES: "LICENSE"        
   release-windows-amd64:
-    name: release windows/amd64
+    name: windows/amd64
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
