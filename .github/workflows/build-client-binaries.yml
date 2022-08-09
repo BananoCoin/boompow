@@ -1,4 +1,6 @@
-on: release
+on: 
+  release:
+    types: [published]
 name: 💻 Build Client Binaries
 jobs:
   release-linux-amd64:
@@ -11,6 +13,7 @@ jobs:
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        PROJECT_NAME: boompow_client
         GOARCH: amd64
         GOOS: linux
         EXTRA_FILES: "LICENSE"
@@ -24,6 +27,7 @@ jobs:
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        PROJECT_NAME: boompow_client
         GOARCH: arm64
         GOOS: linux
         EXTRA_FILES: "LICENSE"
@@ -37,6 +41,7 @@ jobs:
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        PROJECT_NAME: boompow_client
         GOARCH: amd64
         GOOS: darwin
         EXTRA_FILES: "LICENSE"
@@ -50,6 +55,7 @@ jobs:
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        PROJECT_NAME: boompow_client
         GOARCH: arm64
         GOOS: darwin
         EXTRA_FILES: "LICENSE"        
@@ -63,6 +69,7 @@ jobs:
       env:
         CMD_PATH: "-o boompow_client ./apps/client"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        PROJECT_NAME: boompow_client
         GOARCH: amd64
         GOOS: windows
         EXTRA_FILES: "LICENSE"
