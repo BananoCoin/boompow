@@ -5,7 +5,7 @@ metadata:
   namespace: boompow-next
 spec:
   selector:
-      app: boompow-service
+      app: boompow
   type: ClusterIP
   ports:
     - port: 8080
