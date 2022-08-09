@@ -1,0 +1,85 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: boompow-deployment
+  namespace: boompow-next
+  labels:
+    app: boompow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: boompow
+  template:
+    metadata:
+      labels:
+        app: boompow
+    spec:
+      containers:
+      - name: boompow
+        image: replaceme
+        command: ["/bin/bash", "-c"]
+        args: ["boompow-server server"]
+        ports:
+          - containerPort: 8080
+        imagePullPolicy: "Always"
+        env:
+          - name: SMTP_PORT
+            value: 587
+          - name: SMTP_SERVER
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: smtp_server                
+          - name: SMTP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: smtp_username                
+          - name: SMTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: smtp_password                
+          - name: DB_HOST
+            value: postgres.postgres               
+          - name: DB_PORT
+            value: 5432
+          - name: DB_SSLMODE
+            value: disable
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: db_name   
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: db_user  
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: db_password  
+          - name: REDIS_HOST
+            value: redis-0.redis
+          - name: REDIS_DB
+            value: "18" 
+          - name: PRIV_KEY
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: jwt_signing_key
+          - name: BPOW_WALLET_ID
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: wallet_id      
+          - name: BPOW_PRIZE_POOL
+            value: 10000
+          - name: BPOW_WALLET_ADDRESS
+            value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym                   
+      imagePullSecrets:
+          - name: regcred
+ 

@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: boompow-service
+  namespace: boompow-next
+spec:
+  selector:
+      app: boompow-service
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
