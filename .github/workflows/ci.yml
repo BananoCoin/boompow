@@ -65,15 +65,15 @@ jobs:
         shell: bash
         run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
 
-      - name: Build and tag
+      - name: Build and push
         if: success()
-        run: docker build -t bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }} -f apps/server/Dockerfile .
-
-      - name: Push image   
-        if: success()
-        uses: actions-hub/docker@master
+        uses: docker/build-push-action@v3
         with:
-          args: push bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
+          context: .
+          platforms: linux/amd64
+          push: true
+          file: ./apps/server/Dockerfile
+          tags: bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
 
   deploy_go:
     name: 🥳 Deploy Server
