@@ -49,11 +49,6 @@ jobs:
       GITHUB_RUN_ID: ${{ github.run_id }}    
     steps:
       - uses: actions/checkout@master   
-      - name: Login to registry
-        uses: actions-hub/docker/login@master
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get branch name (merge)
         if: github.event_name != 'pull_request'
@@ -64,6 +59,13 @@ jobs:
         if: github.event_name == 'pull_request'
         shell: bash
         run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+      - name: Login to registry
+        if: success()
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push
         if: success()
