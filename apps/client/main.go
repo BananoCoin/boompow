@@ -20,6 +20,10 @@ import (
 	"golang.org/x/term"
 )
 
+// Variables
+var GraphQLURL = "http://localhost:8080/graphql"
+var WSUrl = "ws://localhost:8080/ws/worker"
+
 // For pretty text
 func printBanner() {
 	ascii := figlet4go.NewAsciiRender()
@@ -72,7 +76,7 @@ func main() {
 	NConcurrentWorkers = *threadCount
 
 	printBanner()
-	gql.InitGQLClient()
+	gql.InitGQLClient(GraphQLURL)
 
 	// Define context
 	ctx, cancel := context.WithCancel(context.Background())
@@ -81,7 +85,7 @@ func main() {
 	SetupCloseHandler(ctx, cancel)
 
 	// Create WS Service
-	WSService = websocket.NewWebsockerService()
+	WSService = websocket.NewWebsocketService(WSUrl)
 
 	// Loop to get username and password and login
 	for {

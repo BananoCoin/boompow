@@ -13,11 +13,13 @@ import (
 type WebsocketService struct {
 	WS        *RecConn
 	AuthToken string
+	URL       string
 }
 
-func NewWebsockerService() *WebsocketService {
+func NewWebsocketService(url string) *WebsocketService {
 	return &WebsocketService{
-		WS: &RecConn{},
+		WS:  &RecConn{},
+		URL: url,
 	}
 }
 
@@ -33,7 +35,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 		panic("Tired to start websocket client without auth token")
 	}
 	// Start the websocket connection
-	ws.WS.Dial("ws://localhost:8080/ws/worker", http.Header{
+	ws.WS.Dial(ws.URL, http.Header{
 		"Authorization": {ws.AuthToken},
 	})
 

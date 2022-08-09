@@ -21,10 +21,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - bpow-next.banano.cc
+        - boompow.banano.cc
       secretName: bpow-next-banano-cc-server-secret
   rules:
-    - host: bpow-next.banano.cc
+    - host: boompow.banano.cc
       http:
         paths:
           - path: /

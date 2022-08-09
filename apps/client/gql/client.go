@@ -18,8 +18,8 @@ const (
 
 var client graphql.Client
 
-func InitGQLClient() {
-	client = graphql.NewClient("http://localhost:8080/graphql", http.DefaultClient)
+func InitGQLClient(url string) {
+	client = graphql.NewClient(url, http.DefaultClient)
 }
 
 func Login(ctx context.Context, email string, password string) (*loginUserResponse, GQLError) {

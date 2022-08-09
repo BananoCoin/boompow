@@ -109,7 +109,7 @@ func SendConfirmationEmail(destination string, userType models.UserType, token s
 
 	// Populate template
 	templateData := ConfirmationEmailData{
-		ConfirmationLink:              fmt.Sprintf("https://bpow-next.banano.cc/graphql?query=%s", urlParam),
+		ConfirmationLink:              fmt.Sprintf("https://boompow.banano.cc/graphql?query=%s", urlParam),
 		ConfirmCodeExpirationDuration: config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES,
 		IsProvider:                    userType == models.PROVIDER,
 	}
