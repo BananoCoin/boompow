@@ -113,7 +113,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	database.GetRedisDB().SetConfirmationToken(userInput.Email, confirmationToken)
 	// Send email with confirmation token
 	if doEmail {
-		email.SendConfirmationEmail(userInput.Email, confirmationToken)
+		email.SendConfirmationEmail(userInput.Email, models.UserType(userInput.Type), confirmationToken)
 	}
 	return user, err
 }

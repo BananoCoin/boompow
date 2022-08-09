@@ -12,6 +12,7 @@ import (
 	"runtime"
 
 	"github.com/bananocoin/boompow-next/apps/server/src/config"
+	"github.com/bananocoin/boompow-next/apps/server/src/models"
 	"github.com/bananocoin/boompow-next/libs/utils"
 	"github.com/golang/glog"
 )
@@ -94,7 +95,7 @@ func loadEmailTemplate(templateName string) (*template.Template, error) {
 }
 
 // Send email with link to verify user's email address
-func SendConfirmationEmail(destination string, token string) error {
+func SendConfirmationEmail(destination string, userType models.UserType, token string) error {
 	// Load template
 	t, err := loadEmailTemplate("confirmemail.html")
 	if err != nil {
@@ -102,15 +103,15 @@ func SendConfirmationEmail(destination string, token string) error {
 	}
 
 	// Encode URL params
-	// !  TODO - real URL eventually
 	urlParam := url.QueryEscape(fmt.Sprintf(`query verifyEmail{
 		verifyEmail(input:{email:"%s", token:"%s"})
 	}`, destination, token))
 
 	// Populate template
 	templateData := ConfirmationEmailData{
-		ConfirmationCode:              fmt.Sprintf("http://localhost:8080/graphql?query=%s", urlParam),
+		ConfirmationLink:              fmt.Sprintf("https://bpow-next.banano.cc/graphql?query=%s", urlParam),
 		ConfirmCodeExpirationDuration: config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES,
+		IsProvider:                    userType == models.PROVIDER,
 	}
 
 	return sendEmail(

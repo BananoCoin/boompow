@@ -1,6 +1,7 @@
 package email
 
 type ConfirmationEmailData struct {
-	ConfirmationCode              string
+	ConfirmationLink              string
 	ConfirmCodeExpirationDuration int
+	IsProvider                    bool
 }
