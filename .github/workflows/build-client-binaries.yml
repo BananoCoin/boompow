@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Compile and Release
-      uses: ConsulTent/go-release.action@master
+      uses: bbedward/go-release.action@master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         PROJECT_NAME: boompow_client
@@ -22,7 +22,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Compile and Release
-      uses: ConsulTent/go-release.action@master
+      uses: bbedward/go-release.action@master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         PROJECT_NAME: boompow_client
@@ -35,7 +35,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Compile and Release
-      uses: ConsulTent/go-release.action@master
+      uses: bbedward/go-release.action@master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         PROJECT_NAME: boompow_client
@@ -48,7 +48,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Compile and Release
-      uses: ConsulTent/go-release.action@master
+      uses: bbedward/go-release.action@master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         PROJECT_NAME: boompow_client
@@ -61,7 +61,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Compile and Release
-      uses: ConsulTent/go-release.action@master
+      uses: bbedward/go-release.action@master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GOARCH: amd64
