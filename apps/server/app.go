@@ -74,6 +74,7 @@ func runServer() {
 		WorkRepo: workRepo,
 	}}))
 	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
 	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 		srv.Use(extension.Introspection{})
