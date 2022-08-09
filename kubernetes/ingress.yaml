@@ -22,7 +22,7 @@ spec:
   tls:
     - hosts:
         - boompow.banano.cc
-      secretName: bpow-next-banano-cc-server-secret
+      secretName: boompow-banano-cc-server-secret
   rules:
     - host: boompow.banano.cc
       http:
