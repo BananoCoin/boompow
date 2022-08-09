@@ -40,3 +40,71 @@ jobs:
             DB_SSLMODE: disable
         run: |
           go test -v -parallel 1 $(go list -f '{{.Dir}}/...' -m | xargs)
+
+  build_and_publish:
+    name: ⚒️ Build and Publish Image
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}    
+    steps:
+      - uses: actions/checkout@master   
+      - name: Login to registry
+        uses: actions-hub/docker/login@master
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+      - name: Build and tag
+        if: success()
+        run: docker build -t bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }} -f apps/server/Dockerfile .
+
+      - name: Push image   
+        if: success()
+        uses: actions-hub/docker@master
+        with:
+          args: push bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
+
+  deploy_go:
+    name: 🥳 Deploy Server
+    needs: build_and_publish
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@master   
+      - uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.5.4"
+
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+      - name: Set image
+        working-directory: ./kubernetes
+        run: |
+          kustomize edit set image replaceme=bananocoin/boompow-next:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
+          kustomize build . > go-deployment.yaml
+      - name: Deploy image to k8s cluster
+        uses: bbedward/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: apply -f ./kubernetes/server/go-deployment.yaml
