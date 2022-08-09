@@ -18,7 +18,7 @@ spec:
       containers:
       - name: boompow
         image: replaceme
-        command: ["/bin/bash", "-c"]
+        command: ["/bin/sh", "-c"]
         args: ["boompow-server server"]
         ports:
           - containerPort: 8080
