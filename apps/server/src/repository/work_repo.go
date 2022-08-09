@@ -25,8 +25,8 @@ type WorkRepo interface {
 	SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.WorkResult, error)
 	GetWorkRecord(hash string) (*models.WorkResult, error)
 	StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan *chan serializableModels.ClientMessage)
-	GetUnpaidWorksForUser(email string) ([]*models.WorkResult, error)
-	GetUnpaidWorks() ([]*models.WorkResult, error)
+	GetUnpaidWorkSumForUser(email string) (int, error)
+	GetUnpaidWorkSum() (int, error)
 	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error)
 	GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error)
@@ -110,41 +110,49 @@ func (s *WorkService) GetWorkRecord(hash string) (*models.WorkResult, error) {
 	return &workRequest, nil
 }
 
-func (s *WorkService) GetUnpaidWorksForUser(email string) ([]*models.WorkResult, error) {
+// Get sum of (difficulty_multiplier * 100), use this to determine payments
+
+type UnpaidSumResult struct {
+	DifficultySum int `json:"difficulty_sum"`
+}
+
+func (s *WorkService) GetUnpaidWorkSumForUser(email string) (int, error) {
 	// Get user
 	user, err := s.userRepo.GetUser(nil, &email)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	stats := make([]*models.WorkResult, 0)
-	err = s.Db.Where("provided_by = ?", user.ID).Where("awarded = ?", false).Find(&stats).Error
+	var result UnpaidSumResult
+	err = s.Db.Model(&models.WorkResult{}).Select("sum(difficulty_multiplier*100) as difficulty_sum").Where("awarded = ?", false).Where("provided_by = ?", user.ID).Scan(&result).Error
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return stats, nil
+	return result.DifficultySum, nil
 }
 
-func (s *WorkService) GetUnpaidWorks() ([]*models.WorkResult, error) {
-	stats := make([]*models.WorkResult, 0)
-	err := s.Db.Where("awarded = ?", false).Find(&stats).Error
+// Summate the difficulty of unpaid works for all users
+func (s *WorkService) GetUnpaidWorkSum() (int, error) {
+	var result UnpaidSumResult
+	err := s.Db.Model(&models.WorkResult{}).Select("sum(difficulty_multiplier*100) as difficulty_sum").Where("awarded = ?", false).Scan(&result).Error
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return stats, nil
+	return result.DifficultySum, nil
 }
 
 type UnpaidWorkResult struct {
-	UnpaidCount   int       `json:"unpaid_count"`
-	DifficultySum int       `json:"difficulty_sum"`
-	ProvidedBy    uuid.UUID `json:"provided_by"`
-	BanAddress    string    `json:"ban_address"`
+	UnpaidSumResult
+	UnpaidCount int       `json:"unpaid_count"`
+	ProvidedBy  uuid.UUID `json:"provided_by"`
+	BanAddress  string    `json:"ban_address"`
 }
 
 func (s *WorkService) GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error) {
 	var result []UnpaidWorkResult
-	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
+	// x 100 for more precision
+	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier*100) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
 	return result, err
 }
 
@@ -180,17 +188,17 @@ func (s *WorkService) StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan
 		}
 		// Process message to send to user
 		// Get total unpaid stats
-		unpaidStats, err := s.GetUnpaidWorks()
+		unpaidStats, err := s.GetUnpaidWorkSum()
 		if err != nil {
 			glog.Errorf("Error getting unpaid stats %v", err)
 		}
 		// Get unpaid stats for this user
-		unpaidUserStats, err := s.GetUnpaidWorksForUser(c.ProvidedByEmail)
+		unpaidUserStats, err := s.GetUnpaidWorkSumForUser(c.ProvidedByEmail)
 		if err != nil {
 			glog.Errorf("Error getting unpaid stats for user %v", err)
 		}
 		// Get percentage of unpaid stats for this user
-		percentageOfPool := float64(len(unpaidUserStats)) / float64(len(unpaidStats)) * 100
+		percentageOfPool := float64(unpaidUserStats) / float64(unpaidStats) * 100
 		prizePool := utils.GetTotalPrizePool()
 		estimatedAward := float64(prizePool) * percentageOfPool / 100
 		// Format client message

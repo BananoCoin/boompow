@@ -71,12 +71,12 @@ func TestStatsRepo(t *testing.T) {
 	utils.AssertEqual(t, provider.ID, workRequest.ProvidedBy)
 
 	// Get other stuff
-	workRequests, err := workRepo.GetUnpaidWorks()
+	workDifficultySum, err := workRepo.GetUnpaidWorkSum()
 	utils.AssertEqual(t, nil, err)
-	utils.AssertEqual(t, 3, len(workRequests))
-	workRequestsByUser, err := workRepo.GetUnpaidWorksForUser(providerEmail)
+	utils.AssertEqual(t, 1500, workDifficultySum)
+	workDifficultySumUser, err := workRepo.GetUnpaidWorkSumForUser(providerEmail)
 	utils.AssertEqual(t, nil, err)
-	utils.AssertEqual(t, 2, len(workRequestsByUser))
+	utils.AssertEqual(t, 1000, workDifficultySumUser)
 
 	// Test unpaid work group by
 	workResults, err := workRepo.GetUnpaidWorkCountAndMarkAllPaid(mockDb)
@@ -85,11 +85,11 @@ func TestStatsRepo(t *testing.T) {
 	for _, workResult := range workResults {
 		if workResult.ProvidedBy == provider.ID {
 			utils.AssertEqual(t, 2, workResult.UnpaidCount)
-			utils.AssertEqual(t, 10, workResult.DifficultySum)
+			utils.AssertEqual(t, 1000, workResult.DifficultySum)
 			utils.AssertEqual(t, "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm", workResult.BanAddress)
 		} else {
 			utils.AssertEqual(t, 1, workResult.UnpaidCount)
-			utils.AssertEqual(t, 5, workResult.DifficultySum)
+			utils.AssertEqual(t, 500, workResult.DifficultySum)
 		}
 	}
 
