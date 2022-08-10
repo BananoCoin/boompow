@@ -135,6 +135,8 @@ var WSService *websocket.WebsocketService
 func main() {
 	// Parse flags
 	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
+	benchmark := flag.Int("benchmark", 0, "Run a benchmark for the given number of random hashes")
+	benchmarkDifficulty := flag.Int("benchmark-difficulty", 64, "The difficulty multiplier for the benchmark")
 	argEmail := flag.String("email", "", "The email (username) to use for the worker (optional)")
 	argPassword := flag.String("password", "", "The password to use for the worker (optional)")
 	registerProvider := flag.Bool("register-provider", false, "Register to be a provider (optional)")
@@ -154,6 +156,12 @@ func main() {
 		fmt.Printf("\n⚡ Using GPU")
 		fmt.Printf("\nPlatform: %s", gpuInfo.platformName)
 		fmt.Printf("\nVendor: %s\n\n", gpuInfo.vendor)
+	}
+
+	// Check benchmark
+	if *benchmark > 0 {
+		work.RunBenchmark(*benchmark, *benchmarkDifficulty)
+		os.Exit(0)
 	}
 
 	// Define context
