@@ -67,7 +67,7 @@ type Mutation {
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
-  generateServiceToken: String!
+  generateOrGetServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
 }

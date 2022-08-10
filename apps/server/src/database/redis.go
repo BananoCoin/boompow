@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -188,4 +189,19 @@ func (r *redisManager) GetServiceTokenUser(serviceToken string) (string, error) 
 		return "", err
 	}
 	return user, nil
+}
+
+func (r *redisManager) GetServiceTokenForUser(userID uuid.UUID) (string, error) {
+	userIdStr := userID.String()
+	ret, err := r.Hgetall("servicetokens")
+	if err != nil {
+		return "", err
+	}
+
+	for k, v := range ret {
+		if v == userIdStr {
+			return k, nil
+		}
+	}
+	return "", errors.New("No Token")
 }

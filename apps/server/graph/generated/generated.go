@@ -51,13 +51,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateUser              func(childComplexity int, input model.UserInput) int
-		GenerateServiceToken    func(childComplexity int) int
-		Login                   func(childComplexity int, input model.LoginInput) int
-		RefreshToken            func(childComplexity int, input model.RefreshTokenInput) int
-		ResendConfirmationEmail func(childComplexity int, input model.ResendConfirmationEmailInput) int
-		ResetPassword           func(childComplexity int, input model.ResetPasswordInput) int
-		WorkGenerate            func(childComplexity int, input model.WorkGenerateInput) int
+		CreateUser                func(childComplexity int, input model.UserInput) int
+		GenerateOrGetServiceToken func(childComplexity int) int
+		Login                     func(childComplexity int, input model.LoginInput) int
+		RefreshToken              func(childComplexity int, input model.RefreshTokenInput) int
+		ResendConfirmationEmail   func(childComplexity int, input model.ResendConfirmationEmailInput) int
+		ResetPassword             func(childComplexity int, input model.ResetPasswordInput) int
+		WorkGenerate              func(childComplexity int, input model.WorkGenerateInput) int
 	}
 
 	Query struct {
@@ -88,7 +88,7 @@ type MutationResolver interface {
 	Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 	WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error)
-	GenerateServiceToken(ctx context.Context) (string, error)
+	GenerateOrGetServiceToken(ctx context.Context) (string, error)
 	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
 	ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error)
 }
@@ -134,12 +134,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.UserInput)), true
 
-	case "Mutation.generateServiceToken":
-		if e.complexity.Mutation.GenerateServiceToken == nil {
+	case "Mutation.generateOrGetServiceToken":
+		if e.complexity.Mutation.GenerateOrGetServiceToken == nil {
 			break
 		}
 
-		return e.complexity.Mutation.GenerateServiceToken(childComplexity), true
+		return e.complexity.Mutation.GenerateOrGetServiceToken(childComplexity), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -443,7 +443,7 @@ type Mutation {
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
-  generateServiceToken: String!
+  generateOrGetServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
 }
@@ -920,8 +920,8 @@ func (ec *executionContext) fieldContext_Mutation_workGenerate(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_generateServiceToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_generateServiceToken(ctx, field)
+func (ec *executionContext) _Mutation_generateOrGetServiceToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_generateOrGetServiceToken(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -934,7 +934,7 @@ func (ec *executionContext) _Mutation_generateServiceToken(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GenerateServiceToken(rctx)
+		return ec.resolvers.Mutation().GenerateOrGetServiceToken(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -951,7 +951,7 @@ func (ec *executionContext) _Mutation_generateServiceToken(ctx context.Context, 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_generateServiceToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_generateOrGetServiceToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -3840,10 +3840,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "generateServiceToken":
+		case "generateOrGetServiceToken":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_generateServiceToken(ctx, field)
+				return ec._Mutation_generateOrGetServiceToken(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

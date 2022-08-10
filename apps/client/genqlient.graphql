@@ -18,3 +18,7 @@ mutation refreshToken($input: RefreshTokenInput!) {
 mutation resendConfirmationEmail($input: ResendConfirmationEmailInput!) {
   resendConfirmationEmail(input: $input)
 }
+
+mutation generateOrGetServiceToken {
+  generateOrGetServiceToken
+}

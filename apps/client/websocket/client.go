@@ -82,7 +82,8 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 				var workCancelCmd serializableModels.ClientMessage
 				queue.Delete(workCancelCmd.Hash)
 			} else if serverMsg.MessageType == serializableModels.BlockAwarded {
-				fmt.Printf("\n💰 Received block awarded %s, %f, %f", serverMsg.Hash, serverMsg.PercentOfPool, serverMsg.EstimatedAward)
+				fmt.Printf("\n💰 Received block awarded %s", serverMsg.Hash)
+				fmt.Printf("\n💰 Your current estimated next payout is %f%% or %f BAN", serverMsg.PercentOfPool, serverMsg.EstimatedAward)
 			} else {
 				fmt.Printf("\n🦋 Received unknown message %s\n", serverMsg.MessageType)
 			}

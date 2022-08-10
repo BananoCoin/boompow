@@ -119,6 +119,16 @@ type createUserResponse struct {
 // GetCreateUser returns createUserResponse.CreateUser, and is useful for accessing the field via an interface.
 func (v *createUserResponse) GetCreateUser() createUserCreateUser { return v.CreateUser }
 
+// generateOrGetServiceTokenResponse is returned by generateOrGetServiceToken on success.
+type generateOrGetServiceTokenResponse struct {
+	GenerateOrGetServiceToken string `json:"generateOrGetServiceToken"`
+}
+
+// GetGenerateOrGetServiceToken returns generateOrGetServiceTokenResponse.GenerateOrGetServiceToken, and is useful for accessing the field via an interface.
+func (v *generateOrGetServiceTokenResponse) GetGenerateOrGetServiceToken() string {
+	return v.GenerateOrGetServiceToken
+}
+
 // loginUserLoginLoginResponse includes the requested fields of the GraphQL type LoginResponse.
 type loginUserLoginLoginResponse struct {
 	Token string `json:"token"`
@@ -175,6 +185,32 @@ mutation createUser ($input: UserInput!) {
 	var err error
 
 	var data createUserResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func generateOrGetServiceToken(
+	ctx context.Context,
+	client graphql.Client,
+) (*generateOrGetServiceTokenResponse, error) {
+	req := &graphql.Request{
+		OpName: "generateOrGetServiceToken",
+		Query: `
+mutation generateOrGetServiceToken {
+	generateOrGetServiceToken
+}
+`,
+	}
+	var err error
+
+	var data generateOrGetServiceTokenResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

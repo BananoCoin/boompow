@@ -18,8 +18,22 @@ const (
 
 var client graphql.Client
 
+type authedTransport struct {
+	wrapped http.RoundTripper
+	token   string
+}
+
+func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", t.token)
+	return t.wrapped.RoundTrip(req)
+}
+
 func InitGQLClient(url string) {
 	client = graphql.NewClient(url, http.DefaultClient)
+}
+
+func InitGQLClientWithToken(url string, token string) {
+	client = graphql.NewClient(url, &http.Client{Transport: &authedTransport{wrapped: http.DefaultTransport, token: token}})
 }
 
 func RegisterProvider(ctx context.Context, email string, password string, banAddress string) (*createUserResponse, error) {
@@ -93,6 +107,17 @@ func ResendConfirmationEmail(ctx context.Context, email string) (*resendConfirma
 
 	if err != nil {
 		fmt.Printf("Error resending email %v", err)
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func GenerateServiceToken(ctx context.Context) (*generateOrGetServiceTokenResponse, error) {
+	resp, err := generateOrGetServiceToken(ctx, client)
+
+	if err != nil {
+		fmt.Printf("Error generating service token %v", err)
 		return nil, err
 	}
 

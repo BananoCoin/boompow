@@ -121,19 +121,24 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	return resp.Result, nil
 }
 
-// GenerateServiceToken is the resolver for the generateServiceToken field.
-func (r *mutationResolver) GenerateServiceToken(ctx context.Context) (string, error) {
+// GenerateOrGetServiceToken is the resolver for the generateOrGetServiceToken field.
+func (r *mutationResolver) GenerateOrGetServiceToken(ctx context.Context) (string, error) {
 	// Require authentication
 	requester := middleware.AuthorizedRequester(ctx)
 	if requester == nil {
 		return "", fmt.Errorf("access denied")
 	}
 
-	// Generate token
-	token := r.UserRepo.GenerateServiceToken()
+	// Get token
+	token, err := database.GetRedisDB().GetServiceTokenForUser(requester.User.ID)
 
-	if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != nil {
-		return "", fmt.Errorf("error generating token")
+	if err != nil {
+		// Generate token
+		token = r.UserRepo.GenerateServiceToken()
+
+		if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != nil {
+			return "", fmt.Errorf("error generating token")
+		}
 	}
 
 	return token, nil

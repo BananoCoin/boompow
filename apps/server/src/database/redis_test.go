@@ -72,4 +72,8 @@ func TestRedis(t *testing.T) {
 	utils.AssertEqual(t, uid.String(), uidStr)
 	_, err = redis.GetServiceTokenUser("nonexistentoken")
 	utils.AssertEqual(t, true, err != nil)
+
+	tokenStr, err := redis.GetServiceTokenForUser(uid)
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, "token", tokenStr)
 }

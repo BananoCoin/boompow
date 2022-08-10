@@ -143,6 +143,7 @@ func main() {
 	registerProvider := flag.Bool("register-provider", false, "Register to be a provider (optional)")
 	registerService := flag.Bool("register-service", false, "Register to be a service/work requester (optional)")
 	resendConfirmationEmail := flag.Bool("resend-confirmation-email", false, "Resend the confirmation email (optional)")
+	generateServiceToken := flag.Bool("generate-service-token", false, "Generate a service token (optional)")
 	flag.Parse()
 	NConcurrentWorkers = *threadCount
 
@@ -392,6 +393,79 @@ func main() {
 			fmt.Printf("\n\n✅ Successfully registered %s, check your email for a confirmation link.\n", email)
 			fmt.Printf("\nAfter you confirm your email address, you will receive a follow up email once you are approved to use the service with instructions on getting started.\n\n")
 			os.Exit(0)
+		}
+	}
+
+	if *generateServiceToken {
+		// Loop to get username and password and login
+		for {
+			// Get username/password
+			reader := bufio.NewReader(os.Stdin)
+
+			var email string
+
+			if *argEmail == "" {
+				fmt.Print("➡️ Enter Email: ")
+				rawEmail, err := reader.ReadString('\n')
+
+				if err != nil {
+					fmt.Printf("\n⚠️ Error reading email")
+					continue
+				}
+
+				email = strings.TrimSpace(rawEmail)
+
+				if !validation.IsValidEmail(email) {
+					fmt.Printf("\n⚠️ Invalid email\n\n")
+					continue
+				}
+			} else {
+				if !validation.IsValidEmail(*argEmail) {
+					fmt.Printf("\n⚠️ Invalid email\n\n")
+					os.Exit(1)
+				}
+				email = *argEmail
+			}
+
+			var password string
+
+			if *argPassword == "" {
+				fmt.Print("➡️ Enter Password: ")
+				bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+
+				if err != nil {
+					fmt.Printf("\n⚠️ Error reading password")
+					continue
+				}
+
+				password = strings.TrimSpace(string(bytePassword))
+			} else {
+				password = *argPassword
+			}
+
+			// Login
+			fmt.Printf("\n\n🔒 Logging in...")
+			resp, gqlErr := gql.Login(ctx, email, password)
+			if gqlErr == gql.InvalidUsernamePasssword {
+				fmt.Printf("\n❌ Invalid email or password\n\n")
+				if *argPassword != "" {
+					os.Exit(1)
+				}
+				continue
+			} else if gqlErr == gql.ServerError {
+				fmt.Printf("\n💥 Error reaching server, try again later\n")
+				os.Exit(1)
+			}
+			fmt.Printf("\n\n🔓 Successfully logged in as %s\n\n", email)
+			gql.InitGQLClientWithToken(GraphQLURL, resp.Login.Token)
+			tokenRsp, err := gql.GenerateServiceToken(ctx)
+			if err != nil {
+				fmt.Printf("\n💥 Error generating token %v\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Printf("\nGenerated token: %s\n\n", tokenRsp.GenerateOrGetServiceToken)
+			os.Exit(1)
 		}
 	}
 
