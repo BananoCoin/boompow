@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/bananocoin/boompow-next/apps/server/src/config"
-	"github.com/bananocoin/boompow-next/libs/utils"
+	"github.com/bananocoin/boompow/apps/server/src/config"
+	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/go-redis/redis/v9"
 	"github.com/golang/glog"
 	"github.com/google/uuid"

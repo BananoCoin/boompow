@@ -10,7 +10,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/bananocoin/boompow-next/libs/utils/ed25519/edwards25519"
+	"github.com/bananocoin/boompow/libs/utils/ed25519/edwards25519"
 )
 
 type zeroReader struct{}

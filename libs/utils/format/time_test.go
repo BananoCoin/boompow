@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
+	utils "github.com/bananocoin/boompow/libs/utils/testing"
 )
 
 func TestFormatTime(t *testing.T) {

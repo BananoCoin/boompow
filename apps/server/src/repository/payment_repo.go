@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/bananocoin/boompow-next/apps/server/src/models"
-	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow/apps/server/src/models"
+	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"gorm.io/gorm"
 )
 

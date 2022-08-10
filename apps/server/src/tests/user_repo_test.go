@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bananocoin/boompow-next/apps/server/graph/model"
-	"github.com/bananocoin/boompow-next/apps/server/src/database"
-	"github.com/bananocoin/boompow-next/apps/server/src/models"
-	"github.com/bananocoin/boompow-next/apps/server/src/repository"
-	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
+	"github.com/bananocoin/boompow/apps/server/graph/model"
+	"github.com/bananocoin/boompow/apps/server/src/database"
+	"github.com/bananocoin/boompow/apps/server/src/models"
+	"github.com/bananocoin/boompow/apps/server/src/repository"
+	utils "github.com/bananocoin/boompow/libs/utils/testing"
 )
 
 // Test user repo

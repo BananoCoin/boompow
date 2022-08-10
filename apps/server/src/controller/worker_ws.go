@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bananocoin/boompow-next/apps/server/src/middleware"
-	"github.com/bananocoin/boompow-next/libs/utils/net"
+	"github.com/bananocoin/boompow/apps/server/src/middleware"
+	"github.com/bananocoin/boompow/libs/utils/net"
 	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 )

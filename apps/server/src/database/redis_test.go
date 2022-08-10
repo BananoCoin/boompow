@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
+	utils "github.com/bananocoin/boompow/libs/utils/testing"
 	"github.com/google/uuid"
 )
 

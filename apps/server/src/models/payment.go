@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow/libs/models"
 	"github.com/google/uuid"
 )
 

@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"errors"
 
-	serializableModels "github.com/bananocoin/boompow-next/libs/models"
-	"github.com/bananocoin/boompow-next/libs/utils/validation"
+	serializableModels "github.com/bananocoin/boompow/libs/models"
+	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/golang/glog"
 	"github.com/inkeliz/nanopow"
 )

@@ -8,9 +8,9 @@ This is the BoomPoW server, it coordinates work requests from users/services to 
 
 ## About
 
-The server is written in [GOLang](https://go.dev) and requires Postgres and Redis, you can reference the [docker-compose.yaml](https://github.com/BananoCoin/boompow-next/blob/master/docker-compose.yaml) in the workspace root for details on how to run the server.
+The server is written in [GOLang](https://go.dev) and requires Postgres and Redis, you can reference the [docker-compose.yaml](https://github.com/bananocoin/boompow/blob/master/docker-compose.yaml) in the workspace root for details on how to run the server.
 
-It provides a GraphQL API at `/graphql` and the schema can be seen [here](https://github.com/BananoCoin/boompow-next/blob/master/apps/server/graph/schema.graphqls)
+It provides a GraphQL API at `/graphql` and the schema can be seen [here](https://github.com/bananocoin/boompow/blob/master/apps/server/graph/schema.graphqls)
 
 A secure websocket endpoint is also available at `/ws/worker` this is the channel that the providers and server use to communicate work requests and responses.
 

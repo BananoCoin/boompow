@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bananocoin/boompow-next/apps/server/src/database"
-	"github.com/bananocoin/boompow-next/apps/server/src/repository"
-	serializableModels "github.com/bananocoin/boompow-next/libs/models"
-	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
+	"github.com/bananocoin/boompow/apps/server/src/database"
+	"github.com/bananocoin/boompow/apps/server/src/repository"
+	serializableModels "github.com/bananocoin/boompow/libs/models"
+	utils "github.com/bananocoin/boompow/libs/utils/testing"
 )
 
 // Test stats repo

@@ -20,10 +20,10 @@ github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNg
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0 h1:jfIu9sQUG6Ig+0+Ap1h4unLjW6YQJpKZVmUzxsD4E/Q=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
-github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f h1:toPefEHt2OK4X+Tzw3fIdC12MIQ8TYNPmR2hGgsC+dU=
-github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f/go.mod h1:8KkHP6eDzurg1G/06baS1+fedRGQ4a+KITLrHohY1Wk=
-github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f h1:hQ9q9fkqfqA05xSdsn37XfaRPX1CSkizeBC3ktZNp50=
-github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f/go.mod h1:Pz/hSa0pSllDUXgIY94rFxLtuJ2iqw6hXD22nrQ294I=
+github.com/bananocoin/boompow/libs/models v0.0.0-20220804201902-117208df161f h1:toPefEHt2OK4X+Tzw3fIdC12MIQ8TYNPmR2hGgsC+dU=
+github.com/bananocoin/boompow/libs/models v0.0.0-20220804201902-117208df161f/go.mod h1:8KkHP6eDzurg1G/06baS1+fedRGQ4a+KITLrHohY1Wk=
+github.com/bananocoin/boompow/libs/utils v0.0.0-20220804201902-117208df161f h1:hQ9q9fkqfqA05xSdsn37XfaRPX1CSkizeBC3ktZNp50=
+github.com/bananocoin/boompow/libs/utils v0.0.0-20220804201902-117208df161f/go.mod h1:Pz/hSa0pSllDUXgIY94rFxLtuJ2iqw6hXD22nrQ294I=
 github.com/bitfield/script v0.20.2 h1:4DexsRtBILVMEn3EZwHbtJdDqdk43sXI8gM3F04JXgs=
 github.com/bitfield/script v0.20.2/go.mod h1:l3AZPVAtKQrL03bwh7nlNTUtgrgSWurpJSbtqspYrOA=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=

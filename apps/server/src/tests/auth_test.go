@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bananocoin/boompow-next/apps/server/src/database"
-	"github.com/bananocoin/boompow-next/apps/server/src/middleware"
-	"github.com/bananocoin/boompow-next/apps/server/src/repository"
-	"github.com/bananocoin/boompow-next/libs/utils/auth"
-	utils "github.com/bananocoin/boompow-next/libs/utils/testing"
+	"github.com/bananocoin/boompow/apps/server/src/database"
+	"github.com/bananocoin/boompow/apps/server/src/middleware"
+	"github.com/bananocoin/boompow/apps/server/src/repository"
+	"github.com/bananocoin/boompow/libs/utils/auth"
+	utils "github.com/bananocoin/boompow/libs/utils/testing"
 	"github.com/go-chi/chi"
 )
 

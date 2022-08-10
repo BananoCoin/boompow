@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/BananoCoin/boompow-next)](https://github.com/BananoCoin/boompow-next/blob/master/LICENSE) [![CI](https://github.com/BananoCoin/boompow-next/workflows/CI/badge.svg)](https://github.com/BananoCoin/boompow-next/actions?query=workflow%3ACI)
+[![License](https://img.shields.io/github/license/BananoCoin/boompow-next)](https://github.com/bananocoin/boompow/blob/master/LICENSE) [![CI](https://github.com/bananocoin/boompow/workflows/CI/badge.svg)](https://github.com/bananocoin/boompow/actions?query=workflow%3ACI)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/BananoCoin/boompow-next/master/logo.svg" width="300">
@@ -36,9 +36,9 @@ BoomPow is going to reward contributors with BANANO. Similar to mining, if you p
 
 This is a GOLang "monorepo" that contains all BoomPoW Services
 
-- [Server](https://github.com/BananoCoin/boompow-next/blob/master/apps/server)
-- [Client](https://github.com/BananoCoin/boompow-next/blob/master/apps/client)
-- [Moneybags (Payment Cron)](https://github.com/BananoCoin/boompow-next/blob/master/services/moneybags)
+- [Server](https://github.com/bananocoin/boompow/blob/master/apps/server)
+- [Client](https://github.com/bananocoin/boompow/blob/master/apps/client)
+- [Moneybags (Payment Cron)](https://github.com/bananocoin/boompow/blob/master/services/moneybags)
 
 ## Contributing
 
@@ -65,7 +65,7 @@ Once you have docker installed and running, as well as docker-compose, you can s
 # To run the server
 > dcgo run github.com/bananocoin/boomow-next/apps/server server
 # To run the client
-> dcgo run github.com/bananocoin/boompow-next/apps/client
+> dcgo run github.com/bananocoin/boompow/apps/client
 ```
 
 To get an interactive shell in the container
@@ -76,6 +76,6 @@ dczsh
 
 ## Issues
 
-For issues, create tickets on the [Issues Page](https://github.com/BananoCoin/boompow-next/issues)
+For issues, create tickets on the [Issues Page](https://github.com/bananocoin/boompow/issues)
 
 The [BANANO discord server](https://chat.banano.cc) has a channel dedicated to to boompow if you have general questions about the service.

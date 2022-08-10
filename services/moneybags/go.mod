@@ -1,16 +1,16 @@
-module github.com/bananocoin/boompow-next/services/moneybags
+module github.com/bananocoin/boompow/services/moneybags
 
 go 1.19
 
 require (
-	github.com/bananocoin/boompow-next/apps/server v0.0.0-20220807194001-eecd5ff136c0
+	github.com/bananocoin/boompow/apps/server v0.0.0-20220807194001-eecd5ff136c0
 	github.com/joho/godotenv v1.4.0
 )
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/alicebob/miniredis/v2 v2.22.0 // indirect
-	github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f // indirect
+	github.com/bananocoin/boompow/libs/utils v0.0.0-20220804201902-117208df161f // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis/v9 v9.0.0-beta.2 // indirect

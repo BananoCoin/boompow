@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bananocoin/boompow-next/apps/server/graph/model"
-	"github.com/bananocoin/boompow-next/apps/server/src/database"
-	"github.com/bananocoin/boompow-next/apps/server/src/email"
-	"github.com/bananocoin/boompow-next/apps/server/src/models"
-	"github.com/bananocoin/boompow-next/libs/utils/auth"
-	"github.com/bananocoin/boompow-next/libs/utils/validation"
+	"github.com/bananocoin/boompow/apps/server/graph/model"
+	"github.com/bananocoin/boompow/apps/server/src/database"
+	"github.com/bananocoin/boompow/apps/server/src/email"
+	"github.com/bananocoin/boompow/apps/server/src/models"
+	"github.com/bananocoin/boompow/libs/utils/auth"
+	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

@@ -1,6 +1,6 @@
 package graph
 
-import "github.com/bananocoin/boompow-next/apps/server/src/repository"
+import "github.com/bananocoin/boompow/apps/server/src/repository"
 
 // This file will not be regenerated automatically.
 //

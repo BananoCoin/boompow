@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/bananocoin/boompow-next/apps/server/src/database"
-	"github.com/bananocoin/boompow-next/apps/server/src/models"
-	"github.com/bananocoin/boompow-next/apps/server/src/repository"
-	"github.com/bananocoin/boompow-next/libs/utils/auth"
+	"github.com/bananocoin/boompow/apps/server/src/database"
+	"github.com/bananocoin/boompow/apps/server/src/models"
+	"github.com/bananocoin/boompow/apps/server/src/repository"
+	"github.com/bananocoin/boompow/libs/utils/auth"
 	"github.com/google/uuid"
 )
 

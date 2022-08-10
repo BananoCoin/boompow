@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/bananocoin/boompow-next/libs/utils"
+	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/dgrijalva/jwt-go"
 )
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bananocoin/boompow-next/apps/client/models"
-	"github.com/bananocoin/boompow-next/apps/client/websocket"
-	serializableModels "github.com/bananocoin/boompow-next/libs/models"
+	"github.com/bananocoin/boompow/apps/client/models"
+	"github.com/bananocoin/boompow/apps/client/websocket"
+	serializableModels "github.com/bananocoin/boompow/libs/models"
 )
 
 type WorkProcessor struct {

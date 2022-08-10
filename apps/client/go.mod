@@ -1,11 +1,11 @@
-module github.com/bananocoin/boompow-next/apps/client
+module github.com/bananocoin/boompow/apps/client
 
 go 1.19
 
 require (
 	github.com/Khan/genqlient v0.5.0
-	github.com/bananocoin/boompow-next/libs/models v0.0.0-20220804201902-117208df161f
-	github.com/bananocoin/boompow-next/libs/utils v0.0.0-20220804201902-117208df161f
+	github.com/bananocoin/boompow/libs/models v0.0.0-20220804201902-117208df161f
+	github.com/bananocoin/boompow/libs/utils v0.0.0-20220804201902-117208df161f
 	github.com/go-co-op/gocron v1.16.2
 	github.com/golang/glog v1.0.0
 	github.com/gorilla/websocket v1.5.0

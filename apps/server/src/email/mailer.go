@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/bananocoin/boompow-next/apps/server/src/config"
-	"github.com/bananocoin/boompow-next/apps/server/src/models"
-	"github.com/bananocoin/boompow-next/libs/utils"
+	"github.com/bananocoin/boompow/apps/server/src/config"
+	"github.com/bananocoin/boompow/apps/server/src/models"
+	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/golang/glog"
 )
 
