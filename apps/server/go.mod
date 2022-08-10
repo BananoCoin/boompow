@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/99designs/gqlgen v0.17.13
 	github.com/alicebob/miniredis/v2 v2.22.0
-	github.com/bananocoin/boompow/libs/models v0.0.0-20220804201902-117208df161f
-	github.com/bananocoin/boompow/libs/utils v0.0.0-20220804201902-117208df161f
+	github.com/bananocoin/boompow/libs/models v0.0.0-20220810021633-b4ba8d652a46
+	github.com/bananocoin/boompow/libs/utils v0.0.0-20220810021633-b4ba8d652a46
 	github.com/bitfield/script v0.20.2
 	github.com/go-chi/chi v1.5.4
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
@@ -21,14 +21,12 @@ require (
 
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect
-	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/inkeliz/nanopow v0.0.0-20210531083139-73484259580f // indirect
 	github.com/itchyny/gojq v0.12.8 // indirect
 	github.com/itchyny/timefmt-go v0.1.3 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -45,7 +43,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/exp/errors v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/sys v0.0.0-20220804182731-e052cef7d300 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
