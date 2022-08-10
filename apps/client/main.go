@@ -26,6 +26,7 @@ import (
 // Variables
 var GraphQLURL = "http://localhost:8080/graphql"
 var WSUrl = "ws://localhost:8080/ws/worker"
+var Version = "dev"
 
 // For pretty text
 func printBanner() {
@@ -144,8 +145,14 @@ func main() {
 	registerService := flag.Bool("register-service", false, "Register to be a service/work requester (optional)")
 	resendConfirmationEmail := flag.Bool("resend-confirmation-email", false, "Resend the confirmation email (optional)")
 	generateServiceToken := flag.Bool("generate-service-token", false, "Generate a service token (optional)")
+	version := flag.Bool("version", false, "Display the version")
 	flag.Parse()
 	NConcurrentWorkers = *threadCount
+
+	if *version {
+		fmt.Printf("BoomPOW version: %s\n", Version)
+		os.Exit(0)
+	}
 
 	printBanner()
 
