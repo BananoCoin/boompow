@@ -3,6 +3,7 @@ module github.com/bananocoin/boompow/apps/client
 go 1.19
 
 require (
+	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006
 	github.com/Khan/genqlient v0.5.0
 	github.com/bananocoin/boompow/libs/models v0.0.0-20220810021633-b4ba8d652a46
 	github.com/bananocoin/boompow/libs/utils v0.0.0-20220810021633-b4ba8d652a46
@@ -16,7 +17,6 @@ require (
 )
 
 require (
-	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.4.7 // indirect
