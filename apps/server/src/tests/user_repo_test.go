@@ -32,7 +32,7 @@ func TestUserRepo(t *testing.T) {
 	banAddress := "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm"
 	user, err := userRepo.CreateUser(&model.UserInput{
 		Email:      "joe@gmail.com",
-		Password:   "password",
+		Password:   "Password123!",
 		Type:       model.UserType(models.PROVIDER),
 		BanAddress: &banAddress,
 	}, false)
@@ -62,7 +62,7 @@ func TestUserRepo(t *testing.T) {
 	// Test authenticate
 	authenticated := userRepo.Authenticate(&model.LoginInput{
 		Email:    "joe@gmail.com",
-		Password: "password",
+		Password: "Password123!",
 	})
 	utils.AssertEqual(t, true, authenticated)
 	authenticated = userRepo.Authenticate(&model.LoginInput{
