@@ -11,15 +11,17 @@ import (
 )
 
 type WebsocketService struct {
-	WS        *RecConn
-	AuthToken string
-	URL       string
+	WS            *RecConn
+	AuthToken     string
+	URL           string
+	maxDifficulty int
 }
 
-func NewWebsocketService(url string) *WebsocketService {
+func NewWebsocketService(url string, maxDifficulty int) *WebsocketService {
 	return &WebsocketService{
-		WS:  &RecConn{},
-		URL: url,
+		WS:            &RecConn{},
+		URL:           url,
+		maxDifficulty: maxDifficulty,
 	}
 }
 
@@ -61,6 +63,10 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 
 			// Determine type of message
 			if serverMsg.MessageType == serializableModels.WorkGenerate {
+				if serverMsg.DifficultyMultiplier > ws.maxDifficulty {
+					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx above our max %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.maxDifficulty)
+					continue
+				}
 				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
 
 				if len(serverMsg.Hash) != 64 {

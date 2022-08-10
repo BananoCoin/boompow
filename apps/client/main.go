@@ -135,6 +135,7 @@ var WSService *websocket.WebsocketService
 func main() {
 	// Parse flags
 	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
+	maxDifficulty := flag.Int("max-difficulty", 128, "The maximum work difficulty to compute, less than this will be ignored")
 	benchmark := flag.Int("benchmark", 0, "Run a benchmark for the given number of random hashes")
 	benchmarkDifficulty := flag.Int("benchmark-difficulty", 64, "The difficulty multiplier for the benchmark")
 	argEmail := flag.String("email", "", "The email (username) to use for the worker (optional)")
@@ -395,7 +396,7 @@ func main() {
 	}
 
 	// Create WS Service
-	WSService = websocket.NewWebsocketService(WSUrl)
+	WSService = websocket.NewWebsocketService(WSUrl, *maxDifficulty)
 
 	// Loop to get username and password and login
 	for {
