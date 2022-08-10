@@ -9,3 +9,10 @@ type ConfirmationEmailData struct {
 type ResetPasswordEmailData struct {
 	ResetPasswordLink string
 }
+
+type ConfirmServiceEmailData struct {
+	EmailAddress       string
+	ServiceName        string
+	ServiceWebsite     string
+	ApproveServiceLink string
+}

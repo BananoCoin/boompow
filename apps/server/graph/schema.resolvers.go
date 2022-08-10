@@ -17,7 +17,6 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/controller"
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
-	"github.com/bananocoin/boompow/apps/server/src/models"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
@@ -168,59 +167,14 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetP
 	return token, nil
 }
 
-// GetAllUsers is the resolver for the GetAllUsers field.
-func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) {
-	users, err := r.UserRepo.GetAllUsers()
-	if err != nil {
-		return nil, err
-	}
-
-	// Create return for GQL using primitive types
-	var gqlUsers []*model.User
-	for _, user := range users {
-		gqlUsers = append(gqlUsers, &model.User{
-			ID:        user.ID.String(),
-			Email:     user.Email,
-			CreatedAt: utils.GenerateISOString(user.CreatedAt),
-			UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
-			Type:      model.UserType(user.Type),
-		})
-	}
-	return gqlUsers, nil
-}
-
-// GetUser is the resolver for the getUser field.
-func (r *queryResolver) GetUser(ctx context.Context, id *string, email *string) (*model.User, error) {
-	var err error
-	var user *models.User
-
-	if id != nil {
-		userID, err := uuid.Parse(*id)
-		if err != nil {
-			return nil, err
-		}
-		user, err = r.UserRepo.GetUser(&userID, nil)
-	}
-	if email != nil {
-		user, err = r.UserRepo.GetUser(nil, email)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	selectedUser := &model.User{
-		ID:        user.ID.String(),
-		Email:     user.Email,
-		CreatedAt: utils.GenerateISOString(user.CreatedAt),
-		UpdatedAt: utils.GenerateISOString(user.UpdatedAt),
-	}
-	return selectedUser, nil
-}
-
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error) {
 	return r.UserRepo.VerifyEmailToken(&input)
+}
+
+// VerifyService is the resolver for the verifyService field.
+func (r *queryResolver) VerifyService(ctx context.Context, input model.VerifyServiceInput) (bool, error) {
+	return r.UserRepo.VerifyService(&input)
 }
 
 // Stats is the resolver for the stats field.

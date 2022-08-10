@@ -22,6 +22,39 @@ func InitGQLClient(url string) {
 	client = graphql.NewClient(url, http.DefaultClient)
 }
 
+func RegisterProvider(ctx context.Context, email string, password string, banAddress string) (*createUserResponse, error) {
+	resp, err := createUser(ctx, client, UserInput{
+		Email:      email,
+		Password:   password,
+		Type:       UserTypeProvider,
+		BanAddress: banAddress,
+	})
+
+	if err != nil {
+		fmt.Printf("Error creating user in %v", err)
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func RegisterService(ctx context.Context, email string, password string, serviceName string, serviceWebsite string) (*createUserResponse, error) {
+	resp, err := createUser(ctx, client, UserInput{
+		Email:          email,
+		Password:       password,
+		Type:           UserTypeRequester,
+		ServiceName:    serviceName,
+		ServiceWebsite: serviceWebsite,
+	})
+
+	if err != nil {
+		fmt.Printf("Error creating user in %v", err)
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func Login(ctx context.Context, email string, password string) (*loginUserResponse, GQLError) {
 	resp, err := loginUser(ctx, client, LoginInput{
 		Email:    email,

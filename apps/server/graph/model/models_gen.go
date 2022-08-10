@@ -39,13 +39,20 @@ type User struct {
 }
 
 type UserInput struct {
-	Email      string   `json:"email"`
-	Password   string   `json:"password"`
-	Type       UserType `json:"type"`
-	BanAddress *string  `json:"banAddress"`
+	Email          string   `json:"email"`
+	Password       string   `json:"password"`
+	Type           UserType `json:"type"`
+	BanAddress     *string  `json:"banAddress"`
+	ServiceName    *string  `json:"serviceName"`
+	ServiceWebsite *string  `json:"serviceWebsite"`
 }
 
 type VerifyEmailInput struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
+}
+
+type VerifyServiceInput struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
 }

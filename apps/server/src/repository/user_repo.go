@@ -3,6 +3,8 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/bananocoin/boompow/apps/server/graph/model"
 	"github.com/bananocoin/boompow/apps/server/src/database"
@@ -10,7 +12,9 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	"github.com/bananocoin/boompow/libs/utils/validation"
+	"github.com/golang/glog"
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -22,6 +26,7 @@ type UserRepo interface {
 	GetAllUsers() ([]*models.User, error)
 	Authenticate(loginInput *model.LoginInput) bool
 	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
+	VerifyService(verifyService *model.VerifyServiceInput) (bool, error)
 	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
 	GenerateServiceToken() string
 }
@@ -81,8 +86,34 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	if !validation.IsValidEmail(userInput.Email) {
 		return nil, errors.New("Invalid email")
 	}
+
+	// Providers must have ban address
 	if models.UserType(userInput.Type) == models.PROVIDER && (userInput.BanAddress == nil || !validation.ValidateAddress(*userInput.BanAddress)) {
 		return nil, errors.New("Invalid ban_ address")
+	}
+
+	// Requesters must have name and description
+	if models.UserType(userInput.Type) == models.REQUESTER && (userInput.ServiceName == nil || userInput.ServiceWebsite == nil) {
+		return nil, errors.New("Service name and service website are required")
+	}
+
+	if models.UserType(userInput.Type) == models.REQUESTER {
+		_, err := url.ParseRequestURI(*userInput.ServiceWebsite)
+		if err != nil {
+			return nil, errors.New("Invalid website URL")
+		}
+		if strings.HasPrefix(*userInput.ServiceWebsite, "http://") {
+			return nil, errors.New("Only https websites are supported")
+		}
+
+		if len(*userInput.ServiceName) < 3 {
+			return nil, errors.New("Service name must be at least 3 characters long")
+		}
+	}
+
+	err := validation.ValidatePassword(userInput.Password)
+	if err != nil {
+		return nil, err
 	}
 
 	// Hash password
@@ -92,9 +123,12 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	}
 
 	user := &models.User{
-		Email:    userInput.Email,
-		Password: hashedPassword,
-		Type:     models.UserType(userInput.Type),
+		Email:          userInput.Email,
+		Password:       hashedPassword,
+		Type:           models.UserType(userInput.Type),
+		BanAddress:     userInput.BanAddress,
+		ServiceName:    userInput.ServiceName,
+		ServiceWebsite: userInput.ServiceWebsite,
 	}
 	if userInput.BanAddress != nil {
 		user.BanAddress = userInput.BanAddress
@@ -102,7 +136,10 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	err = s.Db.Create(&user).Error
 
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.(*pgconn.PgError).Message, "duplicate key value violates unique constraint") {
+			return nil, errors.New("Email already exists")
+		}
+		return nil, errors.New("Unknown error creating user")
 	}
 
 	// Generate confirmation token and store in database
@@ -148,7 +185,7 @@ func (s *UserService) GenerateResetPasswordRequest(resetPasswordInput *model.Res
 func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {
 	dbVerificationCode, err := database.GetRedisDB().GetConfirmationToken(verifyEmail.Email)
 	if err != nil {
-		return false, err
+		return false, errors.New("Invalid verification code, it may have expired")
 	} else if dbVerificationCode != verifyEmail.Token {
 		return false, errors.New("Invalid verification code")
 	}
@@ -156,9 +193,49 @@ func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (boo
 	if res := s.Db.Model(&models.User{}).Where("email = ?", verifyEmail.Email).Update("email_verified", true); res.RowsAffected > 0 {
 		// Email has been marked verified, delete the token
 		database.GetRedisDB().DeleteConfirmationToken(verifyEmail.Email)
+		// Get User
+		user, err := s.GetUser(nil, &verifyEmail.Email)
+		if err != nil {
+			glog.Errorf("Failed to retrieve user after verifying email: %v", err)
+			// Don't choke because of this
+			return true, nil
+		}
+
+		// For requesters, send another email for us to approve them to request work
+		if user.Type == models.REQUESTER {
+			// Generate token
+			approvalToken, err := auth.GenerateRandHexString()
+			if err != nil {
+				glog.Errorf("Failed generate approvalToken: %v", err)
+				// Don't choke because of this
+				return true, nil
+			}
+			// Store token in redis
+			database.GetRedisDB().SetApproveServiceToken(verifyEmail.Email, approvalToken)
+			// Send email with token
+			email.SendAuthorizeServiceEmail(user.Email, *user.ServiceName, *user.ServiceWebsite, approvalToken)
+		}
+
 		return true, nil
 	}
 	return false, errors.New("Could not verify email")
+}
+
+func (s *UserService) VerifyService(verifyService *model.VerifyServiceInput) (bool, error) {
+	dbVerificationCode, err := database.GetRedisDB().GetApproveServiceToken(verifyService.Email)
+	if err != nil {
+		return false, errors.New("Invalid verification code, it may have expired")
+	} else if dbVerificationCode != verifyService.Token {
+		return false, errors.New("Invalid verification code")
+	}
+
+	if res := s.Db.Model(&models.User{}).Where("email = ?", verifyService.Email).Update("can_request_work", true); res.RowsAffected > 0 {
+		// Email has been marked verified, delete the token
+		database.GetRedisDB().DeleteApproveServiceToken(verifyService.Email)
+		email.SendServiceApprovedEmail(verifyService.Email)
+		return true, nil
+	}
+	return false, errors.New("Could not verify token")
 }
 
 func (s *UserService) DeleteUser(id uuid.UUID) error {

@@ -25,11 +25,18 @@ input VerifyEmailInput {
   token: String!
 }
 
+input VerifyServiceInput {
+  email: String!
+  token: String!
+}
+
 input UserInput {
   email: String!
   password: String!
   type: UserType!
   banAddress: String
+  serviceName: String
+  serviceWebsite: String
 }
 
 input LoginInput {
@@ -63,9 +70,8 @@ type Mutation {
 
 type Query {
   # User queries
-  getAllUsers: [User!]!
-  getUser(id: String, email: String): User!
   verifyEmail(input: VerifyEmailInput!): Boolean!
+  verifyService(input: VerifyServiceInput!): Boolean!
 }
 
 type Subscription {

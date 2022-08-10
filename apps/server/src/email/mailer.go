@@ -108,7 +108,7 @@ func SendConfirmationEmail(destination string, userType models.UserType, token s
 
 	// Populate template
 	templateData := ConfirmationEmailData{
-		ConfirmationLink:              fmt.Sprintf("https://boompow.banano.cc/graphql?query=%s", urlParam),
+		ConfirmationLink:              fmt.Sprintf("http://localhost:8080/graphql?query=%s", urlParam),
 		ConfirmCodeExpirationDuration: config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES,
 		IsProvider:                    userType == models.PROVIDER,
 	}
@@ -137,6 +137,51 @@ func SendResetPasswordEmail(destination string, token string) error {
 	return sendEmail(
 		destination,
 		"Reset the password for your BoomPOW Account",
+		t, templateData,
+	)
+}
+
+// Send email with link to authorize service
+func SendAuthorizeServiceEmail(email string, name string, website string, token string) error {
+	// Load template
+	t, err := loadEmailTemplate("confirmservice.html")
+	if err != nil {
+		return err
+	}
+
+	// Encode URL params
+	urlParam := url.QueryEscape(fmt.Sprintf(`query verifyService{
+		verifyService(input:{email:"%s", token:"%s"})
+	}`, email, token))
+
+	// Populate template
+	templateData := ConfirmServiceEmailData{
+		ServiceName:        name,
+		EmailAddress:       email,
+		ServiceWebsite:     website,
+		ApproveServiceLink: fmt.Sprintf("http://localhost:8080/graphql?query=%s", urlParam),
+	}
+
+	return sendEmail(
+		"hello@appditto.com",
+		"A service has requested access to BoomPoW",
+		t, templateData,
+	)
+}
+
+// Send email letting service know they are approved
+func SendServiceApprovedEmail(email string) error {
+	// Load template
+	t, err := loadEmailTemplate("serviceapproved.html")
+	if err != nil {
+		return err
+	}
+
+	// Populate template
+	templateData := map[string]string{}
+	return sendEmail(
+		email,
+		"You have been authorized to use BoomPoW!",
 		t, templateData,
 	)
 }

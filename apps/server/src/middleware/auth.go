@@ -105,7 +105,7 @@ func forContext(ctx context.Context) *UserContextValue {
 // AuthorizedProvider returns user from context if they are an authorized provider type
 func AuthorizedProvider(ctx context.Context) *UserContextValue {
 	contextValue := forContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || contextValue.User.Type != models.PROVIDER {
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || !contextValue.User.EmailVerified || contextValue.User.Type != models.PROVIDER {
 		return nil
 	}
 	return contextValue
@@ -114,7 +114,7 @@ func AuthorizedProvider(ctx context.Context) *UserContextValue {
 // AuthorizedRequester returns user from context if they are an authorized requester
 func AuthorizedRequester(ctx context.Context) *UserContextValue {
 	contextValue := forContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" || !contextValue.User.EmailVerified || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
 		return nil
 	}
 	return contextValue
@@ -123,7 +123,7 @@ func AuthorizedRequester(ctx context.Context) *UserContextValue {
 // AuthorizedServiceToken returns user from context if they are an authorized service token
 func AuthorizedServiceToken(ctx context.Context) *UserContextValue {
 	contextValue := forContext(ctx)
-	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" || !contextValue.User.EmailVerified || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
 		return nil
 	}
 	return contextValue
