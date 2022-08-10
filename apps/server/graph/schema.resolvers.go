@@ -20,7 +20,6 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -39,21 +38,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 		BanAddress: input.BanAddress,
 	}
 	return userCreated, nil
-}
-
-// DeleteUser is the resolver for the DeleteUser field.
-func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (string, error) {
-	uuid, err := uuid.Parse((id))
-	if err != nil {
-		return "", err
-	}
-
-	err = r.UserRepo.DeleteUser(uuid)
-	if err != nil {
-		return "", err
-	}
-	successMessage := fmt.Sprintf("deleted %s", id)
-	return successMessage, nil
 }
 
 // Login is the resolver for the login field.
@@ -165,6 +149,22 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetP
 	}
 
 	return token, nil
+}
+
+// ResendConfirmationEmail is the resolver for the resendConfirmationEmail field.
+func (r *mutationResolver) ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error) {
+	u, err := r.UserRepo.GetUser(nil, &input.Email)
+	if err != nil {
+		return false, errors.New("User does not exist")
+	}
+	if u.EmailVerified {
+		return false, errors.New("Email is already verified")
+	}
+
+	if err = r.UserRepo.SendConfirmEmailEmail(u.Email, u.Type, true); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // VerifyEmail is the resolver for the verifyEmail field.

@@ -20,6 +20,7 @@ import (
 
 type UserRepo interface {
 	CreateUser(userInput *model.UserInput, doEmail bool) (*models.User, error)
+	SendConfirmEmailEmail(userEmail string, userType models.UserType, actuallyDoEmail bool) error
 	CreateMockUsers() error
 	DeleteUser(id uuid.UUID) error
 	GetUser(id *uuid.UUID, email *string) (*models.User, error)
@@ -142,18 +143,27 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 		return nil, errors.New("Unknown error creating user")
 	}
 
+	// Send the email
+	err = s.SendConfirmEmailEmail(userInput.Email, models.UserType(userInput.Type), doEmail)
+
+	return user, err
+}
+
+func (s *UserService) SendConfirmEmailEmail(userEmail string, userType models.UserType, actuallyDoEmail bool) error {
 	// Generate confirmation token and store in database
 	confirmationToken, err := auth.GenerateRandHexString()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	database.GetRedisDB().SetConfirmationToken(userInput.Email, confirmationToken)
+	database.GetRedisDB().SetConfirmationToken(userEmail, confirmationToken)
 	// Send email with confirmation token
-	if doEmail {
-		email.SendConfirmationEmail(userInput.Email, models.UserType(userInput.Type), confirmationToken)
+	if actuallyDoEmail {
+		if err = email.SendConfirmationEmail(userEmail, userType, confirmationToken); err != nil {
+			return err
+		}
 	}
-	return user, err
+	return nil
 }
 
 func (s *UserService) GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error) {

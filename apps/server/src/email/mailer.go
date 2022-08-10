@@ -108,7 +108,7 @@ func SendConfirmationEmail(destination string, userType models.UserType, token s
 
 	// Populate template
 	templateData := ConfirmationEmailData{
-		ConfirmationLink:              fmt.Sprintf("http://localhost:8080/graphql?query=%s", urlParam),
+		ConfirmationLink:              fmt.Sprintf("https://boompow.banano.cc/graphql?query=%s", urlParam),
 		ConfirmCodeExpirationDuration: config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES,
 		IsProvider:                    userType == models.PROVIDER,
 	}
@@ -159,7 +159,7 @@ func SendAuthorizeServiceEmail(email string, name string, website string, token 
 		ServiceName:        name,
 		EmailAddress:       email,
 		ServiceWebsite:     website,
-		ApproveServiceLink: fmt.Sprintf("http://localhost:8080/graphql?query=%s", urlParam),
+		ApproveServiceLink: fmt.Sprintf("https://boompow.banano.cc/graphql?query=%s", urlParam),
 	}
 
 	return sendEmail(

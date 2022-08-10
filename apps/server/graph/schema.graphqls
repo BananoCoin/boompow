@@ -53,6 +53,10 @@ input ResetPasswordInput {
   email: String!
 }
 
+input ResendConfirmationEmailInput {
+  email: String!
+}
+
 type LoginResponse {
   token: String!
 }
@@ -60,12 +64,12 @@ type LoginResponse {
 type Mutation {
   # Related to user authentication and authorization
   createUser(input: UserInput!): User!
-  deleteUser(id: String!): String!
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
   generateServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
+  resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
 }
 
 type Query {

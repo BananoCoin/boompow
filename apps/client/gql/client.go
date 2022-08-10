@@ -85,3 +85,16 @@ func RefreshToken(ctx context.Context, token string) (string, error) {
 
 	return resp.RefreshToken, nil
 }
+
+func ResendConfirmationEmail(ctx context.Context, email string) (*resendConfirmationEmailResponse, error) {
+	resp, err := resendConfirmationEmail(ctx, client, ResendConfirmationEmailInput{
+		Email: email,
+	})
+
+	if err != nil {
+		fmt.Printf("Error resending email %v", err)
+		return nil, err
+	}
+
+	return resp, nil
+}

@@ -21,6 +21,10 @@ type RefreshTokenInput struct {
 	Token string `json:"token"`
 }
 
+type ResendConfirmationEmailInput struct {
+	Email string `json:"email"`
+}
+
 type ResetPasswordInput struct {
 	Email string `json:"email"`
 }

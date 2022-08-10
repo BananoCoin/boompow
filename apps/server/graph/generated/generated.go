@@ -51,13 +51,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateUser           func(childComplexity int, input model.UserInput) int
-		DeleteUser           func(childComplexity int, id string) int
-		GenerateServiceToken func(childComplexity int) int
-		Login                func(childComplexity int, input model.LoginInput) int
-		RefreshToken         func(childComplexity int, input model.RefreshTokenInput) int
-		ResetPassword        func(childComplexity int, input model.ResetPasswordInput) int
-		WorkGenerate         func(childComplexity int, input model.WorkGenerateInput) int
+		CreateUser              func(childComplexity int, input model.UserInput) int
+		GenerateServiceToken    func(childComplexity int) int
+		Login                   func(childComplexity int, input model.LoginInput) int
+		RefreshToken            func(childComplexity int, input model.RefreshTokenInput) int
+		ResendConfirmationEmail func(childComplexity int, input model.ResendConfirmationEmailInput) int
+		ResetPassword           func(childComplexity int, input model.ResetPasswordInput) int
+		WorkGenerate            func(childComplexity int, input model.WorkGenerateInput) int
 	}
 
 	Query struct {
@@ -85,12 +85,12 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.UserInput) (*model.User, error)
-	DeleteUser(ctx context.Context, id string) (string, error)
 	Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 	WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error)
 	GenerateServiceToken(ctx context.Context) (string, error)
 	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
+	ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error)
 }
 type QueryResolver interface {
 	VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error)
@@ -134,18 +134,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.UserInput)), true
 
-	case "Mutation.deleteUser":
-		if e.complexity.Mutation.DeleteUser == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteUser_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(string)), true
-
 	case "Mutation.generateServiceToken":
 		if e.complexity.Mutation.GenerateServiceToken == nil {
 			break
@@ -176,6 +164,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
+
+	case "Mutation.resendConfirmationEmail":
+		if e.complexity.Mutation.ResendConfirmationEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_resendConfirmationEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ResendConfirmationEmail(childComplexity, args["input"].(model.ResendConfirmationEmailInput)), true
 
 	case "Mutation.resetPassword":
 		if e.complexity.Mutation.ResetPassword == nil {
@@ -291,6 +291,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputRefreshTokenInput,
+		ec.unmarshalInputResendConfirmationEmailInput,
 		ec.unmarshalInputResetPasswordInput,
 		ec.unmarshalInputUserInput,
 		ec.unmarshalInputVerifyEmailInput,
@@ -428,6 +429,10 @@ input ResetPasswordInput {
   email: String!
 }
 
+input ResendConfirmationEmailInput {
+  email: String!
+}
+
 type LoginResponse {
   token: String!
 }
@@ -435,12 +440,12 @@ type LoginResponse {
 type Mutation {
   # Related to user authentication and authorization
   createUser(input: UserInput!): User!
-  deleteUser(id: String!): String!
   login(input: LoginInput!): LoginResponse!
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
   generateServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
+  resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
 }
 
 type Query {
@@ -475,21 +480,6 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -512,6 +502,21 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_resendConfirmationEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ResendConfirmationEmailInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNResendConfirmationEmailInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐResendConfirmationEmailInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -740,61 +745,6 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteUser(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteUser(rctx, fc.Args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -1063,6 +1013,61 @@ func (ec *executionContext) fieldContext_Mutation_resetPassword(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_resetPassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_resendConfirmationEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_resendConfirmationEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ResendConfirmationEmail(rctx, fc.Args["input"].(model.ResendConfirmationEmailInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_resendConfirmationEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_resendConfirmationEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3512,6 +3517,34 @@ func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputResendConfirmationEmailInput(ctx context.Context, obj interface{}) (model.ResendConfirmationEmailInput, error) {
+	var it model.ResendConfirmationEmailInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context, obj interface{}) (model.ResetPasswordInput, error) {
 	var it model.ResetPasswordInput
 	asMap := map[string]interface{}{}
@@ -3780,15 +3813,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "deleteUser":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteUser(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "login":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -3829,6 +3853,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_resetPassword(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resendConfirmationEmail":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_resendConfirmationEmail(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -4425,6 +4458,11 @@ func (ec *executionContext) marshalNLoginResponse2ᚖgithubᚗcomᚋbananocoin�
 
 func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
 	res, err := ec.unmarshalInputRefreshTokenInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNResendConfirmationEmailInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐResendConfirmationEmailInput(ctx context.Context, v interface{}) (model.ResendConfirmationEmailInput, error) {
+	res, err := ec.unmarshalInputResendConfirmationEmailInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

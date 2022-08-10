@@ -26,6 +26,13 @@ type RefreshTokenInput struct {
 // GetToken returns RefreshTokenInput.Token, and is useful for accessing the field via an interface.
 func (v *RefreshTokenInput) GetToken() string { return v.Token }
 
+type ResendConfirmationEmailInput struct {
+	Email string `json:"email"`
+}
+
+// GetEmail returns ResendConfirmationEmailInput.Email, and is useful for accessing the field via an interface.
+func (v *ResendConfirmationEmailInput) GetEmail() string { return v.Email }
+
 type UserInput struct {
 	Email          string   `json:"email"`
 	Password       string   `json:"password"`
@@ -84,6 +91,14 @@ type __refreshTokenInput struct {
 // GetInput returns __refreshTokenInput.Input, and is useful for accessing the field via an interface.
 func (v *__refreshTokenInput) GetInput() RefreshTokenInput { return v.Input }
 
+// __resendConfirmationEmailInput is used internally by genqlient
+type __resendConfirmationEmailInput struct {
+	Input ResendConfirmationEmailInput `json:"input"`
+}
+
+// GetInput returns __resendConfirmationEmailInput.Input, and is useful for accessing the field via an interface.
+func (v *__resendConfirmationEmailInput) GetInput() ResendConfirmationEmailInput { return v.Input }
+
 // createUserCreateUser includes the requested fields of the GraphQL type User.
 type createUserCreateUser struct {
 	Email string `json:"email"`
@@ -127,6 +142,16 @@ type refreshTokenResponse struct {
 
 // GetRefreshToken returns refreshTokenResponse.RefreshToken, and is useful for accessing the field via an interface.
 func (v *refreshTokenResponse) GetRefreshToken() string { return v.RefreshToken }
+
+// resendConfirmationEmailResponse is returned by resendConfirmationEmail on success.
+type resendConfirmationEmailResponse struct {
+	ResendConfirmationEmail bool `json:"resendConfirmationEmail"`
+}
+
+// GetResendConfirmationEmail returns resendConfirmationEmailResponse.ResendConfirmationEmail, and is useful for accessing the field via an interface.
+func (v *resendConfirmationEmailResponse) GetResendConfirmationEmail() bool {
+	return v.ResendConfirmationEmail
+}
 
 func createUser(
 	ctx context.Context,
@@ -212,6 +237,36 @@ mutation refreshToken ($input: RefreshTokenInput!) {
 	var err error
 
 	var data refreshTokenResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func resendConfirmationEmail(
+	ctx context.Context,
+	client graphql.Client,
+	input ResendConfirmationEmailInput,
+) (*resendConfirmationEmailResponse, error) {
+	req := &graphql.Request{
+		OpName: "resendConfirmationEmail",
+		Query: `
+mutation resendConfirmationEmail ($input: ResendConfirmationEmailInput!) {
+	resendConfirmationEmail(input: $input)
+}
+`,
+		Variables: &__resendConfirmationEmailInput{
+			Input: input,
+		},
+	}
+	var err error
+
+	var data resendConfirmationEmailResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

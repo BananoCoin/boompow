@@ -14,3 +14,7 @@ mutation createUser($input: UserInput!) {
 mutation refreshToken($input: RefreshTokenInput!) {
   refreshToken(input: $input)
 }
+
+mutation resendConfirmationEmail($input: ResendConfirmationEmailInput!) {
+  resendConfirmationEmail(input: $input)
+}

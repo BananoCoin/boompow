@@ -139,6 +139,7 @@ func main() {
 	argPassword := flag.String("password", "", "The password to use for the worker (optional)")
 	registerProvider := flag.Bool("register-provider", false, "Register to be a provider (optional)")
 	registerService := flag.Bool("register-service", false, "Register to be a service/work requester (optional)")
+	resendConfirmationEmail := flag.Bool("resend-confirmation-email", false, "Resend the confirmation email (optional)")
 	flag.Parse()
 	NConcurrentWorkers = *threadCount
 
@@ -164,6 +165,38 @@ func main() {
 
 	// Short circuit for registration
 	// These should be on a website eventually
+	if *resendConfirmationEmail {
+		// Loop to get credentials
+		for {
+			// Get email
+			reader := bufio.NewReader(os.Stdin)
+
+			fmt.Print("➡️ Enter Email: ")
+			rawEmail, err := reader.ReadString('\n')
+
+			if err != nil {
+				fmt.Printf("\n⚠️ Error reading email")
+				continue
+			}
+
+			email := strings.TrimSpace(rawEmail)
+
+			if !validation.IsValidEmail(email) {
+				fmt.Printf("\n⚠️ Invalid email\n\n")
+				continue
+			}
+
+			resp, err := gql.ResendConfirmationEmail(ctx, email)
+			if err != nil {
+				fmt.Printf("\n⚠️ Error resending confirmation email: %v\n\n", err)
+				os.Exit(1)
+			}
+			if resp.ResendConfirmationEmail {
+				fmt.Printf("\n\n✅ Successfully resent confirmation to %s, check your email for a confirmation link. Once confirmed you can login to start contributing.\n\n", email)
+				os.Exit(0)
+			}
+		}
+	}
 	if *registerProvider {
 		fmt.Printf("\n❤️ Register to be a BoomPoW Contributor!\nYou will receive daily rewards for your work that is accepted!\n")
 		// Loop to get credentials
