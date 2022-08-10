@@ -156,6 +156,18 @@ func (r *mutationResolver) GenerateServiceToken(ctx context.Context) (string, er
 	return token, nil
 }
 
+// ResetPassword is the resolver for the resetPassword field.
+// ! TODO - add another mutation that actually accepts the token and a new password
+func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
+	token, err := r.UserRepo.GenerateResetPasswordRequest(&input, true)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
 // GetAllUsers is the resolver for the GetAllUsers field.
 func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) {
 	users, err := r.UserRepo.GetAllUsers()

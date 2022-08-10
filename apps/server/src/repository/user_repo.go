@@ -22,6 +22,7 @@ type UserRepo interface {
 	GetAllUsers() ([]*models.User, error)
 	Authenticate(loginInput *model.LoginInput) bool
 	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
+	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
 	GenerateServiceToken() string
 }
 
@@ -116,6 +117,32 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 		email.SendConfirmationEmail(userInput.Email, models.UserType(userInput.Type), confirmationToken)
 	}
 	return user, err
+}
+
+func (s *UserService) GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error) {
+	// Validate
+	if !validation.IsValidEmail(resetPasswordInput.Email) {
+		return "", errors.New("Invalid email")
+	}
+
+	// Get user
+	user, err := s.GetUser(nil, &resetPasswordInput.Email)
+	if err != nil || user == nil {
+		return "", errors.New("No such user")
+	}
+
+	// Generate reset password token and store in database
+	resetPasswordToken, err := auth.GenerateRandHexString()
+	if err != nil {
+		return "", err
+	}
+
+	database.GetRedisDB().SetResetPasswordToken(resetPasswordInput.Email, resetPasswordToken)
+	// Send email with reset password token token
+	if doEmail {
+		email.SendResetPasswordEmail(resetPasswordInput.Email, resetPasswordToken)
+	}
+	return resetPasswordToken, err
 }
 
 func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {

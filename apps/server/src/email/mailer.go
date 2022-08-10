@@ -37,11 +37,10 @@ func sendEmail(destination string, subject string, t *template.Template, templat
 	// Send email
 	auth := smtp.PlainAuth("", smtpCredentials.Username, smtpCredentials.Password, smtpCredentials.Server)
 	from := mail.Address{
-		Name:    "Banano",
+		Name:    "BoomPoW (Banano)",
 		Address: "noreply@mail.banano.cc",
 	}
 	to := mail.Address{
-		Name:    "Your Name",
 		Address: destination,
 	}
 
@@ -117,6 +116,27 @@ func SendConfirmationEmail(destination string, userType models.UserType, token s
 	return sendEmail(
 		destination,
 		"Confirm your email address for your BoomPOW Account",
+		t, templateData,
+	)
+}
+
+// Send email with link to reset user's password
+func SendResetPasswordEmail(destination string, token string) error {
+	// Load template
+	t, err := loadEmailTemplate("resetpassword.html")
+	if err != nil {
+		return err
+	}
+
+	// Populate template
+	// ! TODO - this is something we'll want to to link to the frontend - which will have a form for a new password
+	templateData := ResetPasswordEmailData{
+		ResetPasswordLink: "https://boompow.banano.cc/notimplemented",
+	}
+
+	return sendEmail(
+		destination,
+		"Reset the password for your BoomPOW Account",
 		t, templateData,
 	)
 }

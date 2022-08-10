@@ -42,6 +42,10 @@ input WorkGenerateInput {
   difficultyMultiplier: Int!
 }
 
+input ResetPasswordInput {
+  email: String!
+}
+
 type LoginResponse {
   token: String!
 }
@@ -54,6 +58,7 @@ type Mutation {
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
   generateServiceToken: String!
+  resetPassword(input: ResetPasswordInput!): String!
 }
 
 type Query {

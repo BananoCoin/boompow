@@ -21,6 +21,10 @@ type RefreshTokenInput struct {
 	Token string `json:"token"`
 }
 
+type ResetPasswordInput struct {
+	Email string `json:"email"`
+}
+
 type Stats struct {
 	ConnectedWorkers int `json:"connectedWorkers"`
 }

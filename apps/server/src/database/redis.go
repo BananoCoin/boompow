@@ -127,6 +127,22 @@ func (r *redisManager) DeleteConfirmationToken(email string) (int64, error) {
 	return r.Del(fmt.Sprintf("emailconfirmation:%s", email))
 }
 
+// Set reset password token
+func (r *redisManager) SetResetPasswordToken(email string, token string) error {
+	// Expire in 24H
+	return r.Set(fmt.Sprintf("passwordreset:%s", email), token, config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES*time.Minute)
+}
+
+// Get token for given email
+func (r *redisManager) GetResetPasswordToken(email string) (string, error) {
+	return r.Get(fmt.Sprintf("passwordreset:%s", email))
+}
+
+// Delete conf token
+func (r *redisManager) DeleteResetPasswordToken(email string) (int64, error) {
+	return r.Del(fmt.Sprintf("passwordreset:%s", email))
+}
+
 // Functions for keeping track of connected clients
 func (r *redisManager) AddConnectedClient(clientID string) error {
 	return r.Hset("clients", clientID, "1")

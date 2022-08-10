@@ -5,3 +5,7 @@ type ConfirmationEmailData struct {
 	ConfirmCodeExpirationDuration int
 	IsProvider                    bool
 }
+
+type ResetPasswordEmailData struct {
+	ResetPasswordLink string
+}
