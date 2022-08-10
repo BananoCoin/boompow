@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/bananocoin/boompow/libs/utils"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // secret key being used to sign tokens
