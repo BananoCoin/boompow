@@ -12,6 +12,10 @@ type User {
   banAddress: String
 }
 
+type Stats {
+  connectedWorkers: Int!
+}
+
 input RefreshTokenInput {
   token: String!
 }
@@ -57,4 +61,8 @@ type Query {
   getAllUsers: [User!]!
   getUser(id: String, email: String): User!
   verifyEmail(input: VerifyEmailInput!): Boolean!
+}
+
+type Subscription {
+  stats: Stats!
 }

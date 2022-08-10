@@ -211,11 +211,32 @@ func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmail
 	return r.UserRepo.VerifyEmailToken(&input)
 }
 
+// Stats is the resolver for the stats field.
+func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, error) {
+	msgs := make(chan *model.Stats, 1)
+
+	// Pub stats every 10 seconds
+	go func() {
+		for {
+			nConnectedClients, err := database.GetRedisDB().GetNumberConnectedClients()
+			if err == nil {
+				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients)}
+			}
+			time.Sleep(10 * time.Second)
+		}
+	}()
+	return msgs, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Subscription returns generated.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }
