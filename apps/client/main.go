@@ -72,6 +72,8 @@ var WSService *websocket.WebsocketService
 func main() {
 	// Parse flags
 	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
+	argEmail := flag.String("email", "", "The email (username) to use for the worker (optional)")
+	argPassword := flag.String("password", "", "The password to use for the worker (optional)")
 	flag.Parse()
 	NConcurrentWorkers = *threadCount
 
@@ -92,36 +94,55 @@ func main() {
 		// Get username/password
 		reader := bufio.NewReader(os.Stdin)
 
-		fmt.Print("➡️ Enter Email: ")
-		email, err := reader.ReadString('\n')
+		var email string
 
-		if err != nil {
-			fmt.Printf("\n⚠️ Error reading email")
-			continue
+		if *argEmail == "" {
+			fmt.Print("➡️ Enter Email: ")
+			rawEmail, err := reader.ReadString('\n')
+
+			if err != nil {
+				fmt.Printf("\n⚠️ Error reading email")
+				continue
+			}
+
+			email = strings.TrimSpace(rawEmail)
+
+			if !validation.IsValidEmail(email) {
+				fmt.Printf("\n⚠️ Invalid email\n\n")
+				continue
+			}
+		} else {
+			if !validation.IsValidEmail(*argEmail) {
+				fmt.Printf("\n⚠️ Invalid email\n\n")
+				os.Exit(1)
+			}
+			email = *argEmail
 		}
 
-		email = strings.TrimSpace(email)
+		var password string
 
-		if !validation.IsValidEmail(email) {
-			fmt.Printf("\n⚠️ Invalid email\n\n")
-			continue
+		if *argPassword == "" {
+			fmt.Print("➡️ Enter Password: ")
+			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+
+			if err != nil {
+				fmt.Printf("\n⚠️ Error reading password")
+				continue
+			}
+
+			password = strings.TrimSpace(string(bytePassword))
+		} else {
+			password = *argPassword
 		}
-
-		fmt.Print("➡️ Enter Password: ")
-		bytePassword, err := term.ReadPassword(int(syscall.Stdin))
-
-		if err != nil {
-			fmt.Printf("\n⚠️ Error reading password")
-			continue
-		}
-
-		password := strings.TrimSpace(string(bytePassword))
 
 		// Login
 		fmt.Printf("\n\n🔒 Logging in...")
 		resp, gqlErr := gql.Login(ctx, email, password)
 		if gqlErr == gql.InvalidUsernamePasssword {
 			fmt.Printf("\n❌ Invalid email or password\n\n")
+			if *argPassword != "" {
+				os.Exit(1)
+			}
 			continue
 		} else if gqlErr == gql.ServerError {
 			fmt.Printf("\n💥 Error reaching server, try again later\n")
