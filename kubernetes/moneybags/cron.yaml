@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: moneybags
+  namespace: boompow-next
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: boompow-payments
+            image: replaceme
+            command: ["/bin/bash", "-c"]
+            args: ["moneybags -dry-run"]
+            env:               
+              - name: DB_HOST
+                value: postgres.postgres               
+              - name: DB_PORT
+                value: "5432"
+              - name: DB_SSLMODE
+                value: disable
+              - name: DB_NAME
+                valueFrom:
+                  secretKeyRef:
+                    name: boompow
+                    key: db_name   
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: boompow
+                    key: db_user  
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: boompow
+                    key: db_password  
+              - name: REDIS_HOST
+                value: redis-0.redis
+              - name: REDIS_DB
+                value: "18" 
+              - name: BPOW_WALLET_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: boompow
+                    key: wallet_id      
+              - name: BPOW_PRIZE_POOL
+                valueFrom:
+                  secretKeyRef:
+                    name: boompow
+                    key: prize_pool  
+              - name: BPOW_WALLET_ADDRESS
+                value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
+              - name: ENVIRONMENT
+                value: production
+          restartPolicy: OnFailure

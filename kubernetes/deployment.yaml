@@ -77,7 +77,10 @@ spec:
                 name: boompow
                 key: wallet_id      
           - name: BPOW_PRIZE_POOL
-            value: "10000"
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: prize_pool  
           - name: BPOW_WALLET_ADDRESS
             value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
           - name: ENVIRONMENT

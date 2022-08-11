@@ -51,6 +51,7 @@ func main() {
 		fmt.Println("👽 Getting unpaid works...")
 		var res []repository.UnpaidWorkResult
 		if *dryRun {
+			fmt.Println("🏃 Dry run mode - not actually sending payments")
 			res, err = workRepo.GetUnpaidWorkCount(tx)
 		} else {
 			res, err = workRepo.GetUnpaidWorkCountAndMarkAllPaid(tx)
