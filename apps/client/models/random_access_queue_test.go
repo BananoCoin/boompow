@@ -41,5 +41,5 @@ func TestRandomAccessMap(t *testing.T) {
 	utils.AssertEqual(t, (*serializableModels.ClientMessage)(nil), queue.Get("3"))
 
 	// Check length
-	utils.AssertEqual(t, 2, len(queue.Hashes))
+	utils.AssertEqual(t, 2, queue.Len())
 }

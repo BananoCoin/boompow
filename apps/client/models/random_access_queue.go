@@ -12,18 +12,18 @@ import (
 // If there is 20 items on 3 workers, each worker will access the next unit of work randomly
 type RandomAccessQueue struct {
 	mu     sync.Mutex
-	Hashes []serializableModels.ClientMessage
+	hashes []serializableModels.ClientMessage
 }
 
 func NewRandomAccessQueue() *RandomAccessQueue {
 	return &RandomAccessQueue{
-		Hashes: []serializableModels.ClientMessage{},
+		hashes: []serializableModels.ClientMessage{},
 	}
 }
 
 // See if element exists
 func (r *RandomAccessQueue) exists(hash string) bool {
-	for _, v := range r.Hashes {
+	for _, v := range r.hashes {
 		if v.Hash == hash {
 			return true
 		}
@@ -31,12 +31,19 @@ func (r *RandomAccessQueue) exists(hash string) bool {
 	return false
 }
 
+// Get length - synchronized
+func (r *RandomAccessQueue) Len() int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return len(r.hashes)
+}
+
 // Put value into map - synchronized
 func (r *RandomAccessQueue) Put(value serializableModels.ClientMessage) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if !r.exists(value.Hash) {
-		r.Hashes = append(r.Hashes, value)
+		r.hashes = append(r.hashes, value)
 	}
 }
 
@@ -44,12 +51,12 @@ func (r *RandomAccessQueue) Put(value serializableModels.ClientMessage) {
 func (r *RandomAccessQueue) PopRandom() *serializableModels.ClientMessage {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if len(r.Hashes) == 0 {
+	if len(r.hashes) == 0 {
 		return nil
 	}
-	index := rand.Intn(len(r.Hashes))
-	ret := r.Hashes[index]
-	r.Hashes = remove(r.Hashes, index)
+	index := rand.Intn(len(r.hashes))
+	ret := r.hashes[index]
+	r.hashes = remove(r.hashes, index)
 
 	return &ret
 }
@@ -59,7 +66,7 @@ func (r *RandomAccessQueue) Get(hash string) *serializableModels.ClientMessage {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.exists(hash) {
-		return &r.Hashes[r.indexOf(hash)]
+		return &r.hashes[r.indexOf(hash)]
 	}
 
 	return nil
@@ -71,12 +78,12 @@ func (r *RandomAccessQueue) Delete(hash string) {
 	defer r.mu.Unlock()
 	index := r.indexOf(hash)
 	if index > -1 {
-		r.Hashes = remove(r.Hashes, r.indexOf(hash))
+		r.hashes = remove(r.hashes, r.indexOf(hash))
 	}
 }
 
 func (r *RandomAccessQueue) indexOf(hash string) int {
-	for i, v := range r.Hashes {
+	for i, v := range r.hashes {
 		if v.Hash == hash {
 			return i
 		}

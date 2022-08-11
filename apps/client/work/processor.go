@@ -35,7 +35,7 @@ func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int, gpuOnl
 func (wp *WorkProcessor) StartRequestQueueWorker() {
 	for c := range wp.WorkQueueChan {
 		// If the backlog is too large, no-op
-		if len(wp.Queue.Hashes) > 100 {
+		if wp.Queue.Len() > 100 {
 			continue
 		}
 		// Add to queue
