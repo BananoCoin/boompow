@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/BananoCoin/boompow-next)](https://github.com/bananocoin/boompow/blob/master/LICENSE) [![CI](https://github.com/bananocoin/boompow/workflows/CI/badge.svg)](https://github.com/bananocoin/boompow/actions?query=workflow%3ACI)
+[![Release](https://img.shields.io/github/v/release/BananoCoin/boompow)](https://github.com/BananoCoin/boompow/releases/latest) ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/bananocoin/boompow?filename=apps%2Fserver%2Fgo.mod) [![License](https://img.shields.io/github/license/BananoCoin/boompow-next)](https://github.com/bananocoin/boompow/blob/master/LICENSE) [![CI](https://github.com/bananocoin/boompow/workflows/CI/badge.svg)](https://github.com/bananocoin/boompow/actions?query=workflow%3ACI)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/BananoCoin/boompow-next/master/logo.svg" width="300">
