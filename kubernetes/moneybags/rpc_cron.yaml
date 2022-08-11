@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: moneybags
+  name: moneybags-rpc-send
   namespace: boompow-next
 spec:
   schedule: "0 */3 * * *"
