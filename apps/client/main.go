@@ -175,7 +175,7 @@ func main() {
 
 	// Check benchmark
 	if *benchmark > 0 {
-		work.RunBenchmark(*benchmark, *benchmarkDifficulty)
+		work.RunBenchmark(*benchmark, *benchmarkDifficulty, *gpuOnly)
 		os.Exit(0)
 	}
 

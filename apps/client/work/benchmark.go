@@ -2,14 +2,15 @@ package work
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"time"
 
-	"github.com/bananocoin/boompow/libs/utils/validation"
-	"github.com/inkeliz/nanopow"
+	"github.com/bananocoin/boompow/libs/models"
 )
 
-func RunBenchmark(nHashes int, difficultyMultiplier int) {
+func RunBenchmark(nHashes int, difficultyMultiplier int, gpuOnly bool) {
+	workPool := NewWorkPool(gpuOnly)
 	if difficultyMultiplier < 1 {
 		difficultyMultiplier = 1
 	}
@@ -23,7 +24,10 @@ func RunBenchmark(nHashes int, difficultyMultiplier int) {
 		fmt.Printf("\nRun %d", i+1)
 		startT := time.Now()
 
-		_, err := nanopow.GenerateWork(bytes, validation.CalculateDifficulty(int64(difficultyMultiplier)))
+		_, err := workPool.WorkGenerate(&models.ClientMessage{
+			Hash:                 hex.EncodeToString(bytes),
+			DifficultyMultiplier: difficultyMultiplier,
+		})
 		if err != nil {
 			panic("Failed to generate work")
 		}
