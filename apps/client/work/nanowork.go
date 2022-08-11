@@ -3,6 +3,7 @@ package work
 import (
 	"encoding/hex"
 	"errors"
+	"runtime"
 
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/validation"
@@ -10,12 +11,39 @@ import (
 	"github.com/inkeliz/nanopow"
 )
 
-func WorkGenerate(item *serializableModels.ClientMessage) (string, error) {
+type WorkPool struct {
+	Pool *nanopow.Pool
+}
+
+func NewWorkPool(gpuOnly bool) *WorkPool {
+	pool := nanopow.NewPool()
+	gpu, gpuErr := nanopow.NewWorkerGPU()
+	if gpuErr == nil {
+		pool.Workers = append(pool.Workers, gpu)
+	}
+	if !gpuOnly {
+		threads := runtime.NumCPU()
+		cpu, cpuErr := nanopow.NewWorkerCPUThread(uint64(threads))
+		if cpuErr == nil {
+			pool.Workers = append(pool.Workers, cpu)
+		} else {
+			panic("Unable to initialize work pool for CPU")
+		}
+	} else if gpuErr != nil {
+		panic("No GPU found, but gpu-only was set")
+	}
+
+	return &WorkPool{
+		Pool: pool,
+	}
+}
+
+func (p *WorkPool) WorkGenerate(item *serializableModels.ClientMessage) (string, error) {
 	decoded, err := hex.DecodeString(item.Hash)
 	if err != nil {
 		return "", err
 	}
-	work, err := nanopow.GenerateWork(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)))
+	work, err := p.Pool.GenerateWork(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)))
 	if err != nil {
 		return "", err
 	}

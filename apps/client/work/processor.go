@@ -17,14 +17,17 @@ type WorkProcessor struct {
 	// WorkProcessChan is where we actually read from the queue and compute work
 	WorkProcessChan chan bool
 	WSService       *websocket.WebsocketService
+	WorkPool        *WorkPool
 }
 
-func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int) *WorkProcessor {
+func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int, gpuOnly bool) *WorkProcessor {
+	wp := NewWorkPool(gpuOnly)
 	return &WorkProcessor{
 		Queue:           models.NewRandomAccessQueue(),
 		WorkQueueChan:   make(chan *serializableModels.ClientMessage, 100),
 		WorkProcessChan: make(chan bool, nWorkProcesses),
 		WSService:       ws,
+		WorkPool:        wp,
 	}
 }
 
@@ -53,7 +56,7 @@ func (wp *WorkProcessor) StartWorkProcessor() {
 			// Generate work
 			ch := make(chan string, 1)
 			go func() {
-				result, err := WorkGenerate(workItem)
+				result, err := wp.WorkPool.WorkGenerate(workItem)
 				if err != nil {
 					result = ""
 				}

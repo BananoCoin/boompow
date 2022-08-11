@@ -136,6 +136,7 @@ var WSService *websocket.WebsocketService
 func main() {
 	// Parse flags
 	threadCount := flag.Int("thread-count", 1, "The maximum number of concurrent work requests to process")
+	gpuOnly := flag.Bool("gpu-only", false, "If set, will only run work on GPU (otherwise, both CPU and GPU)")
 	maxDifficulty := flag.Int("max-difficulty", 128, "The maximum work difficulty to compute, less than this will be ignored")
 	benchmark := flag.Int("benchmark", 0, "Run a benchmark for the given number of random hashes")
 	benchmarkDifficulty := flag.Int("benchmark-difficulty", 64, "The difficulty multiplier for the benchmark")
@@ -164,7 +165,12 @@ func main() {
 	} else {
 		fmt.Printf("\n⚡ Using GPU")
 		fmt.Printf("\nPlatform: %s", gpuInfo.platformName)
-		fmt.Printf("\nVendor: %s\n\n", gpuInfo.vendor)
+		fmt.Printf("\nVendor: %s\n", gpuInfo.vendor)
+	}
+	if *gpuOnly {
+		fmt.Printf("\nOnly using GPU for work_generate...\n\n")
+	} else {
+		fmt.Printf("\nUsing GPU+CPU for work_generate...\n\n")
 	}
 
 	// Check benchmark
@@ -557,7 +563,7 @@ func main() {
 	fmt.Printf("\n🚀 Initiating connection to BoomPOW...")
 
 	// Create work processor
-	workProcessor := work.NewWorkProcessor(WSService, NConcurrentWorkers)
+	workProcessor := work.NewWorkProcessor(WSService, NConcurrentWorkers, *gpuOnly)
 	workProcessor.StartAsync()
 
 	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue)

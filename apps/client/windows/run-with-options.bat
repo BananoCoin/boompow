@@ -10,11 +10,18 @@ set email=""
 :: Password (password) - If you don't want to be prompted for password on startup
 set password=""
 
+:: GPU Only - If true, will only compute PoW on GPU, otherwise will use both CPU and GPU
+set gpuonly=%false%
+
 :: Max work difficulty
 set max_difficulty_multiplier=128
 
 echo Starting BoomPow Client...
 
-boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier%
+if %gpuonly% (
+  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier% -gpu-only
+) else (
+  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier%
+)
 
 pause
