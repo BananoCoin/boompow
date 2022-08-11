@@ -12,7 +12,7 @@ spec:
           containers:
           - name: boompow-payments
             image: replaceme
-            command: ["/bin/bash", "-c"]
+            command: ["/bin/sh", "-c"]
             args: ["moneybags -dry-run"]
             env:               
               - name: DB_HOST

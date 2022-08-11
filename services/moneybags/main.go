@@ -24,6 +24,7 @@ import (
 
 func main() {
 	dryRun := flag.Bool("dry-run", false, "Dry run")
+	rpcSend := flag.Bool("rpc-send", false, "Broadcast pending payments")
 	flag.Parse()
 
 	godotenv.Load()
@@ -48,59 +49,66 @@ func main() {
 
 	// Do all of this within a transaction
 	err = db.Transaction(func(tx *gorm.DB) error {
-		fmt.Println("👽 Getting unpaid works...")
-		var res []repository.UnpaidWorkResult
-		if *dryRun {
-			fmt.Println("🏃 Dry run mode - not actually sending payments")
-			res, err = workRepo.GetUnpaidWorkCount(tx)
-		} else {
-			res, err = workRepo.GetUnpaidWorkCountAndMarkAllPaid(tx)
-		}
+		if !*rpcSend {
+			fmt.Println("👽 Getting unpaid works...")
+			var res []repository.UnpaidWorkResult
+			if *dryRun {
+				fmt.Println("🏃 Dry run mode - not actually sending payments")
+				res, err = workRepo.GetUnpaidWorkCount(tx)
+			} else {
+				res, err = workRepo.GetUnpaidWorkCountAndMarkAllPaid(tx)
+			}
 
-		if err != nil {
-			fmt.Printf("❌ Error retrieving unpaid works %v", err)
-			return err
-		}
+			if err != nil {
+				fmt.Printf("❌ Error retrieving unpaid works %v", err)
+				return err
+			}
 
-		if len(res) == 0 {
-			fmt.Println("🤷 No unpaid works found")
+			if len(res) == 0 {
+				fmt.Println("🤷 No unpaid works found")
+				return nil
+			}
+
+			// Compute the entire sum of the unpaid works
+			totalSum := 0
+			for _, v := range res {
+				totalSum += v.DifficultySum
+			}
+
+			sendRequestsRaw := []models.SendRequest{}
+
+			// Compute the percentage each user has earned and build payments
+			for _, v := range res {
+				percentageOfPool := float64(v.DifficultySum) / float64(totalSum)
+				paymentAmount := percentageOfPool * float64(utils.GetTotalPrizePool())
+
+				sendRequestsRaw = append(sendRequestsRaw, models.SendRequest{
+					BaseRequest: models.SendAction,
+					Wallet:      utils.GetWalletID(),
+					Source:      utils.GetWalletAddress(),
+					Destination: v.BanAddress,
+					AmountRaw:   number.BananoToRaw(paymentAmount),
+					// Just a unique payment identifier
+					ID:     fmt.Sprintf("%s:%s", v.BanAddress, uuid.New().String()),
+					PaidTo: v.ProvidedBy,
+				})
+
+				fmt.Printf("💸 %s has earned %f%% of the pool, and will be paid %f\n", v.BanAddress, percentageOfPool*100, paymentAmount)
+			}
+
+			if !*dryRun {
+				err = paymentRepo.BatchCreateSendRequests(tx, sendRequestsRaw)
+				if err != nil {
+					fmt.Printf("❌ Error creating send requests %v", err)
+					return err
+				}
+			}
 			return nil
 		}
 
-		// Compute the entire sum of the unpaid works
-		totalSum := 0
-		for _, v := range res {
-			totalSum += v.DifficultySum
-		}
+		// Alternative job retrieves all payments from database with null block-hash and broadcasts them to the node
+		fmt.Println("👽 Getting pending payments...")
 
-		sendRequestsRaw := []models.SendRequest{}
-
-		// Compute the percentage each user has earned and build payments
-		for _, v := range res {
-			percentageOfPool := float64(v.DifficultySum) / float64(totalSum)
-			paymentAmount := percentageOfPool * float64(utils.GetTotalPrizePool())
-
-			sendRequestsRaw = append(sendRequestsRaw, models.SendRequest{
-				BaseRequest: models.SendAction,
-				Wallet:      utils.GetWalletID(),
-				Source:      utils.GetWalletAddress(),
-				Destination: v.BanAddress,
-				AmountRaw:   number.BananoToRaw(paymentAmount),
-				// Just a unique payment identifier
-				ID:     fmt.Sprintf("%s:%s", v.BanAddress, uuid.New().String()),
-				PaidTo: v.ProvidedBy,
-			})
-
-			fmt.Printf("💸 %s has earned %f%% of the pool, and will be paid %f\n", v.BanAddress, percentageOfPool*100, paymentAmount)
-		}
-
-		if !*dryRun {
-			err = paymentRepo.BatchCreateSendRequests(tx, sendRequestsRaw)
-			if err != nil {
-				fmt.Printf("❌ Error creating send requests %v", err)
-				return err
-			}
-		}
 		return nil
 	})
 
