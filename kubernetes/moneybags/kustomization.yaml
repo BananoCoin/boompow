@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: boompow-next
 resources:
 - cron.yaml
+- rpc_cron.yaml

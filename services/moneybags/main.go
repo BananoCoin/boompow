@@ -46,6 +46,9 @@ func main() {
 	userRepo := repository.NewUserService(db)
 	workRepo := repository.NewWorkService(db, userRepo)
 	paymentRepo := repository.NewPaymentService(db)
+	rppClient := &RPCClient{
+		Url: os.Getenv("RPC_URL"),
+	}
 
 	// Do all of this within a transaction
 	err = db.Transaction(func(tx *gorm.DB) error {
@@ -108,6 +111,29 @@ func main() {
 
 		// Alternative job retrieves all payments from database with null block-hash and broadcasts them to the node
 		fmt.Println("👽 Getting pending payments...")
+
+		payments, err := paymentRepo.GetPendingPayments(tx)
+		if err != nil {
+			return err
+		}
+
+		for _, payment := range payments {
+			if !*dryRun {
+				res, err := rppClient.MakeSendRequest(payment)
+				if err != nil {
+					fmt.Printf("\n❌ Error sending payment, ID %s, %v", payment.ID, err)
+					fmt.Printf("\nContinuing tho...")
+					continue
+				}
+				err = paymentRepo.SetBlockHash(tx, payment.ID, res.Block)
+				if err != nil {
+					fmt.Printf("\n❌ Error setting payment block hash, ID %s, hash %s, %v", payment.ID, res.Block, err)
+					fmt.Printf("\nContinuing tho...")
+				}
+			} else {
+				fmt.Printf("\n💸 Would send payment, amount %s, to %s", payment.AmountRaw, payment.Destination)
+			}
+		}
 
 		return nil
 	})
