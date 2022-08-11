@@ -15,18 +15,18 @@ type ActiveChannelObject struct {
 // SyncArray builds an thread-safe array with some handy methods
 type SyncArray struct {
 	mu       sync.Mutex
-	Channels []ActiveChannelObject
+	channels []ActiveChannelObject
 }
 
 func NewSyncArray() *SyncArray {
 	return &SyncArray{
-		Channels: []ActiveChannelObject{},
+		channels: []ActiveChannelObject{},
 	}
 }
 
 // See if element exists
 func (r *SyncArray) Exists(requestID string) bool {
-	for _, v := range r.Channels {
+	for _, v := range r.channels {
 		if v.RequestID == requestID {
 			return true
 		}
@@ -35,7 +35,7 @@ func (r *SyncArray) Exists(requestID string) bool {
 }
 
 func (r *SyncArray) HashExists(hash string) bool {
-	for _, v := range r.Channels {
+	for _, v := range r.channels {
 		if v.Hash == hash {
 			return true
 		}
@@ -48,7 +48,7 @@ func (r *SyncArray) Put(value ActiveChannelObject) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if !r.Exists(value.RequestID) {
-		r.Channels = append(r.Channels, value)
+		r.channels = append(r.channels, value)
 	}
 }
 
@@ -57,7 +57,7 @@ func (r *SyncArray) Get(requestID string) *ActiveChannelObject {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.Exists(requestID) {
-		return &r.Channels[r.IndexOf(requestID)]
+		return &r.channels[r.IndexOf(requestID)]
 	}
 
 	return nil
@@ -69,17 +69,23 @@ func (r *SyncArray) Delete(requestID string) {
 	defer r.mu.Unlock()
 	index := r.IndexOf(requestID)
 	if index > -1 {
-		r.Channels = remove(r.Channels, r.IndexOf(requestID))
+		r.channels = remove(r.channels, r.IndexOf(requestID))
 	}
 }
 
 func (r *SyncArray) IndexOf(requestID string) int {
-	for i, v := range r.Channels {
+	for i, v := range r.channels {
 		if v.RequestID == requestID {
 			return i
 		}
 	}
 	return -1
+}
+
+func (r *SyncArray) Len() int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return len(r.channels)
 }
 
 // NOT thread safe, must be called from within a locked section

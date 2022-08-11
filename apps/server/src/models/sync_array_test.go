@@ -33,12 +33,12 @@ func TestSyncArray(t *testing.T) {
 		Chan:                 make(chan []byte),
 	})
 
-	utils.AssertEqual(t, 3, len(array.Channels))
+	utils.AssertEqual(t, 3, array.Len())
 	utils.AssertEqual(t, true, array.Exists("1"))
 	utils.AssertEqual(t, "1", array.Get("1").Hash)
 	utils.AssertEqual(t, true, array.HashExists("2"))
 	array.Delete("1")
 	utils.AssertEqual(t, (*ActiveChannelObject)(nil), array.Get("1"))
-	utils.AssertEqual(t, 2, len(array.Channels))
+	utils.AssertEqual(t, 2, array.Len())
 	utils.AssertEqual(t, 0, array.IndexOf("3"))
 }
