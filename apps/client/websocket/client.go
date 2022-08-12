@@ -74,7 +74,15 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 					continue
 				}
 
-				// Queue
+				// If the backlog is too large, no-op
+				if queue.Len() > 99 {
+					fmt.Printf("\nBacklog is too large, skipping hash %s", serverMsg.Hash)
+				}
+
+				// Queue this work
+				queue.Put(serverMsg)
+
+				// Signal channel that we have work to do
 				workQueueChan <- &serverMsg
 			} else if serverMsg.MessageType == serializableModels.WorkCancel {
 				// Delete pending work from queue

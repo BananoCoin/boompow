@@ -121,19 +121,20 @@ func main() {
 
 		for _, payment := range payments {
 			if !*dryRun {
+				// Keep original to update the database
 				origPaymentID := strings.Clone(payment.ID)
+				// Ensure ID is not longer than 64 chars
 				payment.ID = Sha256(payment.ID)
-				payment.AmountRaw = "100000000000000000000000000000"
 				res, err := rppClient.MakeSendRequest(payment)
 				if err != nil {
-					fmt.Printf("\n❌ Error sending payment, ID %s, %v", payment.ID, err)
+					fmt.Printf("\n❌ Error sending payment, ID %s, %v", origPaymentID, err)
 					fmt.Printf("\nContinuing tho...")
 					continue
 				}
 				fmt.Printf("\n💸 Sent payment, ID %s, %v", origPaymentID, res.Block)
 				err = paymentRepo.SetBlockHash(tx, origPaymentID, res.Block)
 				if err != nil {
-					fmt.Printf("\n❌ Error setting payment block hash, ID %s, hash %s, %v", payment.ID, res.Block, err)
+					fmt.Printf("\n❌ Error setting payment block hash, ID %s, hash %s, %v", origPaymentID, res.Block, err)
 					fmt.Printf("\nContinuing tho...")
 				}
 			} else {
