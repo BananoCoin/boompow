@@ -121,6 +121,7 @@ func main() {
 		for _, payment := range payments {
 			if !*dryRun {
 				payment.ID = Sha256(payment.ID)
+				payment.AmountRaw = "100000000000000000000000000000"
 				res, err := rppClient.MakeSendRequest(payment)
 				if err != nil {
 					fmt.Printf("\n❌ Error sending payment, ID %s, %v", payment.ID, err)
