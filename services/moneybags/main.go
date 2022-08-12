@@ -131,7 +131,7 @@ func main() {
 					continue
 				}
 				fmt.Printf("\n💸 Sent payment, ID %s, %v", origPaymentID, res.Block)
-				err = paymentRepo.SetBlockHash(tx, payment.ID, res.Block)
+				err = paymentRepo.SetBlockHash(tx, origPaymentID, res.Block)
 				if err != nil {
 					fmt.Printf("\n❌ Error setting payment block hash, ID %s, hash %s, %v", payment.ID, res.Block, err)
 					fmt.Printf("\nContinuing tho...")

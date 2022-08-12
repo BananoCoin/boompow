@@ -20,12 +20,12 @@ type WorkProcessor struct {
 	WorkPool        *WorkPool
 }
 
-func NewWorkProcessor(ws *websocket.WebsocketService, nWorkProcesses int, gpuOnly bool) *WorkProcessor {
+func NewWorkProcessor(ws *websocket.WebsocketService, gpuOnly bool) *WorkProcessor {
 	wp := NewWorkPool(gpuOnly)
 	return &WorkProcessor{
 		Queue:           models.NewRandomAccessQueue(),
 		WorkQueueChan:   make(chan *serializableModels.ClientMessage, 100),
-		WorkProcessChan: make(chan bool, nWorkProcesses),
+		WorkProcessChan: make(chan bool),
 		WSService:       ws,
 		WorkPool:        wp,
 	}
