@@ -49,7 +49,7 @@ func (client RPCClient) MakeSendRequest(request models.SendRequest) (*SendRespon
 	var sendResponse SendResponse
 	err = json.Unmarshal(response, &sendResponse)
 	if err != nil {
-		glog.Errorf("Error unmarshaling response %s", err)
+		glog.Errorf("Error unmarshaling response %s, %s", string(response), err)
 		return nil, errors.New("Error")
 	}
 	return &sendResponse, nil
