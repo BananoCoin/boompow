@@ -40,7 +40,7 @@ func (wp *WorkProcessor) StartRequestQueueWorker() {
 			ch := make(chan string)
 
 			// Benchmark
-			startT := time.Now()
+			// startT := time.Now()
 
 			go func() {
 				result, err := wp.WorkPool.WorkGenerate(workItem)
@@ -58,9 +58,9 @@ func (wp *WorkProcessor) StartRequestQueueWorker() {
 			select {
 			case result := <-ch:
 				if result != "" {
-					endT := time.Now()
-					delta := endT.Sub(startT).Seconds()
-					fmt.Printf(" Work result: %s in %.2fs", result, delta)
+					// endT := time.Now()
+					// delta := endT.Sub(startT).Seconds()
+					// fmt.Printf("\nWork result: %s in %.2fs", result, delta)
 					// Send result back to server
 					clientWorkResult := serializableModels.ClientWorkResponse{
 						RequestID: workItem.RequestID,
