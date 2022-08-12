@@ -1,0 +1,13 @@
+FROM golang:1.19-buster
+
+WORKDIR /src
+
+# Install useful tools
+RUN apt-get update && apt-get install -y build-essential ocl-icd-opencl-dev git && \
+  rm -rf /var/lib/apt/lists/*
+
+
+ADD . .
+
+CMD ["./build.sh"]
+
