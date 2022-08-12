@@ -13,7 +13,7 @@ spec:
           - name: boompow-payments
             image: replaceme
             command: ["/bin/sh", "-c"]
-            args: ["moneybags -rpc-send -dry-run"]
+            args: ["moneybags -rpc-send"]
             env:               
               - name: DB_HOST
                 value: postgres.postgres               
