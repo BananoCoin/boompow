@@ -136,14 +136,17 @@ func (h *Hub) Run() {
 					go func() { ActiveHub.Broadcast <- bytes }()
 				}
 				// Credit this client for this work
-				statsMessage := repository.WorkMessage{
-					ProvidedByEmail:      message.ClientEmail,
-					RequestedByEmail:     activeChannel.RequesterEmail,
-					Hash:                 activeChannel.Hash,
-					Result:               workResponse.Result,
-					DifficultyMultiplier: activeChannel.DifficultyMultiplier,
+				// Except for some services people can abuse, like BananoVault
+				if activeChannel.RequesterEmail != "vault@banano.cc" {
+					statsMessage := repository.WorkMessage{
+						ProvidedByEmail:      message.ClientEmail,
+						RequestedByEmail:     activeChannel.RequesterEmail,
+						Hash:                 activeChannel.Hash,
+						Result:               workResponse.Result,
+						DifficultyMultiplier: activeChannel.DifficultyMultiplier,
+					}
+					*h.StatsChan <- statsMessage
 				}
-				*h.StatsChan <- statsMessage
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
 				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
