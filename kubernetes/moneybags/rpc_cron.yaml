@@ -53,7 +53,7 @@ spec:
               - name: BPOW_WALLET_ADDRESS
                 value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
               - name: RPC_URL
-                value: http://pippin-nano.pippin:11338
+                value: http://pippin-banano.pippin:11338
               - name: ENVIRONMENT
                 value: production
           restartPolicy: OnFailure
