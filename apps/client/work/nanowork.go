@@ -3,6 +3,7 @@ package work
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"runtime"
 
 	serializableModels "github.com/bananocoin/boompow/libs/models"
@@ -27,10 +28,10 @@ func NewWorkPool(gpuOnly bool) *WorkPool {
 		if cpuErr == nil {
 			pool.Workers = append(pool.Workers, cpu)
 		} else {
-			panic("Unable to initialize work pool for CPU")
+			panic(fmt.Sprintf("Unable to initialize work pool for CPU %v", cpuErr))
 		}
 	} else if gpuErr != nil {
-		panic("No GPU found, but gpu-only was set")
+		panic(fmt.Sprintf("No GPU found, but gpu-only was set %v", gpuErr))
 	}
 
 	return &WorkPool{

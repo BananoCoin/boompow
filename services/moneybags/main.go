@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"os"
@@ -19,7 +21,6 @@ import (
 // 1) We get the unpaid works for each user
 // 2) We figure out what percentage of the total prize pool this user has earned
 // 3) We build payments for each user based on that amount and save in database
-// ! TODO
 // 4) We ship the payments
 
 func main() {
@@ -119,6 +120,7 @@ func main() {
 
 		for _, payment := range payments {
 			if !*dryRun {
+				payment.ID = Sha256(payment.ID)
 				res, err := rppClient.MakeSendRequest(payment)
 				if err != nil {
 					fmt.Printf("\n❌ Error sending payment, ID %s, %v", payment.ID, err)
@@ -144,4 +146,13 @@ func main() {
 
 	// Success
 	os.Exit(0)
+}
+
+// Sha256 - Hashes given arguments
+func Sha256(values ...string) string {
+	hasher := sha256.New()
+	for _, val := range values {
+		hasher.Write([]byte(val))
+	}
+	return hex.EncodeToString(hasher.Sum(nil))
 }
