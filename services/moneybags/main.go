@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/repository"
@@ -120,6 +121,7 @@ func main() {
 
 		for _, payment := range payments {
 			if !*dryRun {
+				origPaymentID := strings.Clone(payment.ID)
 				payment.ID = Sha256(payment.ID)
 				payment.AmountRaw = "100000000000000000000000000000"
 				res, err := rppClient.MakeSendRequest(payment)
@@ -128,6 +130,7 @@ func main() {
 					fmt.Printf("\nContinuing tho...")
 					continue
 				}
+				fmt.Printf("\n💸 Sent payment, ID %s, %v", origPaymentID, res.Block)
 				err = paymentRepo.SetBlockHash(tx, payment.ID, res.Block)
 				if err != nil {
 					fmt.Printf("\n❌ Error setting payment block hash, ID %s, hash %s, %v", payment.ID, res.Block, err)
