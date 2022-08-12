@@ -43,19 +43,20 @@ func printBanner() {
 
 // Determine GPU info
 type gpuINFO struct {
-	platformName string
-	vendor       string
+	platformName  string
+	vendor        string
+	driverVersion string
+	device        opencl.Device
 }
 
-func getGPUInfo() (*gpuINFO, error) {
-	foundDevice := false
+func getGPUInfo() ([]*gpuINFO, error) {
+	ret := []*gpuINFO{}
 	platforms, err := opencl.GetPlatforms()
 	if err != nil {
 		return nil, err
 	}
 
 	var platform opencl.Platform
-	var device opencl.Device
 	var name string
 	for _, curPlatform := range platforms {
 		err = curPlatform.GetInfo(opencl.PlatformName, &name)
@@ -69,33 +70,43 @@ func getGPUInfo() (*gpuINFO, error) {
 			return nil, err
 		}
 
-		// Use the first available device
-		if len(devices) > 0 && !foundDevice {
+		for _, device := range devices {
 			var available bool
-			err = devices[0].GetInfo(opencl.DeviceAvailable, &available)
+			err = device.GetInfo(opencl.DeviceAvailable, &available)
 			if err == nil && available {
 				platform = curPlatform
 				device = devices[0]
-				foundDevice = true
 			}
-		}
 
-		var platformName string
-		err := platform.GetInfo(opencl.PlatformName, &platformName)
-		if err != nil {
-			return nil, err
-		}
+			var platformName string
+			err := platform.GetInfo(opencl.PlatformName, &platformName)
+			if err != nil {
+				continue
+			}
 
-		var vendor string
-		err = device.GetInfo(opencl.DeviceVendor, &vendor)
-		if err != nil {
-			return nil, err
-		}
+			var vendor string
+			err = device.GetInfo(opencl.DeviceVendor, &vendor)
+			if err != nil {
+				continue
+			}
 
-		return &gpuINFO{
-			platformName: platformName,
-			vendor:       vendor,
-		}, nil
+			var driverVersion string
+			err = device.GetInfo(opencl.DriverVersion, &driverVersion)
+			if err != nil {
+				continue
+			}
+
+			ret = append(ret, &gpuINFO{
+				platformName:  platformName,
+				vendor:        vendor,
+				driverVersion: driverVersion,
+				device:        device,
+			})
+		}
+	}
+
+	if len(ret) > 0 {
+		return ret, nil
 	}
 
 	return nil, errors.New("No GPU found")
@@ -162,14 +173,17 @@ func main() {
 		fmt.Printf("\nOtherwise you may want to check your GPU drivers and ensure it is properly installed, as well as ensure your device supports OpenCL 2.0\n\n")
 	} else {
 		fmt.Printf("\n⚡ Using GPU")
-		fmt.Printf("\nPlatform: %s", gpuInfo.platformName)
-		fmt.Printf("\nVendor: %s\n", gpuInfo.vendor)
+		fmt.Printf("\nPlatform: %s", gpuInfo[0].platformName)
+		fmt.Printf("\nVendor: %s", gpuInfo[0].vendor)
+		fmt.Printf("\nDriver: %s\n", gpuInfo[0].driverVersion)
 	}
 	if *gpuOnly {
 		fmt.Printf("\nOnly using GPU for work_generate...\n\n")
 	} else {
 		fmt.Printf("\nUsing GPU+CPU for work_generate...\n\n")
 	}
+
+	os.Exit(0)
 
 	// Check benchmark
 	if *benchmark > 0 {
