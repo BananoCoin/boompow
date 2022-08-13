@@ -229,7 +229,9 @@ func main() {
 			fmt.Printf("\nOtherwise you may want to check your GPU drivers and ensure it is properly installed, as well as ensure your device supports OpenCL 2.0\n\n")
 		}
 	}
-	if *gpuOnly || !found {
+	if *gpuOnly && found {
+		fmt.Printf("\nOnly using GPU for work_generate...\n\n")
+	} else if !found {
 		fmt.Printf("\nOnly using CPU for work_generate...\n\n")
 	} else {
 		fmt.Printf("\nUsing GPU+CPU for work_generate...\n\n")
