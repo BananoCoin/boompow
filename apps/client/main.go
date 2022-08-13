@@ -211,7 +211,6 @@ func main() {
 	} else {
 		for key := range gpuInfo {
 			for _, gpu := range gpuSplitInt {
-				fmt.Println(gpu)
 				if gpu != key {
 					continue
 				}
