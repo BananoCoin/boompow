@@ -18,6 +18,7 @@ import (
 	"github.com/bananocoin/boompow/apps/client/gql"
 	"github.com/bananocoin/boompow/apps/client/websocket"
 	"github.com/bananocoin/boompow/apps/client/work"
+	"github.com/bananocoin/boompow/libs/utils/misc"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/go-co-op/gocron"
 	"github.com/mbndr/figlet4go"
@@ -210,10 +211,8 @@ func main() {
 		fmt.Printf("\nOtherwise you may want to check your GPU drivers and ensure it is properly installed, as well as ensure your device supports OpenCL 2.0\n\n")
 	} else {
 		for key := range gpuInfo {
-			for _, gpu := range gpuSplitInt {
-				if gpu != key {
-					continue
-				}
+			if !misc.Contains(gpuSplitInt, key) {
+				continue
 			}
 			found = true
 			fmt.Printf("\n⚡ Using GPU %d", key)
