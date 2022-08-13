@@ -1,3 +1,5 @@
+github.com/bbedward/nanopow v0.0.0-20220813150113-8e6381d86476 h1:djatQVcJDwh7ojCMh4G+StXJAnuP/9/Y+WWZljbFcog=
+github.com/bbedward/nanopow v0.0.0-20220813150113-8e6381d86476/go.mod h1:LlfiFzkzg1LQa16NfOIodEcj35rntNnpCgIswbsD/Kw=
 github.com/hasura/go-graphql-client v0.7.2/go.mod h1:NVifIwv+YFIUYGLQ7SM2/vBbzS/9rFP4vmIf/vf/zXM=
 github.com/jackc/chunkreader v1.0.0 h1:4s39bBR8ByfqH+DKm8rQA3E1LHZWB9XWcrz8fqaZbe0=
 github.com/jackc/pgproto3 v1.1.0 h1:FYYE4yRw+AgI8wXIinMlNjBbp/UitDJwfj5LqqewP1A=

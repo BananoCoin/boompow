@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -75,7 +76,8 @@ func getGPUInfo() ([]*gpuINFO, error) {
 			err = device.GetInfo(opencl.DeviceAvailable, &available)
 			if err == nil && available {
 				platform = curPlatform
-				device = devices[0]
+			} else {
+				continue
 			}
 
 			var platformName string
@@ -148,14 +150,20 @@ func main() {
 	// Parse flags
 	gpuOnly := flag.Bool("gpu-only", false, "If set, will only run work on GPU (otherwise, both CPU and GPU)")
 	maxDifficulty := flag.Int("max-difficulty", 128, "The maximum work difficulty to compute, less than this will be ignored")
+	// Benchmark
 	benchmark := flag.Int("benchmark", 0, "Run a benchmark for the given number of random hashes")
 	benchmarkDifficulty := flag.Int("benchmark-difficulty", 64, "The difficulty multiplier for the benchmark")
+	// To login without username and password prompt
 	argEmail := flag.String("email", "", "The email (username) to use for the worker (optional)")
 	argPassword := flag.String("password", "", "The password to use for the worker (optional)")
+	// Registration related things
 	registerProvider := flag.Bool("register-provider", false, "Register to be a provider (optional)")
 	registerService := flag.Bool("register-service", false, "Register to be a service/work requester (optional)")
 	resendConfirmationEmail := flag.Bool("resend-confirmation-email", false, "Resend the confirmation email (optional)")
 	generateServiceToken := flag.Bool("generate-service-token", false, "Generate a service token (optional)")
+	// OpenCL related things
+	listDevices := flag.Bool("list-devices", false, "List available OpenCL devices/GPUs (optional)")
+	gpus := flag.String("gpus", "0", "The GPUs to use for PoW, comma separated e.g. --gpu 0,1,2 (optional, default 0)")
 	version := flag.Bool("version", false, "Display the version")
 	flag.Parse()
 
@@ -164,30 +172,73 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Parse GPU argument
+	gpuSplit := strings.Split(*gpus, ",")
+	gpuSplitInt := []int{}
+	// Validate
+	for _, gpu := range gpuSplit {
+		asInt, err := strconv.Atoi(gpu)
+		if err != nil {
+			fmt.Printf("⚠️ Invalid GPU argument - not a number: %s", gpu)
+			os.Exit(1)
+		}
+		gpuSplitInt = append(gpuSplitInt, asInt)
+	}
+
 	printBanner()
 
 	gpuInfo, err := getGPUInfo()
+
+	// See if we just want to list the deviecs
+	if *listDevices {
+		for key := range gpuInfo {
+			fmt.Printf("\n⚡ GPU %d", key)
+			fmt.Printf("\nPlatform: %s", gpuInfo[key].platformName)
+			fmt.Printf("\nVendor: %s", gpuInfo[key].vendor)
+			fmt.Printf("\nDriver: %s", gpuInfo[key].driverVersion)
+		}
+		fmt.Printf("\n")
+		os.Exit(0)
+	}
+
+	found := false
+	var devicesToUse []opencl.Device
+
 	if err != nil {
 		fmt.Printf("\n🚨 No GPU Found!")
 		fmt.Printf("\nThis error is safe to ignore if you intended to generate PoW on CPU only")
 		fmt.Printf("\nOtherwise you may want to check your GPU drivers and ensure it is properly installed, as well as ensure your device supports OpenCL 2.0\n\n")
 	} else {
-		fmt.Printf("\n⚡ Using GPU")
-		fmt.Printf("\nPlatform: %s", gpuInfo[0].platformName)
-		fmt.Printf("\nVendor: %s", gpuInfo[0].vendor)
-		fmt.Printf("\nDriver: %s\n", gpuInfo[0].driverVersion)
+		for key := range gpuInfo {
+			for _, gpu := range gpuSplitInt {
+				fmt.Println(gpu)
+				if gpu != key {
+					continue
+				}
+			}
+			found = true
+			fmt.Printf("\n⚡ Using GPU %d", key)
+			fmt.Printf("\nPlatform: %s", gpuInfo[key].platformName)
+			fmt.Printf("\nVendor: %s", gpuInfo[key].vendor)
+			fmt.Printf("\nDriver: %s", gpuInfo[key].driverVersion)
+			devicesToUse = append(devicesToUse, gpuInfo[key].device)
+		}
+		fmt.Printf("\n")
+		if !found {
+			fmt.Printf("\n🚨 No GPU Found or Invalid GPU Selected!")
+			fmt.Printf("\nThis error is safe to ignore if you intended to generate PoW on CPU only")
+			fmt.Printf("\nOtherwise you may want to check your GPU drivers and ensure it is properly installed, as well as ensure your device supports OpenCL 2.0\n\n")
+		}
 	}
-	if *gpuOnly {
-		fmt.Printf("\nOnly using GPU for work_generate...\n\n")
+	if *gpuOnly || !found {
+		fmt.Printf("\nOnly using CPU for work_generate...\n\n")
 	} else {
 		fmt.Printf("\nUsing GPU+CPU for work_generate...\n\n")
 	}
 
-	os.Exit(0)
-
 	// Check benchmark
 	if *benchmark > 0 {
-		work.RunBenchmark(*benchmark, *benchmarkDifficulty, *gpuOnly)
+		work.RunBenchmark(*benchmark, *benchmarkDifficulty, *gpuOnly, devicesToUse)
 		os.Exit(0)
 	}
 
@@ -575,7 +626,7 @@ func main() {
 	fmt.Printf("\n🚀 Initiating connection to BoomPOW...")
 
 	// Create work processor
-	workProcessor := work.NewWorkProcessor(WSService, *gpuOnly)
+	workProcessor := work.NewWorkProcessor(WSService, *gpuOnly, devicesToUse)
 	workProcessor.StartAsync()
 
 	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue)

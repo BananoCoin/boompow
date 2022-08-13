@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Inkeliz/go-opencl/opencl"
 	"github.com/bananocoin/boompow/libs/models"
 )
 
-func RunBenchmark(nHashes int, difficultyMultiplier int, gpuOnly bool) {
-	workPool := NewWorkPool(gpuOnly)
+func RunBenchmark(nHashes int, difficultyMultiplier int, gpuOnly bool, devices []opencl.Device) {
+	workPool := NewWorkPool(gpuOnly, devices)
 	if difficultyMultiplier < 1 {
 		difficultyMultiplier = 1
 	}

@@ -6,22 +6,34 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/Inkeliz/go-opencl/opencl"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/validation"
+	"github.com/bbedward/nanopow"
 	"github.com/golang/glog"
-	"github.com/inkeliz/nanopow"
 )
 
 type WorkPool struct {
 	Pool *nanopow.Pool
 }
 
-func NewWorkPool(gpuOnly bool) *WorkPool {
+func NewWorkPool(gpuOnly bool, devices []opencl.Device) *WorkPool {
 	pool := nanopow.NewPool()
-	gpu, gpuErr := nanopow.NewWorkerGPU()
-	if gpuErr == nil {
-		pool.Workers = append(pool.Workers, gpu)
+	for _, device := range devices {
+		gpu, gpuErr := nanopow.NewWorkerGPU(device)
+		if gpuErr == nil {
+			pool.Workers = append(pool.Workers, gpu)
+		} else {
+			fmt.Printf("\n⚠️ Unable to use GPU %v", gpuErr)
+		}
 	}
+
+	if gpuOnly && len(pool.Workers) == 0 {
+		panic("Unable to initialize any GPUs, but gpu-only was set")
+	} else if len(pool.Workers) == 0 {
+		fmt.Printf("\n⚠️ Unable to initialize any GPUs, using CPU")
+	}
+
 	if !gpuOnly {
 		threads := runtime.NumCPU()
 		cpu, cpuErr := nanopow.NewWorkerCPUThread(uint64(threads))
@@ -30,8 +42,6 @@ func NewWorkPool(gpuOnly bool) *WorkPool {
 		} else {
 			panic(fmt.Sprintf("Unable to initialize work pool for CPU %v", cpuErr))
 		}
-	} else if gpuErr != nil {
-		panic(fmt.Sprintf("No GPU found, but gpu-only was set %v", gpuErr))
 	}
 
 	return &WorkPool{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Inkeliz/go-opencl/opencl"
 	"github.com/bananocoin/boompow/apps/client/models"
 	"github.com/bananocoin/boompow/apps/client/websocket"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
@@ -18,8 +19,8 @@ type WorkProcessor struct {
 	WorkPool      *WorkPool
 }
 
-func NewWorkProcessor(ws *websocket.WebsocketService, gpuOnly bool) *WorkProcessor {
-	wp := NewWorkPool(gpuOnly)
+func NewWorkProcessor(ws *websocket.WebsocketService, gpuOnly bool, devices []opencl.Device) *WorkProcessor {
+	wp := NewWorkPool(gpuOnly, devices)
 	return &WorkProcessor{
 		Queue:         models.NewRandomAccessQueue(),
 		WorkQueueChan: make(chan *serializableModels.ClientMessage, 100),
