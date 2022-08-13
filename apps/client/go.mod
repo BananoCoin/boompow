@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/Inkeliz/go-opencl v0.0.0-20200806180703-5f0707fba006
 	github.com/Khan/genqlient v0.5.0
-	github.com/bananocoin/boompow/libs/models v0.0.0-20220812195446-bfe18baf477b
-	github.com/bananocoin/boompow/libs/utils v0.0.0-20220812195446-bfe18baf477b
+	github.com/bananocoin/boompow/libs/models v0.0.0-20220813160408-80dcb738fae5
+	github.com/bananocoin/boompow/libs/utils v0.0.0-20220813160408-80dcb738fae5
 	github.com/bbedward/nanopow v0.0.0-20220813154520-94e2401a7737
 	github.com/go-co-op/gocron v1.16.2
 	github.com/golang/glog v1.0.0

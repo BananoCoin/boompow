@@ -4,9 +4,9 @@ go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.13
-	github.com/alicebob/miniredis/v2 v2.22.0
-	github.com/bananocoin/boompow/libs/models v0.0.0-20220810030035-6f62a2705842
-	github.com/bananocoin/boompow/libs/utils v0.0.0-20220810030035-6f62a2705842
+	github.com/alicebob/miniredis/v2 v2.23.0
+	github.com/bananocoin/boompow/libs/models v0.0.0-20220813160408-80dcb738fae5
+	github.com/bananocoin/boompow/libs/utils v0.0.0-20220813160408-80dcb738fae5
 	github.com/bitfield/script v0.20.2
 	github.com/go-chi/chi v1.5.4
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
@@ -43,6 +43,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.7 // indirect
 )

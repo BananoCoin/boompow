@@ -12,12 +12,10 @@ github.com/alexflint/go-scalar v1.0.0/go.mod h1:GpHzbCOZXEKMEcygYQ5n/aa4Aq84zbxj
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
-github.com/bananocoin/boompow/libs/models v0.0.0-20220812195446-bfe18baf477b h1:OBXH9cydpVEfFT6Pf6cqCOxTUPOUY+H6qdje4q7ogL8=
-github.com/bananocoin/boompow/libs/models v0.0.0-20220812195446-bfe18baf477b/go.mod h1:zu+bs0rePELedw71a8RAFgNbKACZ84WLrh2LajEeNWg=
-github.com/bananocoin/boompow/libs/utils v0.0.0-20220812195446-bfe18baf477b h1:QF2iQq5idkBwd94rJwwItAVhMMdpCMLM1JreWIC7kvY=
-github.com/bananocoin/boompow/libs/utils v0.0.0-20220812195446-bfe18baf477b/go.mod h1:dWygN1vCMbjPmvFx2brx/jk/+Dag4x8XjEQ+h5SwOv8=
-github.com/bbedward/nanopow v0.0.0-20220813150113-8e6381d86476 h1:djatQVcJDwh7ojCMh4G+StXJAnuP/9/Y+WWZljbFcog=
-github.com/bbedward/nanopow v0.0.0-20220813150113-8e6381d86476/go.mod h1:LlfiFzkzg1LQa16NfOIodEcj35rntNnpCgIswbsD/Kw=
+github.com/bananocoin/boompow/libs/models v0.0.0-20220813160408-80dcb738fae5 h1:1o4FLari89Oa2xqO1uh9yipBilHf0onpTlm/UE8CA48=
+github.com/bananocoin/boompow/libs/models v0.0.0-20220813160408-80dcb738fae5/go.mod h1:zu+bs0rePELedw71a8RAFgNbKACZ84WLrh2LajEeNWg=
+github.com/bananocoin/boompow/libs/utils v0.0.0-20220813160408-80dcb738fae5 h1:yALGSBuqBc9N8U5pbf6OCFifx7jmpKuiaNHibd839qQ=
+github.com/bananocoin/boompow/libs/utils v0.0.0-20220813160408-80dcb738fae5/go.mod h1:dWygN1vCMbjPmvFx2brx/jk/+Dag4x8XjEQ+h5SwOv8=
 github.com/bbedward/nanopow v0.0.0-20220813154520-94e2401a7737 h1:E6Ay677kf91kjuszU2xi3g1m73BuEDJcOwtVP6joryI=
 github.com/bbedward/nanopow v0.0.0-20220813154520-94e2401a7737/go.mod h1:LlfiFzkzg1LQa16NfOIodEcj35rntNnpCgIswbsD/Kw=
 github.com/bradleyjkemp/cupaloy/v2 v2.6.0/go.mod h1:bm7JXdkRd4BHJk9HpwqAI8BoAY1lps46Enkdqw6aRX0=
