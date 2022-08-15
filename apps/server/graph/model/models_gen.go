@@ -64,6 +64,7 @@ type VerifyServiceInput struct {
 type WorkGenerateInput struct {
 	Hash                 string `json:"hash"`
 	DifficultyMultiplier int    `json:"difficultyMultiplier"`
+	BlockAward           *bool  `json:"blockAward"`
 }
 
 type UserType string

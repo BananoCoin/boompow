@@ -423,6 +423,7 @@ input LoginInput {
 input WorkGenerateInput {
   hash: String!
   difficultyMultiplier: Int!
+  blockAward: Boolean
 }
 
 input ResetPasswordInput {
@@ -3720,7 +3721,7 @@ func (ec *executionContext) unmarshalInputWorkGenerateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"hash", "difficultyMultiplier"}
+	fieldsInOrder := [...]string{"hash", "difficultyMultiplier", "blockAward"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3740,6 +3741,14 @@ func (ec *executionContext) unmarshalInputWorkGenerateInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyMultiplier"))
 			it.DifficultyMultiplier, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "blockAward":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("blockAward"))
+			it.BlockAward, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

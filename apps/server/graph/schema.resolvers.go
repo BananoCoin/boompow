@@ -105,8 +105,15 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		return workResult.Result, nil
 	}
 
+	var requesterEmail string
+	if input.BlockAward != nil && !*input.BlockAward {
+		requesterEmail = "no_award"
+	} else {
+		requesterEmail = requester.User.Email
+	}
+
 	workRequest := &serializableModels.ClientMessage{
-		RequesterEmail:       requester.User.Email,
+		RequesterEmail:       requesterEmail,
 		MessageType:          serializableModels.WorkGenerate,
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,

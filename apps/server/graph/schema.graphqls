@@ -47,6 +47,7 @@ input LoginInput {
 input WorkGenerateInput {
   hash: String!
   difficultyMultiplier: Int!
+  blockAward: Boolean
 }
 
 input ResetPasswordInput {

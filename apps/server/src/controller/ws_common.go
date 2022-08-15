@@ -137,7 +137,7 @@ func (h *Hub) Run() {
 				}
 				// Credit this client for this work
 				// Except for some services people can abuse, like BananoVault
-				if activeChannel.RequesterEmail != "vault@banano.cc" {
+				if activeChannel.RequesterEmail != "vault@banano.cc" && activeChannel.RequesterEmail != "no_award" {
 					statsMessage := repository.WorkMessage{
 						ProvidedByEmail:      message.ClientEmail,
 						RequestedByEmail:     activeChannel.RequesterEmail,
