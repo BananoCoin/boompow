@@ -104,12 +104,21 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	clientIP := net.GetIPAddress(r)
+
+	// Block hetzner finland datacenters
+	if net.IsIPInHetznerRange(clientIP) {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("403 - Forbidden"))
+		return
+	}
+
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		glog.Error(err)
 		return
 	}
-	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: net.GetIPAddress(r), Email: provider.User.Email}
+	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: clientIP, Email: provider.User.Email}
 	client.Hub.Register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
