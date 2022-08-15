@@ -77,6 +77,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 				// If the backlog is too large, no-op
 				if queue.Len() > 99 {
 					fmt.Printf("\nBacklog is too large, skipping hash %s", serverMsg.Hash)
+					continue
 				}
 
 				// Queue this work
@@ -87,8 +88,7 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 			} else if serverMsg.MessageType == serializableModels.WorkCancel {
 				// Delete pending work from queue
 				// ! TODO - can we cancel currently runing work calculations?
-				var workCancelCmd serializableModels.ClientMessage
-				queue.Delete(workCancelCmd.Hash)
+				queue.Delete(serverMsg.Hash)
 			} else if serverMsg.MessageType == serializableModels.BlockAwarded {
 				fmt.Printf("\n💰 Received block awarded %s", serverMsg.Hash)
 				fmt.Printf("\n💰 Your current estimated next payout is %f%% or %f BAN", serverMsg.PercentOfPool, serverMsg.EstimatedAward)
