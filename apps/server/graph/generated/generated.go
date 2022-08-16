@@ -66,7 +66,9 @@ type ComplexityRoot struct {
 	}
 
 	Stats struct {
-		ConnectedWorkers func(childComplexity int) int
+		ConnectedWorkers       func(childComplexity int) int
+		RegisteredServiceCount func(childComplexity int) int
+		TotalPaidBanano        func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -232,6 +234,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Stats.ConnectedWorkers(childComplexity), true
 
+	case "Stats.registeredServiceCount":
+		if e.complexity.Stats.RegisteredServiceCount == nil {
+			break
+		}
+
+		return e.complexity.Stats.RegisteredServiceCount(childComplexity), true
+
+	case "Stats.totalPaidBanano":
+		if e.complexity.Stats.TotalPaidBanano == nil {
+			break
+		}
+
+		return e.complexity.Stats.TotalPaidBanano(childComplexity), true
+
 	case "Subscription.stats":
 		if e.complexity.Subscription.Stats == nil {
 			break
@@ -390,6 +406,8 @@ type User {
 
 type Stats {
   connectedWorkers: Int!
+  totalPaidBanano: String!
+  registeredServiceCount: Int!
 }
 
 input RefreshTokenInput {
@@ -1358,6 +1376,94 @@ func (ec *executionContext) fieldContext_Stats_connectedWorkers(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Stats_totalPaidBanano(ctx context.Context, field graphql.CollectedField, obj *model.Stats) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Stats_totalPaidBanano(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPaidBanano, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Stats_totalPaidBanano(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Stats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Stats_registeredServiceCount(ctx context.Context, field graphql.CollectedField, obj *model.Stats) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Stats_registeredServiceCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegisteredServiceCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Stats_registeredServiceCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Stats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Subscription_stats(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscription_stats(ctx, field)
 	if err != nil {
@@ -1413,6 +1519,10 @@ func (ec *executionContext) fieldContext_Subscription_stats(ctx context.Context,
 			switch field.Name {
 			case "connectedWorkers":
 				return ec.fieldContext_Stats_connectedWorkers(ctx, field)
+			case "totalPaidBanano":
+				return ec.fieldContext_Stats_totalPaidBanano(ctx, field)
+			case "registeredServiceCount":
+				return ec.fieldContext_Stats_registeredServiceCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Stats", field.Name)
 		},
@@ -3988,6 +4098,20 @@ func (ec *executionContext) _Stats(ctx context.Context, sel ast.SelectionSet, ob
 		case "connectedWorkers":
 
 			out.Values[i] = ec._Stats_connectedWorkers(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalPaidBanano":
+
+			out.Values[i] = ec._Stats_totalPaidBanano(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "registeredServiceCount":
+
+			out.Values[i] = ec._Stats_registeredServiceCount(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

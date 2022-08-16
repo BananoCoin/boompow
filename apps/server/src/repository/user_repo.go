@@ -30,6 +30,7 @@ type UserRepo interface {
 	VerifyService(verifyService *model.VerifyServiceInput) (bool, error)
 	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
 	GenerateServiceToken() string
+	GetNumberServices() (int64, error)
 }
 
 type UserService struct {
@@ -272,6 +273,14 @@ func (s *UserService) GetAllUsers() ([]*models.User, error) {
 	users := []*models.User{}
 	err := s.Db.Find(&users).Error
 	return users, err
+}
+
+func (s *UserService) GetNumberServices() (int64, error) {
+	var count int64
+	if err := s.Db.Model(&models.User{}).Where("type = ?", models.REQUESTER).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 // Compare password to hashed password, return true if match false otherwise

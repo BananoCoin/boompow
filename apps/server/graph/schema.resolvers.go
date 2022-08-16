@@ -20,6 +20,7 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
+	"github.com/golang/glog"
 	"gorm.io/gorm"
 )
 
@@ -196,9 +197,22 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 	// Pub stats every 10 seconds
 	go func() {
 		for {
+			// Connected clients
 			nConnectedClients, err := database.GetRedisDB().GetNumberConnectedClients()
+			if err != nil {
+				glog.Infof("Error retrieving connected clients for stats sub %v", err)
+				continue
+			}
+			// N Services
+			nServices, err := r.UserRepo.GetNumberServices()
+			if err != nil {
+				glog.Infof("Error retrieving # services for stats sub %v", err)
+				continue
+			}
+			// Total paid
+			totalPaidBan, err := r.PaymentRepo.GetTotalPaidBanano()
 			if err == nil {
-				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients)}
+				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: int(nServices)}
 			}
 			time.Sleep(10 * time.Second)
 		}

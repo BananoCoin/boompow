@@ -7,6 +7,7 @@ import "github.com/bananocoin/boompow/apps/server/src/repository"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserRepo repository.UserRepo
-	WorkRepo repository.WorkRepo
+	UserRepo    repository.UserRepo
+	WorkRepo    repository.WorkRepo
+	PaymentRepo repository.PaymentRepo
 }

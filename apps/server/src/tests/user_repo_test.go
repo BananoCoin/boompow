@@ -71,6 +71,25 @@ func TestUserRepo(t *testing.T) {
 	})
 	utils.AssertEqual(t, false, authenticated)
 
+	// Test # Services
+	services, err := userRepo.GetNumberServices()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 0, int(services))
+	// Create a service
+	sname := "Service1"
+	sWeb := "https://google.com"
+	_, err = userRepo.CreateUser(&model.UserInput{
+		Email:          "jeff@gmail.com",
+		Password:       "Password123!",
+		Type:           model.UserType(models.REQUESTER),
+		ServiceName:    &sname,
+		ServiceWebsite: &sWeb,
+	}, false)
+	utils.AssertEqual(t, nil, err)
+	services, err = userRepo.GetNumberServices()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 1, int(services))
+
 	// Test delete user
 	userRepo.DeleteUser(user.ID)
 	dbUser, err = userRepo.GetUser(&user.ID, nil)
@@ -80,4 +99,5 @@ func TestUserRepo(t *testing.T) {
 	token = userRepo.GenerateServiceToken()
 	utils.AssertEqual(t, 44, len(token))
 	utils.AssertEqual(t, true, strings.HasPrefix(token, "service:"))
+
 }

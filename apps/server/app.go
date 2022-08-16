@@ -70,10 +70,12 @@ func runServer() {
 	// Create repositories
 	userRepo := repository.NewUserService((db))
 	workRepo := repository.NewWorkService(db, userRepo)
+	paymentRepo := repository.NewPaymentService(db)
 
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		UserRepo: userRepo,
-		WorkRepo: workRepo,
+		UserRepo:    userRepo,
+		WorkRepo:    workRepo,
+		PaymentRepo: paymentRepo,
 	}}))
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})

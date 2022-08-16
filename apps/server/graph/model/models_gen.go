@@ -30,7 +30,9 @@ type ResetPasswordInput struct {
 }
 
 type Stats struct {
-	ConnectedWorkers int `json:"connectedWorkers"`
+	ConnectedWorkers       int    `json:"connectedWorkers"`
+	TotalPaidBanano        string `json:"totalPaidBanano"`
+	RegisteredServiceCount int    `json:"registeredServiceCount"`
 }
 
 type User struct {

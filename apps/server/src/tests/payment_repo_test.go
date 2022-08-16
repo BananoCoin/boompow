@@ -75,4 +75,9 @@ func TestPaymentrepo(t *testing.T) {
 	for p := range payments {
 		utils.AssertEqual(t, true, payments[p].ID == "0" || payments[p].ID == "2")
 	}
+
+	// Check out total paid
+	totalPaid, err := paymentRepo.GetTotalPaidBanano()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 3.0+1728016, totalPaid)
 }
