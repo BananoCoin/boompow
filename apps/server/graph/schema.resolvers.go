@@ -199,7 +199,7 @@ func (r *mutationResolver) SendConfirmationEmail(ctx context.Context) (bool, err
 		return false, fmt.Errorf("already verified")
 	}
 
-	if err := r.UserRepo.SendConfirmEmailEmail(user.User.Email, user.User.Type, false); err != nil {
+	if err := r.UserRepo.SendConfirmEmailEmail(user.User.Email, user.User.Type, true); err != nil {
 		return false, fmt.Errorf("error sending email")
 	}
 

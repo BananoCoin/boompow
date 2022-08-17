@@ -157,7 +157,11 @@ func (s *UserService) SendConfirmEmailEmail(userEmail string, userType models.Us
 		return err
 	}
 
-	database.GetRedisDB().SetConfirmationToken(userEmail, confirmationToken)
+	err = database.GetRedisDB().SetConfirmationToken(userEmail, confirmationToken)
+	if err != nil {
+		klog.Errorf("Error setting confirmation token: %v", err)
+		return err
+	}
 	// Send email with confirmation token
 	if actuallyDoEmail {
 		if err = email.SendConfirmationEmail(userEmail, userType, confirmationToken); err != nil {
