@@ -125,7 +125,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	}
 
 	user := &models.User{
-		Email:          userInput.Email,
+		Email:          strings.ToLower(userInput.Email),
 		Password:       hashedPassword,
 		Type:           models.UserType(userInput.Type),
 		BanAddress:     userInput.BanAddress,
@@ -286,7 +286,8 @@ func (s *UserService) GetNumberServices() (int64, error) {
 // Compare password to hashed password, return true if match false otherwise
 func (s *UserService) Authenticate(loginInput *model.LoginInput) *models.User {
 	user := &models.User{}
-	err := s.Db.Where("email = ?", &loginInput.Email).First(user).Error
+	emailLower := strings.ToLower(loginInput.Email)
+	err := s.Db.Where("lower(email) = ?", &emailLower).First(user).Error
 
 	if err != nil {
 		return nil
