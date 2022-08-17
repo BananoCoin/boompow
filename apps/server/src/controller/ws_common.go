@@ -150,7 +150,7 @@ func (h *Hub) Run() {
 				}
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
-				glog.Errorf("Received work response for hash %s, but no channel exists", workResponse.Hash)
+				glog.Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
 			// Error de-serializing
 			if err != nil {

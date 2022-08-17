@@ -37,7 +37,10 @@ func usage() {
 func init() {
 	flag.Usage = usage
 	flag.Set("logtostderr", "true")
-	flag.Set("stderrthreshold", "INFO")
+	flag.Set("stderrthreshold", "ERROR")
+	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
+		flag.Set("stderrthreshold", "INFO")
+	}
 	flag.Set("v", "2")
 	flag.Parse()
 }
