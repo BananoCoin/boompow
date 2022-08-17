@@ -91,6 +91,7 @@ func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.Clie
 					glog.Errorf("Error marshalling block awarded message %s", err)
 					break
 				}
+				fmt.Printf("Awarding to %s", c.IPAddress)
 				c.Send <- bytes
 			}
 		}

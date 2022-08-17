@@ -1,15 +1,22 @@
 package net
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 // Get a clients real user IP Address
 func GetIPAddress(r *http.Request) string {
 	IPAddress := r.Header.Get("X-Real-Ip")
 	if IPAddress == "" {
 		IPAddress = r.Header.Get("X-Forwarded-For")
+	} else {
+		fmt.Printf("Got IP from X-Real-Ip")
 	}
 	if IPAddress == "" {
 		IPAddress = r.RemoteAddr
+	} else {
+		fmt.Printf("Got IP from X-Forwarded-For")
 	}
 	return IPAddress
 }
