@@ -2,11 +2,13 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils"
+	"github.com/bananocoin/boompow/libs/utils/number"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/golang/glog"
 	"github.com/google/uuid"
@@ -30,6 +32,7 @@ type WorkRepo interface {
 	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error)
 	GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error)
+	GetTopContributors(limit int) ([]Top10Result, error)
 }
 
 type WorkService struct {
@@ -154,6 +157,28 @@ func (s *WorkService) GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error
 	// x 100 for more precision
 	err := tx.Model(&models.WorkResult{}).Select("COUNT(*) as unpaid_count, provided_by, ban_address, sum(difficulty_multiplier*100) as difficulty_sum").Joins("JOIN users on users.id = work_results.provided_by").Group("provided_by").Group("ban_address").Where("awarded = ?", false).Find(&result).Error
 	return result, err
+}
+
+type Top10Result struct {
+	BanAddress string `json:"ban_address"`
+	TotalRaw   string `json:"total_raw"`
+	TotalBan   string `json:"total_ban"`
+}
+
+func (s *WorkService) GetTopContributors(limit int) ([]Top10Result, error) {
+	var results []Top10Result
+	err := s.Db.Model(&models.WorkResult{}).Select("ban_address, (select sum(cast(send_json->>'amount'as numeric)) from payments where payments.paid_to=provided_by) as total_raw").Joins("JOIN users on users.id = work_results.provided_by").Group("ban_address").Group("provided_by").Where("type = ?", "PROVIDER").Order("sum(difficulty_multiplier) desc").Limit(limit).Find(&results).Error
+	if err == nil {
+		for i, r := range results {
+			totalBan, err := number.RawToBanano(r.TotalRaw, true)
+			if err != nil {
+				glog.Infof("Error converting %v to banano", err)
+				continue
+			}
+			results[i].TotalBan = fmt.Sprintf("%.2f", totalBan)
+		}
+	}
+	return results, err
 }
 
 func (s *WorkService) GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error) {

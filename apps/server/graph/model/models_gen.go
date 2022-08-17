@@ -30,9 +30,15 @@ type ResetPasswordInput struct {
 }
 
 type Stats struct {
-	ConnectedWorkers       int    `json:"connectedWorkers"`
-	TotalPaidBanano        string `json:"totalPaidBanano"`
-	RegisteredServiceCount int    `json:"registeredServiceCount"`
+	ConnectedWorkers       int              `json:"connectedWorkers"`
+	TotalPaidBanano        string           `json:"totalPaidBanano"`
+	RegisteredServiceCount int              `json:"registeredServiceCount"`
+	Top10                  []*StatsUserType `json:"top10"`
+}
+
+type StatsUserType struct {
+	BanAddress      string `json:"banAddress"`
+	TotalPaidBanano string `json:"totalPaidBanano"`
 }
 
 type User struct {

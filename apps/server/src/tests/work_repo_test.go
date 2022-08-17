@@ -93,6 +93,13 @@ func TestStatsRepo(t *testing.T) {
 		}
 	}
 
+	// Test get top 10
+	top10, err := workRepo.GetTopContributors(10)
+	utils.AssertEqual(t, nil, err)
+	for _, top := range top10 {
+		utils.AssertEqual(t, "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm", top.BanAddress)
+	}
+
 	// Test the worker
 	statsChan := make(chan repository.WorkMessage, 100)
 	blockAwardedChan := make(chan serializableModels.ClientMessage, 100)

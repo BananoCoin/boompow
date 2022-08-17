@@ -12,10 +12,16 @@ type User {
   banAddress: String
 }
 
+type StatsUserType {
+  banAddress: String!
+  totalPaidBanano: String!
+}
+
 type Stats {
   connectedWorkers: Int!
   totalPaidBanano: String!
   registeredServiceCount: Int!
+  top10: [StatsUserType]!
 }
 
 input RefreshTokenInput {

@@ -69,7 +69,13 @@ type ComplexityRoot struct {
 	Stats struct {
 		ConnectedWorkers       func(childComplexity int) int
 		RegisteredServiceCount func(childComplexity int) int
+		Top10                  func(childComplexity int) int
 		TotalPaidBanano        func(childComplexity int) int
+	}
+
+	StatsUserType struct {
+		BanAddress      func(childComplexity int) int
+		TotalPaidBanano func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -250,12 +256,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Stats.RegisteredServiceCount(childComplexity), true
 
+	case "Stats.top10":
+		if e.complexity.Stats.Top10 == nil {
+			break
+		}
+
+		return e.complexity.Stats.Top10(childComplexity), true
+
 	case "Stats.totalPaidBanano":
 		if e.complexity.Stats.TotalPaidBanano == nil {
 			break
 		}
 
 		return e.complexity.Stats.TotalPaidBanano(childComplexity), true
+
+	case "StatsUserType.banAddress":
+		if e.complexity.StatsUserType.BanAddress == nil {
+			break
+		}
+
+		return e.complexity.StatsUserType.BanAddress(childComplexity), true
+
+	case "StatsUserType.totalPaidBanano":
+		if e.complexity.StatsUserType.TotalPaidBanano == nil {
+			break
+		}
+
+		return e.complexity.StatsUserType.TotalPaidBanano(childComplexity), true
 
 	case "Subscription.stats":
 		if e.complexity.Subscription.Stats == nil {
@@ -413,10 +440,16 @@ type User {
   banAddress: String
 }
 
+type StatsUserType {
+  banAddress: String!
+  totalPaidBanano: String!
+}
+
 type Stats {
   connectedWorkers: Int!
   totalPaidBanano: String!
   registeredServiceCount: Int!
+  top10: [StatsUserType]!
 }
 
 input RefreshTokenInput {
@@ -1518,6 +1551,144 @@ func (ec *executionContext) fieldContext_Stats_registeredServiceCount(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Stats_top10(ctx context.Context, field graphql.CollectedField, obj *model.Stats) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Stats_top10(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Top10, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.StatsUserType)
+	fc.Result = res
+	return ec.marshalNStatsUserType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Stats_top10(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Stats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "banAddress":
+				return ec.fieldContext_StatsUserType_banAddress(ctx, field)
+			case "totalPaidBanano":
+				return ec.fieldContext_StatsUserType_totalPaidBanano(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StatsUserType", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StatsUserType_banAddress(ctx context.Context, field graphql.CollectedField, obj *model.StatsUserType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StatsUserType_banAddress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BanAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StatsUserType_banAddress(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StatsUserType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StatsUserType_totalPaidBanano(ctx context.Context, field graphql.CollectedField, obj *model.StatsUserType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StatsUserType_totalPaidBanano(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPaidBanano, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StatsUserType_totalPaidBanano(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StatsUserType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Subscription_stats(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
 	fc, err := ec.fieldContext_Subscription_stats(ctx, field)
 	if err != nil {
@@ -1577,6 +1748,8 @@ func (ec *executionContext) fieldContext_Subscription_stats(ctx context.Context,
 				return ec.fieldContext_Stats_totalPaidBanano(ctx, field)
 			case "registeredServiceCount":
 				return ec.fieldContext_Stats_registeredServiceCount(ctx, field)
+			case "top10":
+				return ec.fieldContext_Stats_top10(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Stats", field.Name)
 		},
@@ -4179,6 +4352,48 @@ func (ec *executionContext) _Stats(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "top10":
+
+			out.Values[i] = ec._Stats_top10(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var statsUserTypeImplementors = []string{"StatsUserType"}
+
+func (ec *executionContext) _StatsUserType(ctx context.Context, sel ast.SelectionSet, obj *model.StatsUserType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, statsUserTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StatsUserType")
+		case "banAddress":
+
+			out.Values[i] = ec._StatsUserType_banAddress(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalPaidBanano":
+
+			out.Values[i] = ec._StatsUserType_totalPaidBanano(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4681,6 +4896,44 @@ func (ec *executionContext) marshalNStats2ᚖgithubᚗcomᚋbananocoinᚋboompow
 	return ec._Stats(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStatsUserType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx context.Context, sel ast.SelectionSet, v []*model.StatsUserType) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStatsUserType2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5017,6 +5270,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOStatsUserType2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx context.Context, sel ast.SelectionSet, v *model.StatsUserType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._StatsUserType(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

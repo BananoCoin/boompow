@@ -228,10 +228,23 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 				glog.Infof("Error retrieving # services for stats sub %v", err)
 				continue
 			}
+			// Top 10
+			top10, err := r.WorkRepo.GetTopContributors(10)
+			if err != nil {
+				glog.Infof("Error retrieving # services for stats sub %v", err)
+				continue
+			}
+			var top10Contributors []*model.StatsUserType
+			for _, u := range top10 {
+				top10Contributors = append(top10Contributors, &model.StatsUserType{
+					BanAddress:      u.BanAddress,
+					TotalPaidBanano: u.TotalBan,
+				})
+			}
 			// Total paid
 			totalPaidBan, err := r.PaymentRepo.GetTotalPaidBanano()
 			if err == nil {
-				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: int(nServices)}
+				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: int(nServices), Top10: top10Contributors}
 			}
 			time.Sleep(10 * time.Second)
 		}
