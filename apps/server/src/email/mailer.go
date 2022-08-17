@@ -14,7 +14,7 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/config"
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/libs/utils"
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 // Returns path of an email template by name
@@ -30,7 +30,7 @@ func sendEmail(destination string, subject string, t *template.Template, templat
 	smtpCredentials := utils.GetSmtpConnInformation()
 	if smtpCredentials == nil {
 		errMsg := "SMTP Credentials misconfigured, not sending email"
-		glog.Errorf(errMsg)
+		klog.Errorf(errMsg)
 		return fmt.Errorf("%s", errMsg)
 	}
 
@@ -49,7 +49,7 @@ func sendEmail(destination string, subject string, t *template.Template, templat
 	var body bytes.Buffer
 
 	if err := t.ExecuteTemplate(&body, "base", templateData); err != nil {
-		glog.Errorf("Error creating email template  %s", err)
+		klog.Errorf("Error creating email template  %s", err)
 		return err
 	}
 
@@ -75,7 +75,7 @@ func sendEmail(destination string, subject string, t *template.Template, templat
 		[]byte(message),
 	)
 	if err != nil {
-		glog.Errorf("Error sending email  %s", err)
+		klog.Errorf("Error sending email  %s", err)
 		return err
 	}
 
@@ -87,7 +87,7 @@ func loadEmailTemplate(templateName string) (*template.Template, error) {
 	// Load template
 	t, err := template.New("").ParseFiles(getTemplatePath(templateName), getTemplatePath("base.html"))
 	if err != nil {
-		glog.Errorf("Failed to load email template %s, %s", templateName, err)
+		klog.Errorf("Failed to load email template %s, %s", templateName, err)
 		return nil, err
 	}
 	return t, nil

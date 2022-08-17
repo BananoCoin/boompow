@@ -7,8 +7,8 @@ import (
 
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
 	"github.com/bananocoin/boompow/libs/utils/net"
-	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -38,7 +38,7 @@ func (c *Client) readPump() {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				glog.Errorf("error: %v", err)
+				klog.Errorf("error: %v", err)
 			}
 			break
 		}
@@ -115,7 +115,7 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	client := &Client{Hub: hub, Conn: conn, Send: make(chan []byte, 256), IPAddress: clientIP, Email: provider.User.Email}

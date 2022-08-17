@@ -21,8 +21,8 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
-	"github.com/golang/glog"
 	"gorm.io/gorm"
+	"k8s.io/klog/v2"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -226,19 +226,19 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 			// Connected clients
 			nConnectedClients, err := database.GetRedisDB().GetNumberConnectedClients()
 			if err != nil {
-				glog.Infof("Error retrieving connected clients for stats sub %v", err)
+				klog.Infof("Error retrieving connected clients for stats sub %v", err)
 				continue
 			}
 			// N Services
 			nServices, err := r.UserRepo.GetNumberServices()
 			if err != nil {
-				glog.Infof("Error retrieving # services for stats sub %v", err)
+				klog.Infof("Error retrieving # services for stats sub %v", err)
 				continue
 			}
 			// Top 10
 			top10, err := r.WorkRepo.GetTopContributors(10)
 			if err != nil {
-				glog.Infof("Error retrieving # services for stats sub %v", err)
+				klog.Infof("Error retrieving # services for stats sub %v", err)
 				continue
 			}
 			var top10Contributors []*model.StatsUserType

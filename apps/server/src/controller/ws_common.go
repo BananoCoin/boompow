@@ -11,8 +11,8 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/validation"
-	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
+	"k8s.io/klog/v2"
 )
 
 var ActiveHub *Hub
@@ -88,7 +88,7 @@ func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.Clie
 			if c.Email == ba.ProviderEmail {
 				bytes, err := json.Marshal(ba)
 				if err != nil {
-					glog.Errorf("Error marshalling block awarded message %s", err)
+					klog.Errorf("Error marshalling block awarded message %s", err)
 					break
 				}
 				fmt.Printf("Awarding to %s", c.IPAddress)
@@ -121,7 +121,7 @@ func (h *Hub) Run() {
 			if activeChannel != nil {
 				// Validate this work
 				if !validation.IsWorkValid(activeChannel.Hash, activeChannel.DifficultyMultiplier, workResponse.Result) {
-					glog.Errorf("Received invalid work for %s", activeChannel.Hash)
+					klog.Errorf("Received invalid work for %s", activeChannel.Hash)
 					// ! TODO - penalize this bad client
 					continue
 				}
@@ -132,7 +132,7 @@ func (h *Hub) Run() {
 				}
 				bytes, err := json.Marshal(workCancel)
 				if err != nil {
-					glog.Errorf("Failed to marshal work cancel command: %v", err)
+					klog.Errorf("Failed to marshal work cancel command: %v", err)
 				} else {
 					go func() { ActiveHub.Broadcast <- bytes }()
 				}
@@ -150,11 +150,11 @@ func (h *Hub) Run() {
 				}
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
-				glog.Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
+				klog.V(3).Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
 			// Error de-serializing
 			if err != nil {
-				glog.Errorf("Error unmarshalling work response: %s", err)
+				klog.Errorf("Error unmarshalling work response: %s", err)
 				continue
 			}
 		case message := <-h.Broadcast:
@@ -225,7 +225,7 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) 
 		return &workResponse, nil
 	// 30
 	case <-time.After(WORK_TIMEOUT_S):
-		glog.Errorf("Work request timed out %s", workRequest.Hash)
+		klog.Errorf("Work request timed out %s", workRequest.Hash)
 		// Close channel
 		close(activeChannelObj.Chan)
 		ActiveChannels.Delete(workRequest.RequestID)

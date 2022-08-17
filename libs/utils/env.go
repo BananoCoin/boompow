@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 func GetEnv(key string, fallback string) string {
@@ -18,7 +18,7 @@ func GetEnv(key string, fallback string) string {
 func GetJwtKey() []byte {
 	privKey := GetEnv("PRIV_KEY", "badKey")
 	if privKey == "badKey" {
-		glog.Warningf("!!! DEFAULT JWT SIGNING KEY IS BEING USED, NOT SECURE !!!")
+		klog.Warningf("!!! DEFAULT JWT SIGNING KEY IS BEING USED, NOT SECURE !!!")
 	}
 	return []byte(privKey)
 }

@@ -12,10 +12,10 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	"github.com/bananocoin/boompow/libs/utils/validation"
-	"github.com/golang/glog"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
+	"k8s.io/klog/v2"
 )
 
 type UserRepo interface {
@@ -207,7 +207,7 @@ func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (boo
 		// Get User
 		user, err := s.GetUser(nil, &verifyEmail.Email)
 		if err != nil {
-			glog.Errorf("Failed to retrieve user after verifying email: %v", err)
+			klog.Errorf("Failed to retrieve user after verifying email: %v", err)
 			// Don't choke because of this
 			return true, nil
 		}
@@ -217,7 +217,7 @@ func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (boo
 			// Generate token
 			approvalToken, err := auth.GenerateRandHexString()
 			if err != nil {
-				glog.Errorf("Failed generate approvalToken: %v", err)
+				klog.Errorf("Failed generate approvalToken: %v", err)
 				// Don't choke because of this
 				return true, nil
 			}

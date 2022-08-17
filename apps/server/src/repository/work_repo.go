@@ -10,9 +10,9 @@ import (
 	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/number"
 	"github.com/bananocoin/boompow/libs/utils/validation"
-	"github.com/golang/glog"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"k8s.io/klog/v2"
 )
 
 type WorkMessage struct {
@@ -94,11 +94,11 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 	// Update timestamps
 	err = s.Db.Model(&models.User{}).Where("id = ?", provider.ID).Updates(map[string]interface{}{"last_provided_work_at": time.Now()}).Error
 	if err != nil {
-		glog.Errorf("Failed to update last_provided_work_at for provider %v", err)
+		klog.Errorf("Failed to update last_provided_work_at for provider %v", err)
 	}
 	err = s.Db.Model(&models.User{}).Where("id = ?", requester.ID).Updates(map[string]interface{}{"last_requested_work_at": time.Now()}).Error
 	if err != nil {
-		glog.Errorf("Failed to update last_requested_work_at for provider %v", err)
+		klog.Errorf("Failed to update last_requested_work_at for provider %v", err)
 	}
 
 	return workRequestDb, err
@@ -172,7 +172,7 @@ func (s *WorkService) GetTopContributors(limit int) ([]Top10Result, error) {
 		for i, r := range results {
 			totalBan, err := number.RawToBanano(r.TotalRaw, true)
 			if err != nil {
-				glog.Infof("Error converting %v to banano", err)
+				klog.Infof("Error converting %v to banano", err)
 				continue
 			}
 			results[i].TotalBan = fmt.Sprintf("%.2f", totalBan)
@@ -208,19 +208,19 @@ func (s *WorkService) StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan
 	for c := range statsChan {
 		_, err := s.SaveOrUpdateWorkResult(c)
 		if err != nil {
-			glog.Errorf("Error saving work stats %v", err)
+			klog.Errorf("Error saving work stats %v", err)
 			continue
 		}
 		// Process message to send to user
 		// Get total unpaid stats
 		unpaidStats, err := s.GetUnpaidWorkSum()
 		if err != nil {
-			glog.Errorf("Error getting unpaid stats %v", err)
+			klog.Errorf("Error getting unpaid stats %v", err)
 		}
 		// Get unpaid stats for this user
 		unpaidUserStats, err := s.GetUnpaidWorkSumForUser(c.ProvidedByEmail)
 		if err != nil {
-			glog.Errorf("Error getting unpaid stats for user %v", err)
+			klog.Errorf("Error getting unpaid stats for user %v", err)
 		}
 		// Get percentage of unpaid stats for this user
 		percentageOfPool := float64(unpaidUserStats) / float64(unpaidStats) * 100

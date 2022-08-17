@@ -12,8 +12,8 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/config"
 	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/go-redis/redis/v9"
-	"github.com/golang/glog"
 	"github.com/google/uuid"
+	"k8s.io/klog/v2"
 )
 
 var ctx = context.Background()
@@ -33,7 +33,7 @@ var once sync.Once
 func GetRedisDB() *redisManager {
 	once.Do(func() {
 		if utils.GetEnv("MOCK_REDIS", "false") == "true" {
-			glog.Infof("Using mock redis client because MOCK_REDIS=true is set in environment")
+			klog.Infof("Using mock redis client because MOCK_REDIS=true is set in environment")
 			mr, _ := miniredis.Run()
 			client := redis.NewClient(&redis.Options{
 				Addr: mr.Addr(),

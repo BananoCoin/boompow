@@ -25,6 +25,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
+	"k8s.io/klog/v2"
 )
 
 const defaultPort = "8080"
@@ -36,12 +37,14 @@ func usage() {
 
 func init() {
 	flag.Usage = usage
+	klog.InitFlags(nil)
 	flag.Set("logtostderr", "true")
-	flag.Set("stderrthreshold", "ERROR")
+	flag.Set("stderrthreshold", "WARNING")
+	flag.Set("v", "2")
 	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 		flag.Set("stderrthreshold", "INFO")
+		flag.Set("v", "3")
 	}
-	flag.Set("v", "2")
 	flag.Parse()
 }
 

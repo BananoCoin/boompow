@@ -10,7 +10,6 @@ require (
 	github.com/bitfield/script v0.20.2
 	github.com/go-chi/chi v1.5.4
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
-	github.com/golang/glog v1.0.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgconn v1.13.0
@@ -19,6 +18,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.4.7
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
+	k8s.io/klog/v2 v2.70.1
 )
 
 require (
@@ -27,7 +27,9 @@ require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
+	github.com/golang/glog v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/itchyny/gojq v0.12.8 // indirect
 	github.com/itchyny/timefmt-go v0.1.3 // indirect

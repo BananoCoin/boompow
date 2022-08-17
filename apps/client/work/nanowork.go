@@ -10,7 +10,7 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/bbedward/nanopow"
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 type WorkPool struct {
@@ -60,7 +60,7 @@ func (p *WorkPool) WorkGenerate(item *serializableModels.ClientMessage) (string,
 	}
 
 	if !nanopow.IsValid(decoded, validation.CalculateDifficulty(int64(item.DifficultyMultiplier)), work) {
-		glog.Errorf("\n⚠️ Generated invalid work for %s", item.Hash)
+		klog.Errorf("\n⚠️ Generated invalid work for %s", item.Hash)
 		return "", errors.New("Invalid work")
 	}
 	return WorkToString(work), nil
