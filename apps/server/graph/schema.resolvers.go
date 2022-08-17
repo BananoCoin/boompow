@@ -43,8 +43,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
-	correct := r.UserRepo.Authenticate(&input)
-	if !correct {
+	user := r.UserRepo.Authenticate(&input)
+	if user == nil {
 		return nil, errors.New("invalid email or password")
 	}
 	token, err := auth.GenerateToken(input.Email, time.Now)
@@ -52,7 +52,12 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 		return nil, err
 	}
 	return &model.LoginResponse{
-		Token: token,
+		Token:          token,
+		Type:           model.UserType(user.Type),
+		BanAddress:     user.BanAddress,
+		ServiceName:    user.ServiceName,
+		ServiceWebsite: user.ServiceWebsite,
+		EmailVerified:  user.EmailVerified,
 	}, nil
 }
 

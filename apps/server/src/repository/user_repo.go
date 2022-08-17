@@ -25,7 +25,7 @@ type UserRepo interface {
 	DeleteUser(id uuid.UUID) error
 	GetUser(id *uuid.UUID, email *string) (*models.User, error)
 	GetAllUsers() ([]*models.User, error)
-	Authenticate(loginInput *model.LoginInput) bool
+	Authenticate(loginInput *model.LoginInput) *models.User
 	VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error)
 	VerifyService(verifyService *model.VerifyServiceInput) (bool, error)
 	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
@@ -284,15 +284,18 @@ func (s *UserService) GetNumberServices() (int64, error) {
 }
 
 // Compare password to hashed password, return true if match false otherwise
-func (s *UserService) Authenticate(loginInput *model.LoginInput) bool {
+func (s *UserService) Authenticate(loginInput *model.LoginInput) *models.User {
 	user := &models.User{}
 	err := s.Db.Where("email = ?", &loginInput.Email).First(user).Error
 
 	if err != nil {
-		return false
+		return nil
 	}
 
-	return auth.CheckPasswordHash(loginInput.Password, user.Password)
+	if auth.CheckPasswordHash(loginInput.Password, user.Password) {
+		return user
+	}
+	return nil
 }
 
 // Generate a service token (for services to request work)

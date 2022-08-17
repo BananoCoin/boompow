@@ -68,6 +68,11 @@ input ResendConfirmationEmailInput {
 
 type LoginResponse {
   token: String!
+  type: UserType!
+  banAddress: String
+  serviceName: String
+  serviceWebsite: String
+  emailVerified: Boolean!
 }
 
 type Mutation {

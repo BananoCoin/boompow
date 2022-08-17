@@ -14,7 +14,12 @@ type LoginInput struct {
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	Token          string   `json:"token"`
+	Type           UserType `json:"type"`
+	BanAddress     *string  `json:"banAddress"`
+	ServiceName    *string  `json:"serviceName"`
+	ServiceWebsite *string  `json:"serviceWebsite"`
+	EmailVerified  bool     `json:"emailVerified"`
 }
 
 type RefreshTokenInput struct {
