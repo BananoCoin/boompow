@@ -73,6 +73,7 @@ type Mutation {
   generateOrGetServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
+  sendConfirmationEmail: Boolean!
 }
 
 type Query {

@@ -102,6 +102,15 @@ func forContext(ctx context.Context) *UserContextValue {
 	return raw
 }
 
+// AuthorizedUser returns user from context if they are logged in
+func AuthorizedUser(ctx context.Context) *UserContextValue {
+	contextValue := forContext(ctx)
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "jwt" {
+		return nil
+	}
+	return contextValue
+}
+
 // AuthorizedProvider returns user from context if they are an authorized provider type
 func AuthorizedProvider(ctx context.Context) *UserContextValue {
 	contextValue := forContext(ctx)

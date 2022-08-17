@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		RefreshToken              func(childComplexity int, input model.RefreshTokenInput) int
 		ResendConfirmationEmail   func(childComplexity int, input model.ResendConfirmationEmailInput) int
 		ResetPassword             func(childComplexity int, input model.ResetPasswordInput) int
+		SendConfirmationEmail     func(childComplexity int) int
 		WorkGenerate              func(childComplexity int, input model.WorkGenerateInput) int
 	}
 
@@ -93,6 +94,7 @@ type MutationResolver interface {
 	GenerateOrGetServiceToken(ctx context.Context) (string, error)
 	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
 	ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error)
+	SendConfirmationEmail(ctx context.Context) (bool, error)
 }
 type QueryResolver interface {
 	VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error)
@@ -190,6 +192,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ResetPassword(childComplexity, args["input"].(model.ResetPasswordInput)), true
+
+	case "Mutation.sendConfirmationEmail":
+		if e.complexity.Mutation.SendConfirmationEmail == nil {
+			break
+		}
+
+		return e.complexity.Mutation.SendConfirmationEmail(childComplexity), true
 
 	case "Mutation.workGenerate":
 		if e.complexity.Mutation.WorkGenerate == nil {
@@ -465,6 +474,7 @@ type Mutation {
   generateOrGetServiceToken: String!
   resetPassword(input: ResetPasswordInput!): String!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
+  sendConfirmationEmail: Boolean!
 }
 
 type Query {
@@ -1089,6 +1099,50 @@ func (ec *executionContext) fieldContext_Mutation_resendConfirmationEmail(ctx co
 	if fc.Args, err = ec.field_Mutation_resendConfirmationEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendConfirmationEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendConfirmationEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendConfirmationEmail(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendConfirmationEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -3981,6 +4035,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_resendConfirmationEmail(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sendConfirmationEmail":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendConfirmationEmail(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

@@ -180,6 +180,25 @@ func (r *mutationResolver) ResendConfirmationEmail(ctx context.Context, input mo
 	return true, nil
 }
 
+// SendConfirmationEmail is the resolver for the sendConfirmationEmail field.
+func (r *mutationResolver) SendConfirmationEmail(ctx context.Context) (bool, error) {
+	// Require authentication
+	user := middleware.AuthorizedUser(ctx)
+	if user == nil {
+		return false, fmt.Errorf("access denied")
+	}
+
+	if user.User.EmailVerified {
+		return false, fmt.Errorf("already verified")
+	}
+
+	if err := r.UserRepo.SendConfirmEmailEmail(user.User.Email, user.User.Type, false); err != nil {
+		return false, fmt.Errorf("error sending email")
+	}
+
+	return true, nil
+}
+
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error) {
 	return r.UserRepo.VerifyEmailToken(&input)
