@@ -1,7 +1,6 @@
 package net
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -10,13 +9,9 @@ func GetIPAddress(r *http.Request) string {
 	IPAddress := r.Header.Get("X-Real-Ip")
 	if IPAddress == "" {
 		IPAddress = r.Header.Get("X-Forwarded-For")
-	} else {
-		fmt.Printf("Got IP from X-Real-Ip")
 	}
 	if IPAddress == "" {
 		IPAddress = r.RemoteAddr
-	} else {
-		fmt.Printf("Got IP from X-Forwarded-For")
 	}
 	return IPAddress
 }

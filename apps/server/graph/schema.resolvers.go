@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bananocoin/boompow/apps/server/graph/generated"
@@ -47,7 +48,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 	if user == nil {
 		return nil, errors.New("invalid email or password")
 	}
-	token, err := auth.GenerateToken(input.Email, time.Now)
+	token, err := auth.GenerateToken(strings.ToLower(input.Email), time.Now)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	if err != nil {
 		return "", fmt.Errorf("access denied")
 	}
-	token, err := auth.GenerateToken(email, time.Now)
+	token, err := auth.GenerateToken(strings.ToLower(email), time.Now)
 	if err != nil {
 		return "", err
 	}
