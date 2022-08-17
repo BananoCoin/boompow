@@ -15,6 +15,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/joho/godotenv v1.4.0
+	github.com/rs/cors v1.8.2
 	github.com/vektah/gqlparser/v2 v2.4.7
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8

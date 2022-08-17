@@ -68,6 +68,7 @@ input ResendConfirmationEmailInput {
 
 type LoginResponse {
   token: String!
+  email: String!
   type: UserType!
   banAddress: String
   serviceName: String

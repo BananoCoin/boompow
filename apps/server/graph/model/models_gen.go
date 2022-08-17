@@ -15,6 +15,7 @@ type LoginInput struct {
 
 type LoginResponse struct {
 	Token          string   `json:"token"`
+	Email          string   `json:"email"`
 	Type           UserType `json:"type"`
 	BanAddress     *string  `json:"banAddress"`
 	ServiceName    *string  `json:"serviceName"`

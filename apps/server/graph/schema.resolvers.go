@@ -58,6 +58,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 		ServiceName:    user.ServiceName,
 		ServiceWebsite: user.ServiceWebsite,
 		EmailVerified:  user.EmailVerified,
+		Email:          user.Email,
 	}, nil
 }
 
