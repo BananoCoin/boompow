@@ -64,12 +64,12 @@ func TestUserRepo(t *testing.T) {
 		Email:    "joe@gmail.com",
 		Password: "Password123!",
 	})
-	utils.AssertEqual(t, true, authenticated)
+	utils.AssertEqual(t, true, authenticated != nil)
 	authenticated = userRepo.Authenticate(&model.LoginInput{
 		Email:    "joe@gmail.com",
 		Password: "wrongPassword",
 	})
-	utils.AssertEqual(t, false, authenticated)
+	utils.AssertEqual(t, true, authenticated == nil)
 
 	// Test # Services
 	services, err := userRepo.GetNumberServices()

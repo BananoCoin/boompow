@@ -27,7 +27,14 @@ spec:
     - host: boompow.banano.cc
       http:
         paths:
-          - path: /
+          - path: /graphql
+            pathType: Prefix
+            backend:
+              service:
+                name: boompow-service
+                port:
+                  number: 8080
+          - path: /ws
             pathType: Prefix
             backend:
               service:

@@ -98,19 +98,25 @@ func runServer() {
 
 	// Setup router
 	router := chi.NewRouter()
-	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
-		router.Use(cors.New(cors.Options{
-			AllowOriginFunc: func(origin string) bool {
-				return true
-			},
-		}).Handler)
-	} else {
-		router.Use(cors.New(cors.Options{
-			AllowedOrigins:   []string{"https://*.banano.cc"},
-			AllowCredentials: true,
-			Debug:            true,
-		}).Handler)
-	}
+	// ! TODO - this is temporary, need to set origins in prod
+	router.Use(cors.New(cors.Options{
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+	}).Handler)
+	// if utils.GetEnv("ENVIRONMENT", "development") == "development" {
+	// 	router.Use(cors.New(cors.Options{
+	// 		AllowOriginFunc: func(origin string) bool {
+	// 			return true
+	// 		},
+	// 	}).Handler)
+	// } else {
+	// 	router.Use(cors.New(cors.Options{
+	// 		AllowedOrigins:   []string{"https://*.banano.cc"},
+	// 		AllowCredentials: true,
+	// 		Debug:            true,
+	// 	}).Handler)
+	// }
 	router.Use(middleware.AuthMiddleware(userRepo))
 	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 		router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
