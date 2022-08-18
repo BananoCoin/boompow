@@ -22,9 +22,9 @@ import (
 	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bitfield/script"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 	"k8s.io/klog/v2"
 )
 
@@ -105,11 +105,16 @@ func runServer() {
 	// Setup router
 	router := chi.NewRouter()
 	// ! TODO - this is temporary, need to set origins in prod
-	router.Use(cors.New(cors.Options{
-		AllowOriginFunc: func(origin string) bool {
-			return true
-		},
-	}).Handler)
+	router.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		//AllowedOrigins:   []string{"*"},
+		AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 	// if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 	// 	router.Use(cors.New(cors.Options{
 	// 		AllowOriginFunc: func(origin string) bool {

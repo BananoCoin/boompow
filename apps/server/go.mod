@@ -9,12 +9,12 @@ require (
 	github.com/bananocoin/boompow/libs/utils v0.0.0-20220813160408-80dcb738fae5
 	github.com/bitfield/script v0.20.2
 	github.com/go-chi/chi v1.5.4
+	github.com/go-chi/cors v1.2.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/joho/godotenv v1.4.0
-	github.com/rs/cors v1.8.2
 	github.com/vektah/gqlparser/v2 v2.4.7
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
