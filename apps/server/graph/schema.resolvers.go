@@ -22,7 +22,7 @@ import (
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
 	"gorm.io/gorm"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -214,6 +214,23 @@ func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmail
 // VerifyService is the resolver for the verifyService field.
 func (r *queryResolver) VerifyService(ctx context.Context, input model.VerifyServiceInput) (bool, error) {
 	return r.UserRepo.VerifyService(&input)
+}
+
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context) (*model.GetUserResponse, error) {
+	// Require authentication
+	user := middleware.AuthorizedUser(ctx)
+	if user == nil {
+		return nil, fmt.Errorf("access denied")
+	}
+	return &model.GetUserResponse{
+		Type:           model.UserType(user.User.Type),
+		BanAddress:     user.User.BanAddress,
+		ServiceName:    user.User.ServiceName,
+		ServiceWebsite: user.User.ServiceWebsite,
+		EmailVerified:  user.User.EmailVerified,
+		Email:          user.User.Email,
+	}, nil
 }
 
 // Stats is the resolver for the stats field.

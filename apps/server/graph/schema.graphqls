@@ -76,6 +76,15 @@ type LoginResponse {
   emailVerified: Boolean!
 }
 
+type GetUserResponse {
+  email: String!
+  type: UserType!
+  banAddress: String
+  serviceName: String
+  serviceWebsite: String
+  emailVerified: Boolean!
+}
+
 type Mutation {
   # Related to user authentication and authorization
   createUser(input: UserInput!): User!
@@ -92,6 +101,7 @@ type Query {
   # User queries
   verifyEmail(input: VerifyEmailInput!): Boolean!
   verifyService(input: VerifyServiceInput!): Boolean!
+  getUser: GetUserResponse!
 }
 
 type Subscription {

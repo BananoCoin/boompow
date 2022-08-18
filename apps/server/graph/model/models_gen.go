@@ -8,6 +8,15 @@ import (
 	"strconv"
 )
 
+type GetUserResponse struct {
+	Email          string   `json:"email"`
+	Type           UserType `json:"type"`
+	BanAddress     *string  `json:"banAddress"`
+	ServiceName    *string  `json:"serviceName"`
+	ServiceWebsite *string  `json:"serviceWebsite"`
+	EmailVerified  bool     `json:"emailVerified"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
