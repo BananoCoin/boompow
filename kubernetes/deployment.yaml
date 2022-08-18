@@ -18,6 +18,13 @@ spec:
       containers:
       - name: boompow
         image: replaceme
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
         command: ["/bin/sh", "-c"]
         args: ["boompow-server server"]
         ports:
