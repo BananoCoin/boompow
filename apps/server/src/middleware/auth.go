@@ -51,7 +51,28 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 			var ctx context.Context
 
 			// Determine token type
-			if strings.HasPrefix(header, "service:") {
+			if strings.HasPrefix(header, "resetpassword:") {
+				token := header[len("resetpassword:"):]
+				email, err := auth.ParseToken(token)
+				if err != nil {
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
+					return
+				}
+				// Get from redis
+				_, err = database.GetRedisDB().GetResetPasswordToken(email)
+				if err != nil {
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
+					return
+				}
+				// create user and check if user exists in db
+				user, err := userRepo.GetUser(nil, &email)
+				if err != nil {
+					next.ServeHTTP(w, r)
+					return
+				}
+				// put it in context
+				ctx = context.WithValue(r.Context(), userCtxKey, &UserContextValue{User: user, AuthType: "token"})
+			} else if strings.HasPrefix(header, "service:") {
 				// Service token
 				userID, err := database.GetRedisDB().GetServiceTokenUser(header)
 				if err != nil {
@@ -133,6 +154,15 @@ func AuthorizedRequester(ctx context.Context) *UserContextValue {
 func AuthorizedServiceToken(ctx context.Context) *UserContextValue {
 	contextValue := forContext(ctx)
 	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" || !contextValue.User.EmailVerified || !contextValue.User.CanRequestWork || contextValue.User.Type != models.REQUESTER {
+		return nil
+	}
+	return contextValue
+}
+
+// AuthorizedChangePassword getsuser from context if they are authorized to change their password
+func AuthorizedChangePassword(ctx context.Context) *UserContextValue {
+	contextValue := forContext(ctx)
+	if contextValue == nil || contextValue.User == nil || contextValue.AuthType != "token" {
 		return nil
 	}
 	return contextValue

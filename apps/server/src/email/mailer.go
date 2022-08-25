@@ -131,12 +131,12 @@ func SendResetPasswordEmail(destination string, token string) error {
 	// Populate template
 	// ! TODO - this is something we'll want to to link to the frontend - which will have a form for a new password
 	templateData := ResetPasswordEmailData{
-		ResetPasswordLink: "https://boompow.banano.cc/notimplemented",
+		ResetPasswordLink: fmt.Sprintf("http://localhost:3002/reset_password/%s", token),
 	}
 
 	return sendEmail(
 		destination,
-		"Reset the password for your BoomPOW Account",
+		"Reset the password for your BoomPoW Account",
 		t, templateData,
 	)
 }

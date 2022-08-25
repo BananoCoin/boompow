@@ -21,6 +21,7 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
+	"github.com/bananocoin/boompow/libs/utils/validation"
 	"gorm.io/gorm"
 	klog "k8s.io/klog/v2"
 )
@@ -160,15 +161,10 @@ func (r *mutationResolver) GenerateOrGetServiceToken(ctx context.Context) (strin
 }
 
 // ResetPassword is the resolver for the resetPassword field.
-// ! TODO - add another mutation that actually accepts the token and a new password
-func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
-	token, err := r.UserRepo.GenerateResetPasswordRequest(&input, true)
+func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (bool, error) {
+	r.UserRepo.GenerateResetPasswordRequest(&input, true)
 
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return true, nil
 }
 
 // ResendConfirmationEmail is the resolver for the resendConfirmationEmail field.
@@ -206,6 +202,28 @@ func (r *mutationResolver) SendConfirmationEmail(ctx context.Context) (bool, err
 	return true, nil
 }
 
+// ChangePassword is the resolver for the changePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (bool, error) {
+	// Require authentication for service
+	requester := middleware.AuthorizedChangePassword(ctx)
+	if requester == nil {
+		return false, fmt.Errorf("access denied")
+	}
+
+	// Check that the password is valid
+	err := validation.ValidatePassword(input.NewPassword)
+	if err != nil {
+		return false, err
+	}
+
+	// Is valid so update it
+	if err := r.UserRepo.ChangePassword(requester.User.Email, &input); err == nil {
+		return true, nil
+	}
+
+	return false, err
+}
+
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error) {
 	return r.UserRepo.VerifyEmailToken(&input)
@@ -230,6 +248,7 @@ func (r *queryResolver) GetUser(ctx context.Context) (*model.GetUserResponse, er
 		ServiceWebsite: user.User.ServiceWebsite,
 		EmailVerified:  user.User.EmailVerified,
 		Email:          user.User.Email,
+		CanRequestWork: user.User.CanRequestWork,
 	}, nil
 }
 
@@ -246,11 +265,19 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 				klog.Infof("Error retrieving connected clients for stats sub %v", err)
 				continue
 			}
-			// N Services
-			nServices, err := r.UserRepo.GetNumberServices()
+			// Services
+			services, err := r.WorkRepo.GetServiceStats()
 			if err != nil {
-				klog.Infof("Error retrieving # services for stats sub %v", err)
+				klog.Infof("Error retrieving services for stats sub %v", err)
 				continue
+			}
+			var serviceStats []*model.StatsServiceType
+			for _, service := range services {
+				serviceStats = append(serviceStats, &model.StatsServiceType{
+					Name:     service.ServiceName,
+					Website:  service.ServiceWebsite,
+					Requests: service.TotalRequests,
+				})
 			}
 			// Top 10
 			top10, err := r.WorkRepo.GetTopContributors(10)
@@ -268,7 +295,7 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 			// Total paid
 			totalPaidBan, err := r.PaymentRepo.GetTotalPaidBanano()
 			if err == nil {
-				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: int(nServices), Top10: top10Contributors}
+				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: len(services), Top10: top10Contributors, Services: serviceStats}
 			}
 			time.Sleep(10 * time.Second)
 		}

@@ -17,11 +17,18 @@ type StatsUserType {
   totalPaidBanano: String!
 }
 
+type StatsServiceType {
+  name: String!
+  website: String!
+  requests: Int!
+}
+
 type Stats {
   connectedWorkers: Int!
   totalPaidBanano: String!
   registeredServiceCount: Int!
   top10: [StatsUserType]!
+  services: [StatsServiceType]!
 }
 
 input RefreshTokenInput {
@@ -83,6 +90,11 @@ type GetUserResponse {
   serviceName: String
   serviceWebsite: String
   emailVerified: Boolean!
+  canRequestWork: Boolean!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
 }
 
 type Mutation {
@@ -92,9 +104,10 @@ type Mutation {
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
   generateOrGetServiceToken: String!
-  resetPassword(input: ResetPasswordInput!): String!
+  resetPassword(input: ResetPasswordInput!): Boolean!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
   sendConfirmationEmail: Boolean!
+  changePassword(input: ChangePasswordInput!): Boolean!
 }
 
 type Query {

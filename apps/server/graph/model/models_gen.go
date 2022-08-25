@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+type ChangePasswordInput struct {
+	NewPassword string `json:"newPassword"`
+}
+
 type GetUserResponse struct {
 	Email          string   `json:"email"`
 	Type           UserType `json:"type"`
@@ -15,6 +19,7 @@ type GetUserResponse struct {
 	ServiceName    *string  `json:"serviceName"`
 	ServiceWebsite *string  `json:"serviceWebsite"`
 	EmailVerified  bool     `json:"emailVerified"`
+	CanRequestWork bool     `json:"canRequestWork"`
 }
 
 type LoginInput struct {
@@ -45,10 +50,17 @@ type ResetPasswordInput struct {
 }
 
 type Stats struct {
-	ConnectedWorkers       int              `json:"connectedWorkers"`
-	TotalPaidBanano        string           `json:"totalPaidBanano"`
-	RegisteredServiceCount int              `json:"registeredServiceCount"`
-	Top10                  []*StatsUserType `json:"top10"`
+	ConnectedWorkers       int                 `json:"connectedWorkers"`
+	TotalPaidBanano        string              `json:"totalPaidBanano"`
+	RegisteredServiceCount int                 `json:"registeredServiceCount"`
+	Top10                  []*StatsUserType    `json:"top10"`
+	Services               []*StatsServiceType `json:"services"`
+}
+
+type StatsServiceType struct {
+	Name     string `json:"name"`
+	Website  string `json:"website"`
+	Requests int    `json:"requests"`
 }
 
 type StatsUserType struct {

@@ -33,6 +33,7 @@ type WorkRepo interface {
 	GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetTopContributors(limit int) ([]Top10Result, error)
+	GetServiceStats() ([]ServicesResult, error)
 }
 
 type WorkService struct {
@@ -111,6 +112,19 @@ func (s *WorkService) GetWorkRecord(hash string) (*models.WorkResult, error) {
 		return nil, err
 	}
 	return &workRequest, nil
+}
+
+type ServicesResult struct {
+	TotalRequests  int    `json:"total_requests"`
+	ServiceName    string `json:"service_name"`
+	ServiceWebsite string `json:"service_website"`
+}
+
+func (s *WorkService) GetServiceStats() ([]ServicesResult, error) {
+	services := []ServicesResult{}
+	err := s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as total_requests, service_name, service_website").Joins("JOIN users on users.id = work_results.requested_by").Group("requested_by").Group("service_name").Group("service_website").Order("total_requests desc").Find(&services).Error
+
+	return services, err
 }
 
 // Get sum of (difficulty_multiplier * 100), use this to determine payments

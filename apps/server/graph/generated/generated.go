@@ -48,6 +48,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	GetUserResponse struct {
 		BanAddress     func(childComplexity int) int
+		CanRequestWork func(childComplexity int) int
 		Email          func(childComplexity int) int
 		EmailVerified  func(childComplexity int) int
 		ServiceName    func(childComplexity int) int
@@ -66,6 +67,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		ChangePassword            func(childComplexity int, input model.ChangePasswordInput) int
 		CreateUser                func(childComplexity int, input model.UserInput) int
 		GenerateOrGetServiceToken func(childComplexity int) int
 		Login                     func(childComplexity int, input model.LoginInput) int
@@ -85,8 +87,15 @@ type ComplexityRoot struct {
 	Stats struct {
 		ConnectedWorkers       func(childComplexity int) int
 		RegisteredServiceCount func(childComplexity int) int
+		Services               func(childComplexity int) int
 		Top10                  func(childComplexity int) int
 		TotalPaidBanano        func(childComplexity int) int
+	}
+
+	StatsServiceType struct {
+		Name     func(childComplexity int) int
+		Requests func(childComplexity int) int
+		Website  func(childComplexity int) int
 	}
 
 	StatsUserType struct {
@@ -114,9 +123,10 @@ type MutationResolver interface {
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 	WorkGenerate(ctx context.Context, input model.WorkGenerateInput) (string, error)
 	GenerateOrGetServiceToken(ctx context.Context) (string, error)
-	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
+	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (bool, error)
 	ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error)
 	SendConfirmationEmail(ctx context.Context) (bool, error)
+	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (bool, error)
 }
 type QueryResolver interface {
 	VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error)
@@ -148,6 +158,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GetUserResponse.BanAddress(childComplexity), true
+
+	case "GetUserResponse.canRequestWork":
+		if e.complexity.GetUserResponse.CanRequestWork == nil {
+			break
+		}
+
+		return e.complexity.GetUserResponse.CanRequestWork(childComplexity), true
 
 	case "GetUserResponse.email":
 		if e.complexity.GetUserResponse.Email == nil {
@@ -232,6 +249,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoginResponse.Type(childComplexity), true
+
+	case "Mutation.changePassword":
+		if e.complexity.Mutation.ChangePassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_changePassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ChangePassword(childComplexity, args["input"].(model.ChangePasswordInput)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -364,6 +393,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Stats.RegisteredServiceCount(childComplexity), true
 
+	case "Stats.services":
+		if e.complexity.Stats.Services == nil {
+			break
+		}
+
+		return e.complexity.Stats.Services(childComplexity), true
+
 	case "Stats.top10":
 		if e.complexity.Stats.Top10 == nil {
 			break
@@ -377,6 +413,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Stats.TotalPaidBanano(childComplexity), true
+
+	case "StatsServiceType.name":
+		if e.complexity.StatsServiceType.Name == nil {
+			break
+		}
+
+		return e.complexity.StatsServiceType.Name(childComplexity), true
+
+	case "StatsServiceType.requests":
+		if e.complexity.StatsServiceType.Requests == nil {
+			break
+		}
+
+		return e.complexity.StatsServiceType.Requests(childComplexity), true
+
+	case "StatsServiceType.website":
+		if e.complexity.StatsServiceType.Website == nil {
+			break
+		}
+
+		return e.complexity.StatsServiceType.Website(childComplexity), true
 
 	case "StatsUserType.banAddress":
 		if e.complexity.StatsUserType.BanAddress == nil {
@@ -449,6 +506,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputChangePasswordInput,
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputRefreshTokenInput,
 		ec.unmarshalInputResendConfirmationEmailInput,
@@ -553,11 +611,18 @@ type StatsUserType {
   totalPaidBanano: String!
 }
 
+type StatsServiceType {
+  name: String!
+  website: String!
+  requests: Int!
+}
+
 type Stats {
   connectedWorkers: Int!
   totalPaidBanano: String!
   registeredServiceCount: Int!
   top10: [StatsUserType]!
+  services: [StatsServiceType]!
 }
 
 input RefreshTokenInput {
@@ -619,6 +684,11 @@ type GetUserResponse {
   serviceName: String
   serviceWebsite: String
   emailVerified: Boolean!
+  canRequestWork: Boolean!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
 }
 
 type Mutation {
@@ -628,9 +698,10 @@ type Mutation {
   refreshToken(input: RefreshTokenInput!): String!
   workGenerate(input: WorkGenerateInput!): String!
   generateOrGetServiceToken: String!
-  resetPassword(input: ResetPasswordInput!): String!
+  resetPassword(input: ResetPasswordInput!): Boolean!
   resendConfirmationEmail(input: ResendConfirmationEmailInput!): Boolean!
   sendConfirmationEmail: Boolean!
+  changePassword(input: ChangePasswordInput!): Boolean!
 }
 
 type Query {
@@ -650,6 +721,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ChangePasswordInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNChangePasswordInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐChangePasswordInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1067,6 +1153,50 @@ func (ec *executionContext) _GetUserResponse_emailVerified(ctx context.Context, 
 }
 
 func (ec *executionContext) fieldContext_GetUserResponse_emailVerified(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GetUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GetUserResponse_canRequestWork(ctx context.Context, field graphql.CollectedField, obj *model.GetUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GetUserResponse_canRequestWork(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CanRequestWork, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GetUserResponse_canRequestWork(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "GetUserResponse",
 		Field:      field,
@@ -1698,9 +1828,9 @@ func (ec *executionContext) _Mutation_resetPassword(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_resetPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1710,7 +1840,7 @@ func (ec *executionContext) fieldContext_Mutation_resetPassword(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	defer func() {
@@ -1822,6 +1952,61 @@ func (ec *executionContext) fieldContext_Mutation_sendConfirmationEmail(ctx cont
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_changePassword(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ChangePassword(rctx, fc.Args["input"].(model.ChangePasswordInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_changePassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -1987,6 +2172,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_GetUserResponse_serviceWebsite(ctx, field)
 			case "emailVerified":
 				return ec.fieldContext_GetUserResponse_emailVerified(ctx, field)
+			case "canRequestWork":
+				return ec.fieldContext_GetUserResponse_canRequestWork(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GetUserResponse", field.Name)
 		},
@@ -2305,6 +2492,190 @@ func (ec *executionContext) fieldContext_Stats_top10(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Stats_services(ctx context.Context, field graphql.CollectedField, obj *model.Stats) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Stats_services(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Services, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.StatsServiceType)
+	fc.Result = res
+	return ec.marshalNStatsServiceType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsServiceType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Stats_services(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Stats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_StatsServiceType_name(ctx, field)
+			case "website":
+				return ec.fieldContext_StatsServiceType_website(ctx, field)
+			case "requests":
+				return ec.fieldContext_StatsServiceType_requests(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type StatsServiceType", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StatsServiceType_name(ctx context.Context, field graphql.CollectedField, obj *model.StatsServiceType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StatsServiceType_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StatsServiceType_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StatsServiceType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StatsServiceType_website(ctx context.Context, field graphql.CollectedField, obj *model.StatsServiceType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StatsServiceType_website(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Website, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StatsServiceType_website(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StatsServiceType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StatsServiceType_requests(ctx context.Context, field graphql.CollectedField, obj *model.StatsServiceType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StatsServiceType_requests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Requests, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StatsServiceType_requests(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StatsServiceType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _StatsUserType_banAddress(ctx context.Context, field graphql.CollectedField, obj *model.StatsUserType) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StatsUserType_banAddress(ctx, field)
 	if err != nil {
@@ -2454,6 +2825,8 @@ func (ec *executionContext) fieldContext_Subscription_stats(ctx context.Context,
 				return ec.fieldContext_Stats_registeredServiceCount(ctx, field)
 			case "top10":
 				return ec.fieldContext_Stats_top10(ctx, field)
+			case "services":
+				return ec.fieldContext_Stats_services(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Stats", field.Name)
 		},
@@ -4495,6 +4868,34 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Context, obj interface{}) (model.ChangePasswordInput, error) {
+	var it model.ChangePasswordInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"newPassword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "newPassword":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+			it.NewPassword, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (model.LoginInput, error) {
 	var it model.LoginInput
 	asMap := map[string]interface{}{}
@@ -4850,6 +5251,13 @@ func (ec *executionContext) _GetUserResponse(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "canRequestWork":
+
+			out.Values[i] = ec._GetUserResponse_canRequestWork(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5013,6 +5421,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "changePassword":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_changePassword(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5169,6 +5586,55 @@ func (ec *executionContext) _Stats(ctx context.Context, sel ast.SelectionSet, ob
 		case "top10":
 
 			out.Values[i] = ec._Stats_top10(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "services":
+
+			out.Values[i] = ec._Stats_services(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var statsServiceTypeImplementors = []string{"StatsServiceType"}
+
+func (ec *executionContext) _StatsServiceType(ctx context.Context, sel ast.SelectionSet, obj *model.StatsServiceType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, statsServiceTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StatsServiceType")
+		case "name":
+
+			out.Values[i] = ec._StatsServiceType_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "website":
+
+			out.Values[i] = ec._StatsServiceType_website(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "requests":
+
+			out.Values[i] = ec._StatsServiceType_requests(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -5632,6 +6098,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNChangePasswordInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐChangePasswordInput(ctx context.Context, v interface{}) (model.ChangePasswordInput, error) {
+	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNGetUserResponse2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐGetUserResponse(ctx context.Context, sel ast.SelectionSet, v model.GetUserResponse) graphql.Marshaler {
 	return ec._GetUserResponse(ctx, sel, &v)
 }
@@ -5722,6 +6193,44 @@ func (ec *executionContext) marshalNStats2ᚖgithubᚗcomᚋbananocoinᚋboompow
 		return graphql.Null
 	}
 	return ec._Stats(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStatsServiceType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsServiceType(ctx context.Context, sel ast.SelectionSet, v []*model.StatsServiceType) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStatsServiceType2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsServiceType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalNStatsUserType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx context.Context, sel ast.SelectionSet, v []*model.StatsUserType) graphql.Marshaler {
@@ -6098,6 +6607,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOStatsServiceType2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsServiceType(ctx context.Context, sel ast.SelectionSet, v *model.StatsServiceType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._StatsServiceType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOStatsUserType2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsUserType(ctx context.Context, sel ast.SelectionSet, v *model.StatsUserType) graphql.Marshaler {

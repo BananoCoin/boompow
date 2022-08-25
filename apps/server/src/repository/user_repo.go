@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/bananocoin/boompow/apps/server/graph/model"
 	"github.com/bananocoin/boompow/apps/server/src/database"
@@ -31,6 +32,7 @@ type UserRepo interface {
 	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
 	GenerateServiceToken() string
 	GetNumberServices() (int64, error)
+	ChangePassword(email string, userInput *model.ChangePasswordInput) error
 }
 
 type UserService struct {
@@ -60,12 +62,17 @@ func (s *UserService) CreateMockUsers() error {
 		BanAddress:    &banAddress,
 	}
 
+	serviceName := "Service Name"
+	serviceWebsite := "https://service.com"
+
 	requester := &models.User{
 		Type:           models.REQUESTER,
 		Email:          "requester@gmail.com",
 		Password:       hashedPassword,
 		EmailVerified:  true,
 		CanRequestWork: true,
+		ServiceName:    &serviceName,
+		ServiceWebsite: &serviceWebsite,
 	}
 
 	err = s.Db.Create(&provider).Error
@@ -178,16 +185,18 @@ func (s *UserService) GenerateResetPasswordRequest(resetPasswordInput *model.Res
 	}
 
 	// Get user
-	user, err := s.GetUser(nil, &resetPasswordInput.Email)
+	lower := strings.ToLower(resetPasswordInput.Email)
+	user, err := s.GetUser(nil, &lower)
 	if err != nil || user == nil {
 		return "", errors.New("No such user")
 	}
 
 	// Generate reset password token and store in database
-	resetPasswordToken, err := auth.GenerateRandHexString()
+	resetPasswordToken, err := auth.GenerateToken(strings.ToLower(user.Email), time.Now)
 	if err != nil {
 		return "", err
 	}
+	resetPasswordToken = fmt.Sprintf("resetpassword:%s", resetPasswordToken)
 
 	database.GetRedisDB().SetResetPasswordToken(resetPasswordInput.Email, resetPasswordToken)
 	// Send email with reset password token token
@@ -195,6 +204,22 @@ func (s *UserService) GenerateResetPasswordRequest(resetPasswordInput *model.Res
 		email.SendResetPasswordEmail(resetPasswordInput.Email, resetPasswordToken)
 	}
 	return resetPasswordToken, err
+}
+
+func (s *UserService) ChangePassword(email string, userInput *model.ChangePasswordInput) error {
+	// Hash password
+	hashedPassword, err := auth.HashPassword(userInput.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	if res := s.Db.Model(&models.User{}).Where("email = ?", email).Update("password", hashedPassword); res.RowsAffected > 0 {
+		// Email has been marked verified, delete the token
+		database.GetRedisDB().DeleteResetPasswordToken(email)
+
+		return nil
+	}
+	return errors.New("Could not change password")
 }
 
 func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {

@@ -100,6 +100,15 @@ func TestStatsRepo(t *testing.T) {
 		utils.AssertEqual(t, "ban_3bsnis6ha3m9cepuaywskn9jykdggxcu8mxsp76yc3oinrt3n7gi77xiggtm", top.BanAddress)
 	}
 
+	// Test get services
+	services, err := workRepo.GetServiceStats()
+	utils.AssertEqual(t, nil, err)
+	utils.AssertEqual(t, 2, len(services))
+	utils.AssertEqual(t, 2, services[0].TotalRequests)
+	utils.AssertEqual(t, "https://service.com", services[0].ServiceWebsite)
+	utils.AssertEqual(t, "Service Name", services[0].ServiceName)
+	utils.AssertEqual(t, 1, services[1].TotalRequests)
+
 	// Test the worker
 	statsChan := make(chan repository.WorkMessage, 100)
 	blockAwardedChan := make(chan serializableModels.ClientMessage, 100)
