@@ -16,7 +16,7 @@ spec:
             args: ["moneybags"]
             env:               
               - name: DB_HOST
-                value: postgres-ha-postgresql-ha-pgpool.postgres            
+                value: postgres.kubegres          
               - name: DB_PORT
                 value: "5432"
               - name: DB_SSLMODE
