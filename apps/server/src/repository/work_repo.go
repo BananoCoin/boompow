@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/number"
 	"github.com/bananocoin/boompow/libs/utils/validation"
+	"github.com/go-redis/redis/v9"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"k8s.io/klog/v2"
@@ -125,8 +127,25 @@ type ServicesResult struct {
 }
 
 func (s *WorkService) GetServiceStats() ([]ServicesResult, error) {
+	// Check cache
+	res, err := database.GetRedisDB().Get("service_stats")
+	if err == nil || err == redis.Nil {
+		var services []ServicesResult
+		err = json.Unmarshal([]byte(res), &services)
+		if err == nil {
+			return services, nil
+		}
+	}
+
 	services := []ServicesResult{}
-	err := s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as total_requests, service_name, service_website").Joins("JOIN users on users.id = work_results.requested_by").Group("requested_by").Group("service_name").Group("service_website").Order("total_requests desc").Find(&services).Error
+	err = s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as total_requests, service_name, service_website").Joins("JOIN users on users.id = work_results.requested_by").Group("requested_by").Group("service_name").Group("service_website").Order("total_requests desc").Find(&services).Error
+
+	if err == nil {
+		b, err := json.Marshal(services)
+		if err == nil {
+			database.GetRedisDB().Set("service_stats", string(b), time.Minute*5)
+		}
+	}
 
 	return services, err
 }
@@ -184,18 +203,37 @@ type Top10Result struct {
 }
 
 func (s *WorkService) GetTopContributors(limit int) ([]Top10Result, error) {
+	// Check cache
+	res, err := database.GetRedisDB().Get("top10_result")
+	if err == nil || err == redis.Nil {
+		var top []Top10Result
+		err = json.Unmarshal([]byte(res), &top)
+		if err == nil {
+			return top, nil
+		}
+	}
+
 	var results []Top10Result
-	err := s.Db.Model(&models.WorkResult{}).Select("ban_address, (select sum(cast(send_json->>'amount'as numeric)) from payments where payments.paid_to=provided_by) as total_raw").Joins("JOIN users on users.id = work_results.provided_by").Group("ban_address").Group("provided_by").Where("type = ?", "PROVIDER").Order("sum(difficulty_multiplier) desc").Limit(limit).Find(&results).Error
+	err = s.Db.Model(&models.WorkResult{}).Select("ban_address, (select sum(cast(send_json->>'amount'as numeric)) from payments where payments.paid_to=provided_by) as total_raw").Joins("JOIN users on users.id = work_results.provided_by").Group("ban_address").Group("provided_by").Where("type = ?", "PROVIDER").Order("sum(difficulty_multiplier) desc").Limit(limit).Find(&results).Error
 	if err == nil {
 		for i, r := range results {
 			totalBan, err := number.RawToBanano(r.TotalRaw, true)
 			if err != nil {
 				klog.Infof("Error converting %v to banano", err)
-				continue
+				results[i].TotalBan = "0"
+			} else {
+				results[i].TotalBan = fmt.Sprintf("%.2f", totalBan)
 			}
-			results[i].TotalBan = fmt.Sprintf("%.2f", totalBan)
 		}
 	}
+
+	if err == nil {
+		b, err := json.Marshal(results)
+		if err == nil {
+			database.GetRedisDB().Set("top10_result", string(b), time.Hour*1)
+		}
+	}
+
 	return results, err
 }
 

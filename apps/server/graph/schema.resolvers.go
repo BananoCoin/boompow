@@ -22,6 +22,7 @@ import (
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
 	"github.com/bananocoin/boompow/libs/utils/validation"
+	"github.com/go-redis/redis/v9"
 	"gorm.io/gorm"
 	klog "k8s.io/klog/v2"
 )
@@ -147,12 +148,11 @@ func (r *mutationResolver) GenerateOrGetServiceToken(ctx context.Context) (strin
 
 	// Get token
 	token, err := database.GetRedisDB().GetServiceTokenForUser(requester.User.ID)
-
 	if err != nil {
 		// Generate token
 		token = r.UserRepo.GenerateServiceToken()
 
-		if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != nil {
+		if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != redis.Nil {
 			return "", fmt.Errorf("error generating token")
 		}
 	}
@@ -280,7 +280,7 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 				})
 			}
 			// Top 10
-			top10, err := r.WorkRepo.GetTopContributors(10)
+			top10, err := r.WorkRepo.GetTopContributors(25)
 			if err != nil {
 				klog.Infof("Error retrieving # services for stats sub %v", err)
 				continue
