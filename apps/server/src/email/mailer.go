@@ -101,14 +101,9 @@ func SendConfirmationEmail(destination string, userType models.UserType, token s
 		return err
 	}
 
-	// Encode URL params
-	urlParam := url.QueryEscape(fmt.Sprintf(`query verifyEmail{
-		verifyEmail(input:{email:"%s", token:"%s"})
-	}`, destination, token))
-
 	// Populate template
 	templateData := ConfirmationEmailData{
-		ConfirmationLink:              fmt.Sprintf("https://boompow.banano.cc/graphql?query=%s", urlParam),
+		ConfirmationLink:              fmt.Sprintf("https://boompow.banano.cc/verify_email/%s/%s", destination, token),
 		ConfirmCodeExpirationDuration: config.EMAIL_CONFIRMATION_TOKEN_VALID_MINUTES,
 		IsProvider:                    userType == models.PROVIDER,
 	}
@@ -129,9 +124,8 @@ func SendResetPasswordEmail(destination string, token string) error {
 	}
 
 	// Populate template
-	// ! TODO - this is something we'll want to to link to the frontend - which will have a form for a new password
 	templateData := ResetPasswordEmailData{
-		ResetPasswordLink: fmt.Sprintf("http://localhost:3002/reset_password/%s", token),
+		ResetPasswordLink: fmt.Sprintf("https://boompow.banano.cc/reset_password/%s", token),
 	}
 
 	return sendEmail(
