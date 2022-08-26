@@ -110,8 +110,8 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", err
 	}
-	if workResult != nil {
-		return workResult.Result, nil
+	if workResult != "" {
+		return workResult, nil
 	}
 
 	var requesterEmail string

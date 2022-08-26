@@ -205,3 +205,13 @@ func (r *redisManager) GetServiceTokenForUser(userID uuid.UUID) (string, error) 
 	}
 	return "", errors.New("No Token")
 }
+
+// For caching work
+func (r *redisManager) CacheWork(hash string, result string) error {
+	// 5 minute cache
+	return r.Set(fmt.Sprintf("cache:%s", hash), result, 5*time.Minute)
+}
+
+func (r *redisManager) GetCachedWork(hash string) (string, error) {
+	return r.Get(fmt.Sprintf("cache:%s", hash))
+}

@@ -147,6 +147,9 @@ func (h *Hub) Run() {
 						DifficultyMultiplier: activeChannel.DifficultyMultiplier,
 					}
 					*h.StatsChan <- statsMessage
+				} else {
+					// Still cache
+					database.GetRedisDB().CacheWork(activeChannel.Hash, workResponse.Result)
 				}
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {

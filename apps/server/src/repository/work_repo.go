@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils"
@@ -29,7 +30,7 @@ type WorkRepo interface {
 	StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan *chan serializableModels.ClientMessage)
 	GetUnpaidWorkSumForUser(email string) (int, error)
 	GetUnpaidWorkSum() (int, error)
-	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error)
+	RetrieveWorkFromCache(hash string, difficultyMultiplier int) (string, error)
 	GetUnpaidWorkCount(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWorkResult, error)
 	GetTopContributors(limit int) ([]Top10Result, error)
@@ -82,6 +83,9 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 		if err != nil {
 			return nil, err
 		}
+
+		// Cache in redis temporarily for faster lookup
+		database.GetRedisDB().CacheWork(workMessage.Hash, workMessage.Result)
 	} else if err == nil {
 		// Update record
 		err = s.Db.Model(&workResult).Updates(map[string]interface{}{"difficulty_multiplier": workMessage.DifficultyMultiplier, "result": workMessage.Result, "provided_by": provider.ID, "requested_by": requester.ID, "awarded": false}).Error
@@ -204,18 +208,24 @@ func (s *WorkService) GetUnpaidWorkCountAndMarkAllPaid(tx *gorm.DB) ([]UnpaidWor
 	return result, err
 }
 
-func (s *WorkService) RetrieveWorkFromCache(hash string, difficultyMultiplier int) (*models.WorkResult, error) {
+func (s *WorkService) RetrieveWorkFromCache(hash string, difficultyMultiplier int) (string, error) {
+	// Check cache first
+	work, err := database.GetRedisDB().GetCachedWork(hash)
+	if err == nil {
+		return work, nil
+	}
+
 	var workRequest models.WorkResult
-	err := s.Db.Where("hash = ?", hash).First(&workRequest).Error
+	err = s.Db.Where("hash = ?", hash).First(&workRequest).Error
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Validate difficulty is valid
 	if !validation.IsWorkValid(hash, difficultyMultiplier, workRequest.Result) {
-		return nil, gorm.ErrRecordNotFound
+		return "", gorm.ErrRecordNotFound
 	}
-	return &workRequest, nil
+	return workRequest.Result, nil
 }
 
 func (s *WorkService) StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan *chan serializableModels.ClientMessage) {
