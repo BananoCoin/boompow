@@ -138,12 +138,12 @@ func (s *WorkService) GetServiceStats() ([]ServicesResult, error) {
 	}
 
 	services := []ServicesResult{}
-	err = s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as total_requests, service_name, service_website").Joins("JOIN users on users.id = work_results.requested_by").Group("requested_by").Group("service_name").Group("service_website").Order("total_requests desc").Find(&services).Error
+	err = s.Db.Model(&models.WorkResult{}).Select("COUNT(*) as total_requests, service_name, service_website").Joins("JOIN users on users.id = work_results.requested_by").Where("users.email != ?", "all@banano.cc").Where("users.email != ?", "nano@banano.cc").Group("requested_by").Group("service_name").Group("service_website").Order("total_requests desc").Find(&services).Error
 
 	if err == nil {
 		b, err := json.Marshal(services)
 		if err == nil {
-			database.GetRedisDB().Set("service_stats", string(b), time.Minute*5)
+			database.GetRedisDB().Set("service_stats", string(b), time.Minute*1)
 		}
 	}
 
