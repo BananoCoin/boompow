@@ -44,6 +44,7 @@ func TestStatsRepo(t *testing.T) {
 		Hash:                 "123",
 		Result:               "ac",
 		DifficultyMultiplier: 5,
+		BlockAward:           true,
 	})
 	utils.AssertEqual(t, nil, err)
 	_, err = workRepo.SaveOrUpdateWorkResult(repository.WorkMessage{
@@ -52,6 +53,7 @@ func TestStatsRepo(t *testing.T) {
 		Hash:                 "566",
 		Result:               "ac",
 		DifficultyMultiplier: 5,
+		BlockAward:           true,
 	})
 	utils.AssertEqual(t, nil, err)
 	_, err = workRepo.SaveOrUpdateWorkResult(repository.WorkMessage{
@@ -60,6 +62,7 @@ func TestStatsRepo(t *testing.T) {
 		Hash:                 "321",
 		Result:               "ac",
 		DifficultyMultiplier: 5,
+		BlockAward:           true,
 	})
 	utils.AssertEqual(t, nil, err)
 
@@ -122,6 +125,7 @@ func TestStatsRepo(t *testing.T) {
 		Hash:                 "321",
 		Result:               "fe",
 		DifficultyMultiplier: 3,
+		BlockAward:           true,
 	}
 
 	time.Sleep(1 * time.Second) // Arbitrary time to wait for the worker to process the message

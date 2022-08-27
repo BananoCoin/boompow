@@ -12,6 +12,7 @@ const (
 type ClientMessage struct {
 	// Exclude this field from serialization (don't expose requester email to client)
 	RequesterEmail string      `json:"-"`
+	BlockAward     bool        `json:"-"`
 	MessageType    MessageType `json:"request_type"`
 	// We attach a unique request ID to each request, this links it to user requesting work
 	RequestID            string `json:"request_id"`

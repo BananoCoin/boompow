@@ -138,8 +138,9 @@ func (h *Hub) Run() {
 				}
 				// Credit this client for this work
 				// Except for some services people can abuse, like BananoVault
-				if activeChannel.RequesterEmail != "vault@banano.cc" && activeChannel.RequesterEmail != "no_award" {
+				if activeChannel.RequesterEmail != "vault@banano.cc" {
 					statsMessage := repository.WorkMessage{
+						BlockAward:           activeChannel.BlockAward,
 						ProvidedByEmail:      message.ClientEmail,
 						RequestedByEmail:     activeChannel.RequesterEmail,
 						Hash:                 activeChannel.Hash,
@@ -207,6 +208,7 @@ func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) 
 	}
 	// Create channel for this hash
 	activeChannelObj := models.ActiveChannelObject{
+		BlockAward:           workRequest.BlockAward,
 		RequesterEmail:       workRequest.RequesterEmail,
 		RequestID:            workRequest.RequestID,
 		Hash:                 workRequest.Hash,

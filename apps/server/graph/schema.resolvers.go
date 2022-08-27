@@ -22,7 +22,6 @@ import (
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
 	"github.com/bananocoin/boompow/libs/utils/validation"
-	"github.com/go-redis/redis/v9"
 	"gorm.io/gorm"
 	klog "k8s.io/klog/v2"
 )
@@ -115,15 +114,9 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		return workResult, nil
 	}
 
-	var requesterEmail string
-	if input.BlockAward != nil && !*input.BlockAward {
-		requesterEmail = "no_award"
-	} else {
-		requesterEmail = requester.User.Email
-	}
-
 	workRequest := &serializableModels.ClientMessage{
-		RequesterEmail:       requesterEmail,
+		RequesterEmail:       requester.User.Email,
+		BlockAward:           input.BlockAward == nil || *input.BlockAward,
 		MessageType:          serializableModels.WorkGenerate,
 		RequestID:            hex.EncodeToString(reqID),
 		Hash:                 input.Hash,
@@ -152,7 +145,7 @@ func (r *mutationResolver) GenerateOrGetServiceToken(ctx context.Context) (strin
 		// Generate token
 		token = r.UserRepo.GenerateServiceToken()
 
-		if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != redis.Nil {
+		if err := database.GetRedisDB().AddServiceToken(requester.User.ID, token); err != nil {
 			return "", fmt.Errorf("error generating token")
 		}
 	}

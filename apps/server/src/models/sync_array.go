@@ -5,6 +5,7 @@ import (
 )
 
 type ActiveChannelObject struct {
+	BlockAward           bool
 	RequesterEmail       string
 	RequestID            string
 	Hash                 string

@@ -19,6 +19,7 @@ import (
 )
 
 type WorkMessage struct {
+	BlockAward           bool   `json:"block_award"`
 	RequestedByEmail     string `json:"requestedByEmail"`
 	ProvidedByEmail      string `json:"providedByEmail"`
 	Hash                 string `json:"hash"`
@@ -73,6 +74,7 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 
 		// Create work request
 		workRequestDb = &models.WorkResult{
+			Awarded:              !workMessage.BlockAward,
 			Hash:                 workMessage.Hash,
 			DifficultyMultiplier: workMessage.DifficultyMultiplier,
 			Result:               workMessage.Result,
@@ -269,6 +271,10 @@ func (s *WorkService) RetrieveWorkFromCache(hash string, difficultyMultiplier in
 func (s *WorkService) StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan *chan serializableModels.ClientMessage) {
 	for c := range statsChan {
 		_, err := s.SaveOrUpdateWorkResult(c)
+		if !c.BlockAward {
+			// This request has no reward, so don't messsage the client
+			continue
+		}
 		if err != nil {
 			klog.Errorf("Error saving work stats %v", err)
 			continue
