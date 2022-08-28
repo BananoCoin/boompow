@@ -116,8 +116,9 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Block IPs already connected
 	for c := range hub.Clients {
 		if c.IPAddress == clientIP {
-			c.Hub.Unregister <- c
-			c.Conn.Close()
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("403 - Forbidden"))
+			return
 		}
 	}
 
