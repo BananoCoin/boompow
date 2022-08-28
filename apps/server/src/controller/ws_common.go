@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bananocoin/boompow/apps/server/src/database"
@@ -140,20 +141,20 @@ func (h *Hub) Run() {
 				}
 				// Credit this client for this work
 				// Except for some services people can abuse, like BananoVault
-				if activeChannel.RequesterEmail != "vault@banano.cc" {
-					statsMessage := repository.WorkMessage{
-						BlockAward:           activeChannel.BlockAward,
-						ProvidedByEmail:      message.ClientEmail,
-						RequestedByEmail:     activeChannel.RequesterEmail,
-						Hash:                 activeChannel.Hash,
-						Result:               workResponse.Result,
-						DifficultyMultiplier: activeChannel.DifficultyMultiplier,
-					}
-					*h.StatsChan <- statsMessage
-				} else {
-					// Still cache
-					database.GetRedisDB().CacheWork(activeChannel.Hash, workResponse.Result)
+				if activeChannel.RequesterEmail == "vault@banano.cc" {
+					activeChannel.BlockAward = false
+				} else if strings.Contains(activeChannel.RequesterEmail, "wenano.net") {
+					activeChannel.BlockAward = false
 				}
+				statsMessage := repository.WorkMessage{
+					BlockAward:           activeChannel.BlockAward,
+					ProvidedByEmail:      message.ClientEmail,
+					RequestedByEmail:     activeChannel.RequesterEmail,
+					Hash:                 activeChannel.Hash,
+					Result:               workResponse.Result,
+					DifficultyMultiplier: activeChannel.DifficultyMultiplier,
+				}
+				*h.StatsChan <- statsMessage
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
 				klog.V(3).Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
