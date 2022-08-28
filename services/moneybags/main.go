@@ -145,6 +145,8 @@ func main() {
 		return nil
 	})
 
+	database.GetRedisDB().WipeClientScores()
+
 	if err != nil {
 		os.Exit(1)
 	}

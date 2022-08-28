@@ -106,11 +106,19 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	clientIP := net.GetIPAddress(r)
 
-	// Block hetzner finland datacenters
+	// Block hetzner datacenters
 	if net.IsIPInHetznerRange(clientIP) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("403 - Forbidden"))
 		return
+	}
+
+	// Block IPs already connected
+	for c := range hub.Clients {
+		if c.IPAddress == clientIP {
+			c.Hub.Unregister <- c
+			c.Conn.Close()
+		}
 	}
 
 	conn, err := Upgrader.Upgrade(w, r, nil)

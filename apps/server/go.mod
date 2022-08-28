@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgconn v1.13.0
 	github.com/joho/godotenv v1.4.0
 	github.com/vektah/gqlparser/v2 v2.4.7
+	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
 	k8s.io/klog/v2 v2.70.1

@@ -12,6 +12,7 @@ import (
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/gorilla/websocket"
+	"golang.org/x/exp/slices"
 	"k8s.io/klog/v2"
 )
 
@@ -92,6 +93,7 @@ func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.Clie
 					break
 				}
 				fmt.Printf("Awarding to %s", c.IPAddress)
+				database.GetRedisDB().UpdateClientScore(c.IPAddress, int(ba.PercentOfPool))
 				c.Send <- bytes
 			}
 		}
@@ -162,7 +164,15 @@ func (h *Hub) Run() {
 				continue
 			}
 		case message := <-h.Broadcast:
+			toExclude, err := database.GetRedisDB().FilterOverperformingClients()
+			if err != nil {
+				klog.Errorf("Error filtering overperforming clients: %v", err)
+				toExclude = []string{}
+			}
 			for client := range h.Clients {
+				if len(toExclude) > 0 && slices.Contains(toExclude, client.IPAddress) {
+					continue
+				}
 				select {
 				case client.Send <- message:
 				default:

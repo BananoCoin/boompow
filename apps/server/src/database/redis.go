@@ -215,3 +215,46 @@ func (r *redisManager) CacheWork(hash string, result string) error {
 func (r *redisManager) GetCachedWork(hash string) (string, error) {
 	return r.Get(fmt.Sprintf("cache:%s", hash))
 }
+
+// Client scoring
+func (r *redisManager) UpdateClientScore(ip string, points int) error {
+	return r.Hset("clientscores", ip, strconv.Itoa(points))
+}
+
+func (r *redisManager) GetClientScore(ip string) int {
+	score, err := r.Hget("clientscores", ip)
+	if err != nil {
+		return 0
+	}
+	scoreInt, err := strconv.Atoi(score)
+	if err != nil {
+		return 0
+	}
+	return scoreInt
+}
+
+func (r *redisManager) FilterOverperformingClients() ([]string, error) {
+	ret, err := r.Hgetall("clientscores")
+	if err != nil {
+		return nil, err
+	}
+	// Remove clinents whos score makes up 15% or more of total
+	var toBroadcast []string
+	for ip, score := range ret {
+		score, err := strconv.Atoi(score)
+		if err != nil {
+			score = 0
+		}
+		if score >= 15 {
+			toBroadcast = append(toBroadcast, ip)
+		}
+	}
+	if len(toBroadcast) < 5 {
+		return nil, errors.New("Not enough clients to filter high earners")
+	}
+	return toBroadcast, nil
+}
+
+func (r *redisManager) WipeClientScores() (int64, error) {
+	return r.Del("clientscores")
+}
