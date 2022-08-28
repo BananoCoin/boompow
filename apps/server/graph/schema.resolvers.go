@@ -273,7 +273,7 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 				})
 			}
 			// Top 10
-			top10, err := r.WorkRepo.GetTopContributors(25)
+			top10, err := r.WorkRepo.GetTopContributors(100)
 			if err != nil {
 				klog.Infof("Error retrieving # services for stats sub %v", err)
 				continue
