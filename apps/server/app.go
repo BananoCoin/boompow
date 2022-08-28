@@ -74,6 +74,14 @@ func runServer() {
 		port = defaultPort
 	}
 
+	// Setup channel for stats processing job
+	statsChan := make(chan repository.WorkMessage, 100)
+	// Setup channel for sending block awarded messages
+	blockAwardedChan := make(chan serializableModels.ClientMessage)
+
+	// Setup WS endpoint
+	controller.ActiveHub = controller.NewHub(&statsChan)
+
 	// Create repositories
 	userRepo := repository.NewUserService((db))
 	workRepo := repository.NewWorkService(db, userRepo)
@@ -83,6 +91,7 @@ func runServer() {
 		UserRepo:    userRepo,
 		WorkRepo:    workRepo,
 		PaymentRepo: paymentRepo,
+		ActiveHub:   controller.ActiveHub,
 	}}))
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -135,13 +144,6 @@ func runServer() {
 	}
 	router.Handle("/graphql", srv)
 
-	// Setup channel for stats processing job
-	statsChan := make(chan repository.WorkMessage, 100)
-	// Setup channel for sending block awarded messages
-	blockAwardedChan := make(chan serializableModels.ClientMessage)
-
-	// Setup WS endpoint
-	controller.ActiveHub = controller.NewHub(&statsChan)
 	go controller.ActiveHub.Run()
 	router.HandleFunc("/ws/worker", func(w http.ResponseWriter, r *http.Request) {
 		controller.WorkerChl(controller.ActiveHub, w, r)
