@@ -169,7 +169,7 @@ func (h *Hub) Run() {
 				klog.Errorf("Error filtering overperforming clients: %v", err)
 				toExclude = []string{}
 			}
-			if len(h.Clients) > 5 {
+			if len(h.Clients) < 5 {
 				toExclude = []string{}
 				klog.V(3).Infof("Not enough clients to exclude any")
 			}
