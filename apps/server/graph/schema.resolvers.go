@@ -15,6 +15,7 @@ import (
 	"github.com/bananocoin/boompow/apps/server/graph/generated"
 	"github.com/bananocoin/boompow/apps/server/graph/model"
 	"github.com/bananocoin/boompow/apps/server/src/config"
+	"github.com/bananocoin/boompow/apps/server/src/controller"
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
@@ -122,7 +123,7 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		DifficultyMultiplier: input.DifficultyMultiplier,
 	}
 
-	resp, err := r.ActiveHub.BroadcastWorkRequestAndWait(workRequest)
+	resp, err := controller.BroadcastWorkRequestAndWait(workRequest)
 	if err != nil {
 		return "", err
 	}

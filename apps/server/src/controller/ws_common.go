@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/bananocoin/boompow/apps/server/src/database"
@@ -53,16 +52,11 @@ var Upgrader = websocket.Upgrader{}
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
-	// Keep a few buckets for clients to distribute work
-	ClientsA map[string]*Client
-	ClientsB map[string]*Client
-	ClientsC map[string]*Client
+	// Registered clients.
+	Clients map[*Client]bool
 
 	// Outbound messages to the client
-	Broadcast  chan []byte
-	BroadcastA chan []byte
-	BroadcastB chan []byte
-	BroadcastC chan []byte
+	Broadcast chan []byte
 
 	// Inbound messages from client
 	Response chan ClientWSMessage
@@ -75,115 +69,32 @@ type Hub struct {
 
 	// Channel to broadcast stats to
 	StatsChan *chan repository.WorkMessage
-
-	sync.RWMutex
-	LastBroadCastBucket string
 }
 
 func NewHub(statsChan *chan repository.WorkMessage) *Hub {
 	return &Hub{
-		Broadcast:           make(chan []byte, 100),
-		BroadcastA:          make(chan []byte, 100),
-		BroadcastB:          make(chan []byte, 100),
-		BroadcastC:          make(chan []byte, 100),
-		Response:            make(chan ClientWSMessage),
-		Register:            make(chan *Client),
-		Unregister:          make(chan *Client),
-		ClientsA:            make(map[string]*Client),
-		ClientsB:            make(map[string]*Client),
-		ClientsC:            make(map[string]*Client),
-		StatsChan:           statsChan,
-		LastBroadCastBucket: "A",
+		Broadcast:  make(chan []byte),
+		Response:   make(chan ClientWSMessage),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
+		Clients:    make(map[*Client]bool),
+		StatsChan:  statsChan,
 	}
 }
 
 func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.ClientMessage) {
 	for ba := range blockAwardedChan {
-		for k := range h.ClientsA {
-			if h.ClientsA[k].Email == ba.ProviderEmail {
+		for c := range h.Clients {
+			if c.Email == ba.ProviderEmail {
 				bytes, err := json.Marshal(ba)
 				if err != nil {
 					klog.Errorf("Error marshalling block awarded message %s", err)
 					break
 				}
-				fmt.Printf("Awarding to %s", k)
-				h.ClientsA[k].Send <- bytes
+				fmt.Printf("Awarding to %s", c.IPAddress)
+				c.Send <- bytes
 			}
 		}
-		for k := range h.ClientsB {
-			if h.ClientsB[k].Email == ba.ProviderEmail {
-				bytes, err := json.Marshal(ba)
-				if err != nil {
-					klog.Errorf("Error marshalling block awarded message %s", err)
-					break
-				}
-				fmt.Printf("Awarding to %s", k)
-				h.ClientsB[k].Send <- bytes
-			}
-		}
-		for k := range h.ClientsC {
-			if h.ClientsC[k].Email == ba.ProviderEmail {
-				bytes, err := json.Marshal(ba)
-				if err != nil {
-					klog.Errorf("Error marshalling block awarded message %s", err)
-					break
-				}
-				fmt.Printf("Awarding to %s", k)
-				h.ClientsC[k].Send <- bytes
-			}
-		}
-	}
-}
-
-func (h *Hub) UnregisterClient(client *Client) {
-	h.Unregister <- client
-	if _, ok := h.ClientsA[client.IPAddress]; ok {
-		delete(h.ClientsA, client.IPAddress)
-		close(client.Send)
-		// Keep global state of connected clients
-		database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
-	} else if _, ok := h.ClientsB[client.IPAddress]; ok {
-		delete(h.ClientsB, client.IPAddress)
-		close(client.Send)
-		// Keep global state of connected clients
-		database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
-	} else if _, ok := h.ClientsC[client.IPAddress]; ok {
-		delete(h.ClientsC, client.IPAddress)
-		close(client.Send)
-		// Keep global state of connected clients
-		database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
-	}
-}
-
-func (h *Hub) AddClientToBucket(client *Client) {
-	// See if already in a bucket
-	added := false
-	if _, ok := h.ClientsA[client.IPAddress]; ok {
-		added = true
-		h.ClientsA[client.IPAddress] = client
-	} else if _, ok := h.ClientsB[client.IPAddress]; ok {
-		added = true
-		h.ClientsB[client.IPAddress] = client
-	} else if _, ok := h.ClientsC[client.IPAddress]; ok {
-		added = true
-		h.ClientsC[client.IPAddress] = client
-	}
-	if added {
-		return
-	}
-
-	// If not in a bucket, add to a balanced bucket
-	if len(h.ClientsA) < len(h.ClientsB) {
-		if len(h.ClientsA) < len(h.ClientsC) {
-			// Add to A
-			h.ClientsA[client.IPAddress] = client
-		}
-	} else if len(h.ClientsB) < len(h.ClientsC) {
-		// Add to B
-		h.ClientsB[client.IPAddress] = client
-	} else {
-		// Add to C
-		h.ClientsC[client.IPAddress] = client
 	}
 }
 
@@ -191,12 +102,16 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			// Determine if user is already in a bucket
-			h.AddClientToBucket(client)
+			h.Clients[client] = true
 			// Keep global state of connected clients
 			database.GetRedisDB().AddConnectedClient(client.IPAddress)
 		case client := <-h.Unregister:
-			h.UnregisterClient(client)
+			if _, ok := h.Clients[client]; ok {
+				delete(h.Clients, client)
+				close(client.Send)
+				// Keep global state of connected clients
+				database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
+			}
 		case message := <-h.Response:
 			// Try to unmarshal as ClientWorkResponse
 			var workResponse serializableModels.ClientWorkResponse
@@ -246,37 +161,15 @@ func (h *Hub) Run() {
 				klog.Errorf("Error unmarshalling work response: %s", err)
 				continue
 			}
-		case message := <-h.BroadcastA:
-			for k := range h.ClientsA {
-				select {
-				case h.ClientsA[k].Send <- message:
-				default:
-					close(h.ClientsA[k].Send)
-					delete(h.ClientsA, k)
-				}
-			}
-		case message := <-h.BroadcastB:
-			for k := range h.ClientsB {
-				select {
-				case h.ClientsB[k].Send <- message:
-				default:
-					close(h.ClientsB[k].Send)
-					delete(h.ClientsB, k)
-				}
-			}
-		case message := <-h.BroadcastC:
-			for k := range h.ClientsC {
-				select {
-				case h.ClientsC[k].Send <- message:
-				default:
-					close(h.ClientsC[k].Send)
-					delete(h.ClientsC, k)
-				}
-			}
 		case message := <-h.Broadcast:
-			h.BroadcastA <- message
-			h.BroadcastB <- message
-			h.BroadcastC <- message
+			for client := range h.Clients {
+				select {
+				case client.Send <- message:
+				default:
+					close(client.Send)
+					delete(h.Clients, client)
+				}
+			}
 		}
 	}
 }
@@ -303,27 +196,11 @@ var ActiveChannels = models.NewSyncArray()
 // Timeout waiting for work response from client
 const WORK_TIMEOUT_S = time.Second * 30
 
-// Get last broadcast bucket thread-safe
-func (h *Hub) GetBroadcastBucket() string {
-	h.RLock()
-	defer h.RUnlock()
-	if h.LastBroadCastBucket == "A" {
-		h.LastBroadCastBucket = "B"
-		return "B"
-	}
-	if h.LastBroadCastBucket == "B" {
-		h.LastBroadCastBucket = "C"
-		return "C"
-	}
-	h.LastBroadCastBucket = "A"
-	return "A"
-}
-
 // Method to handle a work request response
 // 1) Broadcast to every client
 // 2) Create a channel for the response
 // 3) Wait for response on the channel until timeout
-func (h *Hub) BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
+func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
 	// Serialize
 	bytes, err := json.Marshal(workRequest)
 	if err != nil {
@@ -339,53 +216,6 @@ func (h *Hub) BroadcastWorkRequestAndWait(workRequest *serializableModels.Client
 		Chan:                 make(chan []byte),
 	}
 	ActiveChannels.Put(activeChannelObj)
-
-	broadcastBucket := h.GetBroadcastBucket()
-	switch broadcastBucket {
-	case "A":
-		go func() { ActiveHub.BroadcastA <- bytes }()
-	case "B":
-		go func() { ActiveHub.BroadcastB <- bytes }()
-	case "C":
-		go func() { ActiveHub.BroadcastC <- bytes }()
-	}
-	select {
-	case response := <-activeChannelObj.Chan:
-		var workResponse serializableModels.ClientWorkResponse
-		err := json.Unmarshal(response, &workResponse)
-		if err != nil {
-			return nil, err
-		}
-		// Close channel
-		close(activeChannelObj.Chan)
-		ActiveChannels.Delete(workRequest.RequestID)
-		return &workResponse, nil
-	case <-time.After(1 * time.Second):
-		klog.Errorf("Work request timed out %s, sending to all buckets", workRequest.Hash)
-		// Close channel
-		close(activeChannelObj.Chan)
-		ActiveChannels.Delete(workRequest.RequestID)
-		return h.BroadcastWorkRequestAndWaitToEverybody(workRequest)
-	}
-}
-
-func (h *Hub) BroadcastWorkRequestAndWaitToEverybody(workRequest *serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
-	// Serialize
-	bytes, err := json.Marshal(workRequest)
-	if err != nil {
-		return nil, err
-	}
-	// Create channel for this hash
-	activeChannelObj := models.ActiveChannelObject{
-		BlockAward:           workRequest.BlockAward,
-		RequesterEmail:       workRequest.RequesterEmail,
-		RequestID:            workRequest.RequestID,
-		Hash:                 workRequest.Hash,
-		DifficultyMultiplier: workRequest.DifficultyMultiplier,
-		Chan:                 make(chan []byte),
-	}
-	ActiveChannels.Put(activeChannelObj)
-
 	go func() { ActiveHub.Broadcast <- bytes }()
 	select {
 	case response := <-activeChannelObj.Chan:

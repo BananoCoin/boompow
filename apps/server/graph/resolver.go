@@ -1,9 +1,6 @@
 package graph
 
-import (
-	"github.com/bananocoin/boompow/apps/server/src/controller"
-	"github.com/bananocoin/boompow/apps/server/src/repository"
-)
+import "github.com/bananocoin/boompow/apps/server/src/repository"
 
 // This file will not be regenerated automatically.
 //
@@ -13,5 +10,4 @@ type Resolver struct {
 	UserRepo    repository.UserRepo
 	WorkRepo    repository.WorkRepo
 	PaymentRepo repository.PaymentRepo
-	ActiveHub   *controller.Hub
 }
