@@ -249,9 +249,6 @@ func (r *redisManager) FilterOverperformingClients() ([]string, error) {
 			toBroadcast = append(toBroadcast, ip)
 		}
 	}
-	if len(toBroadcast) < 5 {
-		return nil, errors.New("Not enough clients to filter high earners")
-	}
 	return toBroadcast, nil
 }
 
