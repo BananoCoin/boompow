@@ -296,11 +296,12 @@ func (s *WorkService) StatsWorker(statsChan <-chan WorkMessage, blockAwardedChan
 		estimatedAward := float64(prizePool) * percentageOfPool / 100
 		// Format client message
 		blockAwardedMsg := serializableModels.ClientMessage{
-			MessageType:    serializableModels.BlockAwarded,
-			Hash:           c.Hash,
-			PercentOfPool:  percentageOfPool,
-			EstimatedAward: estimatedAward,
-			ProviderEmail:  c.ProvidedByEmail,
+			MessageType:          serializableModels.BlockAwarded,
+			Hash:                 c.Hash,
+			PercentOfPool:        percentageOfPool,
+			EstimatedAward:       estimatedAward,
+			ProviderEmail:        c.ProvidedByEmail,
+			DifficultyMultiplier: c.DifficultyMultiplier,
 		}
 
 		go func() { *blockAwardedChan <- blockAwardedMsg }()

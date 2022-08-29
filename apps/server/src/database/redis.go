@@ -218,7 +218,7 @@ func (r *redisManager) GetCachedWork(hash string) (string, error) {
 
 // Client scoring
 func (r *redisManager) UpdateClientScore(ip string, points int) error {
-	return r.Hset("clientscores", ip, strconv.Itoa(points))
+	return r.Hset("clientscores", ip, strconv.Itoa(points+r.GetClientScore(ip)))
 }
 
 func (r *redisManager) GetClientScore(ip string) int {
@@ -238,14 +238,23 @@ func (r *redisManager) FilterOverperformingClients() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Remove clinents whos score makes up 15% or more of total
+	totalScore := 0
+	for _, score := range ret {
+		scoreInt, err := strconv.Atoi(score)
+		if err != nil {
+			totalScore += 0
+		}
+		totalScore += scoreInt
+	}
+
+	// Remove clients whos score makes up 15% or more of total
 	var toBroadcast []string
 	for ip, score := range ret {
 		score, err := strconv.Atoi(score)
 		if err != nil {
 			score = 0
 		}
-		if score >= 15 {
+		if float64(score)/float64(totalScore) >= 0.15 {
 			toBroadcast = append(toBroadcast, ip)
 		}
 	}
