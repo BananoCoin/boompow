@@ -143,8 +143,6 @@ func (h *Hub) Run() {
 				// Except for some services people can abuse, like BananoVault
 				if activeChannel.RequesterEmail == "vault@banano.cc" {
 					activeChannel.BlockAward = false
-				} else if strings.Contains(activeChannel.RequesterEmail, "wenano.net") {
-					activeChannel.BlockAward = false
 				}
 				statsMessage := repository.WorkMessage{
 					BlockAward:           activeChannel.BlockAward,
