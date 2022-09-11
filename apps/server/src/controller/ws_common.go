@@ -212,7 +212,7 @@ const WORK_TIMEOUT_S = time.Second * 30
 // 1) Broadcast to every client
 // 2) Create a channel for the response
 // 3) Wait for response on the channel until timeout
-func BroadcastWorkRequestAndWait(workRequest *serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
+func BroadcastWorkRequestAndWait(workRequest serializableModels.ClientMessage) (*serializableModels.ClientWorkResponse, error) {
 	// Serialize
 	bytes, err := json.Marshal(workRequest)
 	if err != nil {

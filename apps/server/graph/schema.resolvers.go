@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -22,6 +21,7 @@ import (
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
 	"github.com/bananocoin/boompow/libs/utils/validation"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	klog "k8s.io/klog/v2"
 )
@@ -85,11 +85,6 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		return "", fmt.Errorf("access denied")
 	}
 
-	reqID := make([]byte, 32)
-	if _, err := rand.Read(reqID); err != nil {
-		return "", errors.New("server_error:error occured processing request")
-	}
-
 	// Check that this request is valid
 	_, err := hex.DecodeString(input.Hash)
 	if err != nil || len(input.Hash) != 64 {
@@ -114,11 +109,11 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		return workResult, nil
 	}
 
-	workRequest := &serializableModels.ClientMessage{
+	workRequest := serializableModels.ClientMessage{
 		RequesterEmail:       requester.User.Email,
 		BlockAward:           input.BlockAward == nil || *input.BlockAward,
 		MessageType:          serializableModels.WorkGenerate,
-		RequestID:            hex.EncodeToString(reqID),
+		RequestID:            uuid.NewString(),
 		Hash:                 input.Hash,
 		DifficultyMultiplier: input.DifficultyMultiplier,
 	}

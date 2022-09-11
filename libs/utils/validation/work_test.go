@@ -27,4 +27,8 @@ func TestWorkValidation(t *testing.T) {
 
 	// Check that we can access these items
 	utils.AssertEqual(t, false, IsWorkValid(hash, 1, workResult))
+
+	hash = "03DDDFF29D3FF3DC41B5374A10A70B49F7AA41E42461511D6A64F346F9C8421E"
+	workResult = "00000000002d7708"
+	utils.AssertEqual(t, false, IsWorkValid(hash, 1, workResult))
 }
