@@ -118,6 +118,11 @@ func (h *Hub) Run() {
 			// Try to unmarshal as ClientWorkResponse
 			var workResponse serializableModels.ClientWorkResponse
 			err := json.Unmarshal(message.msg, &workResponse)
+			// Error de-serializing
+			if err != nil {
+				klog.Errorf("Error unmarshalling work response: %s", err)
+				continue
+			}
 			// If this channel exists, send response
 			activeChannel := ActiveChannels.Get(workResponse.RequestID)
 			if activeChannel != nil {
@@ -155,11 +160,6 @@ func (h *Hub) Run() {
 				WriteChannelSafe(activeChannel.Chan, message.msg)
 			} else {
 				klog.V(3).Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
-			}
-			// Error de-serializing
-			if err != nil {
-				klog.Errorf("Error unmarshalling work response: %s", err)
-				continue
 			}
 		case message := <-h.Broadcast:
 			toExclude, err := database.GetRedisDB().FilterOverperformingClients()
