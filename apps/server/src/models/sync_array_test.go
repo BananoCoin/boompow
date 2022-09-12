@@ -11,21 +11,21 @@ func TestSyncArray(t *testing.T) {
 	array := NewSyncArray()
 
 	// Add a few items
-	array.Put(ActiveChannelObject{
+	array.Put(&ActiveChannelObject{
 		RequesterEmail:       "1",
 		RequestID:            "1",
 		Hash:                 "1",
 		DifficultyMultiplier: 1,
 		Chan:                 make(chan []byte),
 	})
-	array.Put(ActiveChannelObject{
+	array.Put(&ActiveChannelObject{
 		RequesterEmail:       "2",
 		RequestID:            "2",
 		Hash:                 "2",
 		DifficultyMultiplier: 2,
 		Chan:                 make(chan []byte),
 	})
-	array.Put(ActiveChannelObject{
+	array.Put(&ActiveChannelObject{
 		RequesterEmail:       "3",
 		RequestID:            "3",
 		Hash:                 "3",
