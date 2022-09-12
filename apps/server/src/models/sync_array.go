@@ -16,12 +16,12 @@ type ActiveChannelObject struct {
 // SyncArray builds an thread-safe array with some handy methods
 type SyncArray struct {
 	mu       sync.Mutex
-	channels []ActiveChannelObject
+	channels []*ActiveChannelObject
 }
 
 func NewSyncArray() *SyncArray {
 	return &SyncArray{
-		channels: []ActiveChannelObject{},
+		channels: []*ActiveChannelObject{},
 	}
 }
 
@@ -45,7 +45,7 @@ func (r *SyncArray) HashExists(hash string) bool {
 }
 
 // Put value into map - synchronized
-func (r *SyncArray) Put(value ActiveChannelObject) {
+func (r *SyncArray) Put(value *ActiveChannelObject) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if !r.Exists(value.RequestID) {
@@ -59,7 +59,7 @@ func (r *SyncArray) Get(requestID string) *ActiveChannelObject {
 	defer r.mu.Unlock()
 	for _, v := range r.channels {
 		if v.RequestID == requestID {
-			return &v
+			return v
 		}
 	}
 
@@ -92,7 +92,7 @@ func (r *SyncArray) Len() int {
 }
 
 // NOT thread safe, must be called from within a locked section
-func remove(s []ActiveChannelObject, i int) []ActiveChannelObject {
+func remove(s []*ActiveChannelObject, i int) []*ActiveChannelObject {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }

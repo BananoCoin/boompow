@@ -219,15 +219,18 @@ func BroadcastWorkRequestAndWait(workRequest serializableModels.ClientMessage) (
 		return nil, err
 	}
 	// Create channel for this hash
+	responseChan := make(chan []byte)
+	defer close(responseChan)
 	activeChannelObj := models.ActiveChannelObject{
 		BlockAward:           workRequest.BlockAward,
 		RequesterEmail:       workRequest.RequesterEmail,
 		RequestID:            workRequest.RequestID,
 		Hash:                 workRequest.Hash,
 		DifficultyMultiplier: workRequest.DifficultyMultiplier,
-		Chan:                 make(chan []byte),
+		Chan:                 responseChan,
 	}
-	ActiveChannels.Put(activeChannelObj)
+	ActiveChannels.Put(&activeChannelObj)
+	defer ActiveChannels.Delete(workRequest.RequestID)
 	go func() { ActiveHub.Broadcast <- bytes }()
 	select {
 	case response := <-activeChannelObj.Chan:
@@ -236,16 +239,10 @@ func BroadcastWorkRequestAndWait(workRequest serializableModels.ClientMessage) (
 		if err != nil {
 			return nil, err
 		}
-		// Close channel
-		close(activeChannelObj.Chan)
-		ActiveChannels.Delete(workRequest.RequestID)
 		return &workResponse, nil
 	// 30
 	case <-time.After(WORK_TIMEOUT_S):
 		klog.Errorf("Work request timed out %s", workRequest.Hash)
-		// Close channel
-		close(activeChannelObj.Chan)
-		ActiveChannels.Delete(workRequest.RequestID)
 		return nil, errors.New("timeout")
 	}
 }
