@@ -57,10 +57,8 @@ func (r *SyncArray) Put(value ActiveChannelObject) {
 func (r *SyncArray) Get(requestID string) *ActiveChannelObject {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	for _, v := range r.channels {
-		if v.RequestID == requestID {
-			return &v
-		}
+	if r.Exists(requestID) {
+		return &r.channels[r.IndexOf(requestID)]
 	}
 
 	return nil
