@@ -74,7 +74,7 @@ type Hub struct {
 
 func NewHub(statsChan *chan repository.WorkMessage) *Hub {
 	return &Hub{
-		Broadcast:  make(chan []byte),
+		Broadcast:  make(chan []byte, 100),
 		Response:   make(chan ClientWSMessage),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
@@ -141,7 +141,7 @@ func (h *Hub) Run() {
 				if err != nil {
 					klog.Errorf("Failed to marshal work cancel command: %v", err)
 				} else {
-					go func() { ActiveHub.Broadcast <- bytes }()
+					ActiveHub.Broadcast <- bytes
 				}
 				// Credit this client for this work
 				// Except for some services people can abuse, like BananoVault
@@ -231,7 +231,7 @@ func BroadcastWorkRequestAndWait(workRequest serializableModels.ClientMessage) (
 	}
 	ActiveChannels.Put(&activeChannelObj)
 	defer ActiveChannels.Delete(workRequest.RequestID)
-	go func() { ActiveHub.Broadcast <- bytes }()
+	ActiveHub.Broadcast <- bytes
 	select {
 	case response := <-activeChannelObj.Chan:
 		var workResponse serializableModels.ClientWorkResponse
