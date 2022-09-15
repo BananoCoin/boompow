@@ -152,7 +152,7 @@ func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*mod
 	}
 
 	// Send the email
-	err = s.SendConfirmEmailEmail(userInput.Email, models.UserType(userInput.Type), doEmail)
+	err = s.SendConfirmEmailEmail(strings.ToLower(userInput.Email), models.UserType(userInput.Type), doEmail)
 
 	return user, err
 }
@@ -223,16 +223,17 @@ func (s *UserService) ChangePassword(email string, userInput *model.ChangePasswo
 }
 
 func (s *UserService) VerifyEmailToken(verifyEmail *model.VerifyEmailInput) (bool, error) {
-	dbVerificationCode, err := database.GetRedisDB().GetConfirmationToken(verifyEmail.Email)
+	lowerEmail := strings.ToLower(verifyEmail.Email)
+	dbVerificationCode, err := database.GetRedisDB().GetConfirmationToken(lowerEmail)
 	if err != nil {
 		return false, errors.New("Invalid verification code, it may have expired")
 	} else if dbVerificationCode != verifyEmail.Token {
 		return false, errors.New("Invalid verification code")
 	}
 
-	if res := s.Db.Model(&models.User{}).Where("email = ?", verifyEmail.Email).Update("email_verified", true); res.RowsAffected > 0 {
+	if res := s.Db.Model(&models.User{}).Where("email = ?", lowerEmail).Update("email_verified", true); res.RowsAffected > 0 {
 		// Email has been marked verified, delete the token
-		database.GetRedisDB().DeleteConfirmationToken(verifyEmail.Email)
+		database.GetRedisDB().DeleteConfirmationToken(lowerEmail)
 		// Get User
 		user, err := s.GetUser(nil, &verifyEmail.Email)
 		if err != nil {
