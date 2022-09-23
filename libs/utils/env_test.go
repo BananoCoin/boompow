@@ -15,6 +15,13 @@ func TestGetEnv(t *testing.T) {
 	utils.AssertEqual(t, "default", GetEnv("MY_ENV_UNKNOWN", "default"))
 }
 
+func TestGetBannedRewards(t *testing.T) {
+	os.Setenv("BPOW_BANNED_REWARDS", "a,b")
+	defer os.Unsetenv("BPOW_BANNED_REWARDS")
+
+	utils.AssertEqual(t, []string{"a", "b"}, GetBannedRewards())
+}
+
 func TestGetJwtKey(t *testing.T) {
 	os.Unsetenv("PRIV_KEY")
 	utils.AssertEqual(t, []byte("badKey"), GetJwtKey())

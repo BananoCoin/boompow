@@ -3,6 +3,7 @@ package utils
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"k8s.io/klog/v2"
 )
@@ -13,6 +14,11 @@ func GetEnv(key string, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func GetBannedRewards() []string {
+	raw := GetEnv("BPOW_BANNED_REWARDS", "")
+	return strings.Split(raw, ",")
 }
 
 func GetJwtKey() []byte {

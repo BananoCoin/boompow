@@ -10,6 +10,7 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
+	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/gorilla/websocket"
 	"golang.org/x/exp/slices"
@@ -145,7 +146,7 @@ func (h *Hub) Run() {
 				}
 				// Credit this client for this work
 				// Except for some services people can abuse, like BananoVault
-				if activeChannel.RequesterEmail == "vault@banano.cc" {
+				if slices.Contains(utils.GetBannedRewards(), activeChannel.RequesterEmail) {
 					activeChannel.BlockAward = false
 				}
 				statsMessage := repository.WorkMessage{
