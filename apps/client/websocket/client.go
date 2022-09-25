@@ -32,7 +32,7 @@ func (ws *WebsocketService) SetAuthToken(authToken string) {
 	})
 }
 
-func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientMessage, queue *models.RandomAccessQueue) {
+func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientMessage, queue *models.RandomAccessQueue, minDifficulty int) {
 	if ws.AuthToken == "" {
 		panic("Tired to start websocket client without auth token")
 	}
@@ -67,6 +67,11 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx above our max %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.maxDifficulty)
 					continue
 				}
+				if serverMsg.DifficultyMultiplier < minDifficulty {
+					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx below our min %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, minDifficulty)
+					continue
+				}
+
 				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
 
 				if len(serverMsg.Hash) != 64 {

@@ -16,12 +16,15 @@ set gpuonly=%false%
 :: Max work difficulty
 set max_difficulty_multiplier=128
 
+:: Min work difficulty
+set min_difficulty_multiplier=1
+
 echo Starting BoomPow Client...
 
 if %gpuonly% (
-  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier% -gpu-only
+  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier% -min-difficulty %min_difficulty_multiplier% -gpu-only
 ) else (
-  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier%
+  boompow-client.exe -email %email% -password %password% -max-difficulty %max_difficulty_multiplier% -min-difficulty %min_difficulty_multiplier%
 )
 
 pause

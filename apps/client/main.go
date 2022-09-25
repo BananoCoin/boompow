@@ -150,7 +150,8 @@ var WSService *websocket.WebsocketService
 func main() {
 	// Parse flags
 	gpuOnly := flag.Bool("gpu-only", false, "If set, will only run work on GPU (otherwise, both CPU and GPU)")
-	maxDifficulty := flag.Int("max-difficulty", 128, "The maximum work difficulty to compute, less than this will be ignored")
+	maxDifficulty := flag.Int("max-difficulty", 128, "The maximum work difficulty to compute, higher than this will be ignored")
+	minDifficulty := flag.Int("min-difficulty", 1, "The minimum work difficulty to compute, lower than this will be ignored")
 	// Benchmark
 	benchmark := flag.Int("benchmark", 0, "Run a benchmark for the given number of random hashes")
 	benchmarkDifficulty := flag.Int("benchmark-difficulty", 64, "The difficulty multiplier for the benchmark")
@@ -545,6 +546,8 @@ func main() {
 		}
 	}
 
+	// Klicer: not sure why we're passing max difficulty to the server? Work above the set max difficulty still gets sent to clients.
+
 	// Create WS Service
 	WSService = websocket.NewWebsocketService(WSUrl, *maxDifficulty)
 
@@ -629,5 +632,5 @@ func main() {
 	workProcessor := work.NewWorkProcessor(WSService, *gpuOnly, devicesToUse)
 	workProcessor.StartAsync()
 
-	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue)
+	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue, *minDifficulty)
 }
