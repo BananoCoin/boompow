@@ -95,7 +95,7 @@ func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.Clie
 				}
 				fmt.Printf("Awarding to %s", c.IPAddress)
 				database.GetRedisDB().UpdateClientScore(c.IPAddress, int(ba.DifficultyMultiplier))
-				c.Send <- bytes
+				WriteChannelSafe(c.Send, bytes)
 			}
 		}
 	}
