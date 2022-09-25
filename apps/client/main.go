@@ -546,10 +546,8 @@ func main() {
 		}
 	}
 
-	// Klicer: not sure why we're passing max difficulty to the server? Work above the set max difficulty still gets sent to clients.
-
 	// Create WS Service
-	WSService = websocket.NewWebsocketService(WSUrl, *maxDifficulty)
+	WSService = websocket.NewWebsocketService(WSUrl, *maxDifficulty, *minDifficulty)
 
 	// Loop to get username and password and login
 	for {
@@ -632,5 +630,5 @@ func main() {
 	workProcessor := work.NewWorkProcessor(WSService, *gpuOnly, devicesToUse)
 	workProcessor.StartAsync()
 
-	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue, *minDifficulty)
+	WSService.StartWSClient(ctx, workProcessor.WorkQueueChan, workProcessor.Queue)
 }

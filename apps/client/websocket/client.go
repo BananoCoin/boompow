@@ -15,13 +15,15 @@ type WebsocketService struct {
 	AuthToken     string
 	URL           string
 	maxDifficulty int
+	minDifficulty int
 }
 
-func NewWebsocketService(url string, maxDifficulty int) *WebsocketService {
+func NewWebsocketService(url string, maxDifficulty int, minDifficulty int) *WebsocketService {
 	return &WebsocketService{
 		WS:            &RecConn{},
 		URL:           url,
 		maxDifficulty: maxDifficulty,
+		minDifficulty: minDifficulty,
 	}
 }
 
@@ -32,7 +34,7 @@ func (ws *WebsocketService) SetAuthToken(authToken string) {
 	})
 }
 
-func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientMessage, queue *models.RandomAccessQueue, minDifficulty int) {
+func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan chan *serializableModels.ClientMessage, queue *models.RandomAccessQueue) {
 	if ws.AuthToken == "" {
 		panic("Tired to start websocket client without auth token")
 	}
@@ -67,8 +69,8 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx above our max %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.maxDifficulty)
 					continue
 				}
-				if serverMsg.DifficultyMultiplier < minDifficulty {
-					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx below our min %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, minDifficulty)
+				if serverMsg.DifficultyMultiplier < ws.minDifficulty {
+					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx below our min %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.minDifficulty)
 					continue
 				}
 
