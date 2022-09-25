@@ -36,39 +36,6 @@ func InitGQLClientWithToken(url string, token string) {
 	client = graphql.NewClient(url, &http.Client{Transport: &authedTransport{wrapped: http.DefaultTransport, token: token}})
 }
 
-func RegisterProvider(ctx context.Context, email string, password string, banAddress string) (*createUserResponse, error) {
-	resp, err := createUser(ctx, client, UserInput{
-		Email:      email,
-		Password:   password,
-		Type:       UserTypeProvider,
-		BanAddress: banAddress,
-	})
-
-	if err != nil {
-		fmt.Printf("Error creating user in %v", err)
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func RegisterService(ctx context.Context, email string, password string, serviceName string, serviceWebsite string) (*createUserResponse, error) {
-	resp, err := createUser(ctx, client, UserInput{
-		Email:          email,
-		Password:       password,
-		Type:           UserTypeRequester,
-		ServiceName:    serviceName,
-		ServiceWebsite: serviceWebsite,
-	})
-
-	if err != nil {
-		fmt.Printf("Error creating user in %v", err)
-		return nil, err
-	}
-
-	return resp, nil
-}
-
 func Login(ctx context.Context, email string, password string) (*loginUserResponse, GQLError) {
 	resp, err := loginUser(ctx, client, LoginInput{
 		Email:    email,
@@ -98,28 +65,4 @@ func RefreshToken(ctx context.Context, token string) (string, error) {
 	fmt.Printf("\n👮 Refreshed authentication token")
 
 	return resp.RefreshToken, nil
-}
-
-func ResendConfirmationEmail(ctx context.Context, email string) (*resendConfirmationEmailResponse, error) {
-	resp, err := resendConfirmationEmail(ctx, client, ResendConfirmationEmailInput{
-		Email: email,
-	})
-
-	if err != nil {
-		fmt.Printf("Error resending email %v", err)
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func GenerateServiceToken(ctx context.Context) (*generateOrGetServiceTokenResponse, error) {
-	resp, err := generateOrGetServiceToken(ctx, client)
-
-	if err != nil {
-		fmt.Printf("Error generating service token %v", err)
-		return nil, err
-	}
-
-	return resp, nil
 }
