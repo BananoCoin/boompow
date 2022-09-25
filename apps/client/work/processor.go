@@ -3,6 +3,7 @@ package work
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Inkeliz/go-opencl/opencl"
@@ -17,6 +18,7 @@ type WorkProcessor struct {
 	WorkQueueChan chan *serializableModels.ClientMessage
 	WSService     *websocket.WebsocketService
 	WorkPool      *WorkPool
+	mu            sync.Mutex
 }
 
 func NewWorkProcessor(ws *websocket.WebsocketService, gpuOnly bool, devices []opencl.Device) *WorkProcessor {
@@ -40,10 +42,9 @@ func (wp *WorkProcessor) StartRequestQueueWorker() {
 			// Generate work with timeout
 			ch := make(chan string)
 
-			// Benchmark
-			// startT := time.Now()
-
 			go func() {
+				wp.mu.Lock()
+				defer wp.mu.Unlock()
 				result, err := wp.WorkPool.WorkGenerate(workItem)
 				if err != nil {
 					result = ""
@@ -59,9 +60,6 @@ func (wp *WorkProcessor) StartRequestQueueWorker() {
 			select {
 			case result := <-ch:
 				if result != "" {
-					// endT := time.Now()
-					// delta := endT.Sub(startT).Seconds()
-					// fmt.Printf("\nWork result: %s in %.2fs", result, delta)
 					// Send result back to server
 					clientWorkResult := serializableModels.ClientWorkResponse{
 						RequestID: workItem.RequestID,
