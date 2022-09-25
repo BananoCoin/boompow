@@ -15,13 +15,15 @@ type WebsocketService struct {
 	AuthToken     string
 	URL           string
 	maxDifficulty int
+	minDifficulty int
 }
 
-func NewWebsocketService(url string, maxDifficulty int) *WebsocketService {
+func NewWebsocketService(url string, maxDifficulty int, minDifficulty int) *WebsocketService {
 	return &WebsocketService{
 		WS:            &RecConn{},
 		URL:           url,
 		maxDifficulty: maxDifficulty,
+		minDifficulty: minDifficulty,
 	}
 }
 
@@ -67,6 +69,11 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx above our max %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.maxDifficulty)
 					continue
 				}
+				if serverMsg.DifficultyMultiplier < ws.minDifficulty {
+					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx below our min %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.minDifficulty)
+					continue
+				}
+
 				fmt.Printf("\n🦋 Received work request %s with difficulty %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier)
 
 				if len(serverMsg.Hash) != 64 {
