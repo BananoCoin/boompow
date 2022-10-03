@@ -107,12 +107,10 @@ func WorkerChl(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Block IPs already connected
-	for c := range hub.Clients {
-		if c.IPAddress == clientIP {
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("403 - Forbidden"))
-			return
-		}
+	if hub.AlreadyConnected(clientIP) {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("403 - Forbidden"))
+		return
 	}
 
 	conn, err := Upgrader.Upgrade(w, r, nil)

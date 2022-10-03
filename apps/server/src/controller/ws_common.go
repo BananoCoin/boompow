@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/bananocoin/boompow/apps/server/src/database"
@@ -71,6 +72,19 @@ type Hub struct {
 
 	// Channel to broadcast stats to
 	StatsChan *chan repository.WorkMessage
+
+	mu sync.Mutex
+}
+
+func (h *Hub) AlreadyConnected(ip string) bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for c := range h.Clients {
+		if c.IPAddress == ip {
+			return true
+		}
+	}
+	return false
 }
 
 func NewHub(statsChan *chan repository.WorkMessage) *Hub {
@@ -86,18 +100,22 @@ func NewHub(statsChan *chan repository.WorkMessage) *Hub {
 
 func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.ClientMessage) {
 	for ba := range blockAwardedChan {
-		for c := range h.Clients {
-			if c.Email == ba.ProviderEmail {
-				bytes, err := json.Marshal(ba)
-				if err != nil {
-					klog.Errorf("Error marshalling block awarded message %s", err)
-					break
+		func() {
+			h.mu.Lock()
+			defer h.mu.Unlock()
+			for c := range h.Clients {
+				if c.Email == ba.ProviderEmail {
+					bytes, err := json.Marshal(ba)
+					if err != nil {
+						klog.Errorf("Error marshalling block awarded message %s", err)
+						break
+					}
+					fmt.Printf("Awarding to %s", c.IPAddress)
+					database.GetRedisDB().UpdateClientScore(c.IPAddress, int(ba.DifficultyMultiplier))
+					WriteChannelSafe(c.Send, bytes)
 				}
-				fmt.Printf("Awarding to %s", c.IPAddress)
-				database.GetRedisDB().UpdateClientScore(c.IPAddress, int(ba.DifficultyMultiplier))
-				WriteChannelSafe(c.Send, bytes)
 			}
-		}
+		}()
 	}
 }
 
@@ -105,16 +123,24 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			h.Clients[client] = true
-			// Keep global state of connected clients
-			database.GetRedisDB().AddConnectedClient(client.IPAddress)
-		case client := <-h.Unregister:
-			if _, ok := h.Clients[client]; ok {
-				delete(h.Clients, client)
-				close(client.Send)
+			func() {
+				h.mu.Lock()
+				defer h.mu.Unlock()
+				h.Clients[client] = true
 				// Keep global state of connected clients
-				database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
-			}
+				database.GetRedisDB().AddConnectedClient(client.IPAddress)
+			}()
+		case client := <-h.Unregister:
+			func() {
+				h.mu.Lock()
+				defer h.mu.Unlock()
+				if _, ok := h.Clients[client]; ok {
+					delete(h.Clients, client)
+					close(client.Send)
+					// Keep global state of connected clients
+					database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
+				}
+			}()
 		case message := <-h.Response:
 			// Try to unmarshal as ClientWorkResponse
 			var workResponse serializableModels.ClientWorkResponse
@@ -164,26 +190,30 @@ func (h *Hub) Run() {
 				klog.V(3).Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
 		case message := <-h.Broadcast:
-			toExclude, err := database.GetRedisDB().FilterOverperformingClients()
-			if err != nil {
-				klog.Errorf("Error filtering overperforming clients: %v", err)
-				toExclude = []string{}
-			}
-			if len(h.Clients) < 5 {
-				toExclude = []string{}
-				klog.V(3).Infof("Not enough clients to exclude any")
-			}
-			for client := range h.Clients {
-				if len(toExclude) > 0 && slices.Contains(toExclude, client.IPAddress) {
-					continue
+			func() {
+				h.mu.Lock()
+				defer h.mu.Unlock()
+				toExclude, err := database.GetRedisDB().FilterOverperformingClients()
+				if err != nil {
+					klog.Errorf("Error filtering overperforming clients: %v", err)
+					toExclude = []string{}
 				}
-				select {
-				case client.Send <- message:
-				default:
-					close(client.Send)
-					delete(h.Clients, client)
+				if len(h.Clients) < 5 {
+					toExclude = []string{}
+					klog.V(3).Infof("Not enough clients to exclude any")
 				}
-			}
+				for client := range h.Clients {
+					if len(toExclude) > 0 && slices.Contains(toExclude, client.IPAddress) {
+						continue
+					}
+					select {
+					case client.Send <- message:
+					default:
+						close(client.Send)
+						delete(h.Clients, client)
+					}
+				}
+			}()
 		}
 	}
 }
