@@ -81,6 +81,7 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 			Result:               workMessage.Result,
 			ProvidedBy:           provider.ID,
 			RequestedBy:          requester.ID,
+			Precache:             workMessage.Precache,
 		}
 
 		err = s.Db.Create(&workRequestDb).Error
