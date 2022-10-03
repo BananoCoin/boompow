@@ -15,6 +15,7 @@ func TestSerializeDeserializeClientRequest(t *testing.T) {
 		RequestID:            "123",
 		Hash:                 "hash",
 		DifficultyMultiplier: 3,
+		Precache:             true,
 	}
 
 	// Just want to ensure we don't leak requester emails to the client
@@ -32,4 +33,5 @@ func TestSerializeDeserializeClientRequest(t *testing.T) {
 	utils.AssertEqual(t, "123", deserialized["request_id"])
 	utils.AssertEqual(t, "hash", deserialized["hash"])
 	utils.AssertEqual(t, float64(3), deserialized["difficulty_multiplier"])
+	utils.AssertEqual(t, true, deserialized["precache"])
 }

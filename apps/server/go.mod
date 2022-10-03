@@ -22,6 +22,8 @@ require (
 	k8s.io/klog/v2 v2.70.1
 )
 
+require github.com/jpillora/backoff v1.0.0 // indirect
+
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
@@ -45,6 +47,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/lib/pq v1.10.6 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/recws-org/recws v1.4.0
 	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect

@@ -10,4 +10,5 @@ type WorkResult struct {
 	Awarded              bool      `json:"awarded" gorm:"default:false;not null"` // Whether or not this has been awarded
 	ProvidedBy           uuid.UUID `json:"providedBy" gorm:"not null"`
 	RequestedBy          uuid.UUID `json:"requestedBy" gorm:"not null"`
+	Precache             bool      `json:"precache" gorm:"default:false;not null"`
 }

@@ -123,6 +123,8 @@ func (r *mutationResolver) WorkGenerate(ctx context.Context, input model.WorkGen
 		return "", err
 	}
 
+	r.PrecacheMap.Store(strings.ToUpper(input.Hash), resp.Result)
+
 	return resp.Result, nil
 }
 

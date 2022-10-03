@@ -25,6 +25,7 @@ type WorkMessage struct {
 	Hash                 string `json:"hash"`
 	Result               string `json:"result"`
 	DifficultyMultiplier int    `json:"difficulty_multiplier"`
+	Precache             bool   `json:"precache"`
 }
 
 type WorkRepo interface {

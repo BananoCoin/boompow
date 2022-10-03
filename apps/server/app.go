@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -17,12 +18,14 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/controller"
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
+	"github.com/bananocoin/boompow/apps/server/src/net"
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bitfield/script"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"k8s.io/klog/v2"
@@ -67,7 +70,11 @@ func runServer() {
 	}
 
 	fmt.Println("🦋 Running database migrations...")
-	database.Migrate(db)
+	err = database.Migrate(db)
+	if err != nil {
+		fmt.Printf("Error running database migrations %v", err)
+		os.Exit(1)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -79,10 +86,13 @@ func runServer() {
 	workRepo := repository.NewWorkService(db, userRepo)
 	paymentRepo := repository.NewPaymentService(db)
 
+	precacheMap := &sync.Map{}
+
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		UserRepo:    userRepo,
 		WorkRepo:    workRepo,
 		PaymentRepo: paymentRepo,
+		PrecacheMap: precacheMap,
 	}}))
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -151,6 +161,84 @@ func runServer() {
 	go workRepo.StatsWorker(statsChan, &blockAwardedChan)
 	// Job for sending block awarded messages to user
 	go controller.ActiveHub.BlockAwardedWorker(blockAwardedChan)
+
+	// Setup callback clients for pre-caching
+
+	// Start nano WS client
+	callbackChan := make(chan *net.WSCallbackMsg, 100)
+	if utils.GetEnv("NANO_WS_URL", "") != "" {
+		go net.StartNanoWSClient(utils.GetEnv("NANO_WS_URL", ""), &callbackChan)
+	}
+
+	// Read channel to notify clients of blocks of new blocks
+	go func() {
+		for msg := range callbackChan {
+			_, ok := precacheMap.LoadAndDelete(msg.Block.Previous)
+			if !ok {
+				continue
+			}
+
+			// We want to precache this if we don't have it
+			_, err := workRepo.RetrieveWorkFromCache(msg.Hash, 64)
+			if err == nil {
+				// Already cached
+				continue
+			}
+
+			workRequest := serializableModels.ClientMessage{
+				RequesterEmail:       "nano@banano.cc",
+				BlockAward:           true,
+				MessageType:          serializableModels.WorkGenerate,
+				RequestID:            uuid.NewString(),
+				Hash:                 msg.Hash,
+				DifficultyMultiplier: 64,
+				Precache:             true,
+			}
+
+			controller.BroadcastWorkRequestAndWait(workRequest)
+			if msg.Block.Subtype != "send" {
+				continue
+			}
+		}
+	}()
+
+	// Start banano WS client
+	callbackChanBanano := make(chan *net.WSCallbackMsg, 100)
+	if utils.GetEnv("BANANO_WS_URL", "") != "" {
+		go net.StartNanoWSClient(utils.GetEnv("BANANO_WS_URL", ""), &callbackChanBanano)
+	}
+
+	// Read channel to notify clients of blocks of new blocks
+	go func() {
+		for msg := range callbackChanBanano {
+			_, ok := precacheMap.LoadAndDelete(msg.Block.Previous)
+			if !ok {
+				continue
+			}
+
+			// We want to precache this if we don't have it
+			_, err := workRepo.RetrieveWorkFromCache(msg.Hash, 1)
+			if err == nil {
+				// Already cached
+				continue
+			}
+
+			workRequest := serializableModels.ClientMessage{
+				RequesterEmail:       "all@banano.cc",
+				BlockAward:           true,
+				MessageType:          serializableModels.WorkGenerate,
+				RequestID:            uuid.NewString(),
+				Hash:                 msg.Hash,
+				DifficultyMultiplier: 1,
+				Precache:             true,
+			}
+
+			controller.BroadcastWorkRequestAndWait(workRequest)
+			if msg.Block.Subtype != "send" {
+				continue
+			}
+		}
+	}()
 
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }

@@ -10,6 +10,7 @@ type ActiveChannelObject struct {
 	RequestID            string
 	Hash                 string
 	DifficultyMultiplier int
+	Precache             bool
 	Chan                 chan []byte
 }
 

@@ -96,4 +96,9 @@ spec:
           - name: BPOW_WALLET_ADDRESS
             value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
           - name: ENVIRONMENT
-            value: production                   
+            value: production     
+          - name: BANANO_WS_URL
+            value: ws://10.255.0.1:7074
+          - name: NANO_WS_URL
+            value: ws://10.8.0.2:7078
+              

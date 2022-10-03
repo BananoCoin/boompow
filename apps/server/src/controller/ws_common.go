@@ -156,6 +156,7 @@ func (h *Hub) Run() {
 					Hash:                 activeChannel.Hash,
 					Result:               workResponse.Result,
 					DifficultyMultiplier: activeChannel.DifficultyMultiplier,
+					Precache:             activeChannel.Precache,
 				}
 				*h.StatsChan <- statsMessage
 				WriteChannelSafe(activeChannel.Chan, message.msg)
@@ -229,6 +230,7 @@ func BroadcastWorkRequestAndWait(workRequest serializableModels.ClientMessage) (
 		Hash:                 workRequest.Hash,
 		DifficultyMultiplier: workRequest.DifficultyMultiplier,
 		Chan:                 responseChan,
+		Precache:             workRequest.Precache,
 	}
 	ActiveChannels.Put(&activeChannelObj)
 	defer ActiveChannels.Delete(workRequest.RequestID)

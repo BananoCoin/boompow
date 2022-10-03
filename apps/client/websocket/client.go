@@ -16,14 +16,16 @@ type WebsocketService struct {
 	URL           string
 	maxDifficulty int
 	minDifficulty int
+	skipPrecache  bool
 }
 
-func NewWebsocketService(url string, maxDifficulty int, minDifficulty int) *WebsocketService {
+func NewWebsocketService(url string, maxDifficulty int, minDifficulty int, skipPrecache bool) *WebsocketService {
 	return &WebsocketService{
 		WS:            &RecConn{},
 		URL:           url,
 		maxDifficulty: maxDifficulty,
 		minDifficulty: minDifficulty,
+		skipPrecache:  skipPrecache,
 	}
 }
 
@@ -71,6 +73,11 @@ func (ws *WebsocketService) StartWSClient(ctx context.Context, workQueueChan cha
 				}
 				if serverMsg.DifficultyMultiplier < ws.minDifficulty {
 					fmt.Printf("\n😒 Ignoring work request %s with difficulty %dx below our min %dx", serverMsg.Hash, serverMsg.DifficultyMultiplier, ws.minDifficulty)
+					continue
+				}
+
+				if ws.skipPrecache && serverMsg.Precache {
+					fmt.Printf("\n😒 Ignoring precache request %s", serverMsg.Hash)
 					continue
 				}
 

@@ -22,4 +22,5 @@ type ClientMessage struct {
 	ProviderEmail  string  `json:"-"`
 	PercentOfPool  float64 `json:"percent_of_pool"`
 	EstimatedAward float64 `json:"estimated_award"`
+	Precache       bool    `json:"precache"`
 }
