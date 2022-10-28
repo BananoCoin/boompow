@@ -11,7 +11,9 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	"github.com/bananocoin/boompow/libs/utils/auth"
+	"github.com/bananocoin/boompow/libs/utils/net"
 	"github.com/google/uuid"
+	"k8s.io/klog/v2"
 )
 
 // We distinguish the type of authentication so we can restrict service tokens to only be used for work requests
@@ -76,6 +78,7 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 				// Service token
 				userID, err := database.GetRedisDB().GetServiceTokenUser(header)
 				if err != nil {
+					klog.Errorf("INVALID TOKEN ATTEMPT %s:%s", header, net.GetIPAddress(r))
 					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
 					return
 				}
