@@ -153,6 +153,7 @@ func (r *mutationResolver) GenerateOrGetServiceToken(ctx context.Context) (strin
 
 // ResetPassword is the resolver for the resetPassword field.
 func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (bool, error) {
+	return false, errors.New("Password reset disabled")
 	r.UserRepo.GenerateResetPasswordRequest(&input, true)
 
 	return true, nil
@@ -160,6 +161,7 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetP
 
 // ResendConfirmationEmail is the resolver for the resendConfirmationEmail field.
 func (r *mutationResolver) ResendConfirmationEmail(ctx context.Context, input model.ResendConfirmationEmailInput) (bool, error) {
+	return false, errors.New("Email confirmation disabled")
 	u, err := r.UserRepo.GetUser(nil, &input.Email)
 	if err != nil {
 		return false, errors.New("User does not exist")
@@ -176,6 +178,7 @@ func (r *mutationResolver) ResendConfirmationEmail(ctx context.Context, input mo
 
 // SendConfirmationEmail is the resolver for the sendConfirmationEmail field.
 func (r *mutationResolver) SendConfirmationEmail(ctx context.Context) (bool, error) {
+	return false, errors.New("Email confirmation disabled")
 	// Require authentication
 	user := middleware.AuthorizedUser(ctx)
 	if user == nil {
@@ -195,6 +198,7 @@ func (r *mutationResolver) SendConfirmationEmail(ctx context.Context) (bool, err
 
 // ChangePassword is the resolver for the changePassword field.
 func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (bool, error) {
+	return false, errors.New("Password reset disabled")
 	// Require authentication for service
 	requester := middleware.AuthorizedChangePassword(ctx)
 	if requester == nil {
@@ -217,11 +221,13 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input model.Chang
 
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *queryResolver) VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error) {
+	return false, errors.New("Email confirmation disabled")
 	return r.UserRepo.VerifyEmailToken(&input)
 }
 
 // VerifyService is the resolver for the verifyService field.
 func (r *queryResolver) VerifyService(ctx context.Context, input model.VerifyServiceInput) (bool, error) {
+	return false, errors.New("Service verification disabled")
 	return r.UserRepo.VerifyService(&input)
 }
 
