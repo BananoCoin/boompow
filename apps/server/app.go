@@ -24,9 +24,11 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	"github.com/bananocoin/boompow/libs/utils"
+	netutils "github.com/bananocoin/boompow/libs/utils/net"
 	"github.com/bitfield/script"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
@@ -132,6 +134,15 @@ func runServer() {
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
+	// Rate limiting middleware
+	router.Use(httprate.Limit(
+		20,            // requests
+		1*time.Minute, // per duration
+		// an oversimplified example of rate limiting by a custom header
+		httprate.WithKeyFuncs(func(r *http.Request) (string, error) {
+			return netutils.GetIPAddress(r), nil
+		}),
+	))
 	// if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 	// 	router.Use(cors.New(cors.Options{
 	// 		AllowOriginFunc: func(origin string) bool {

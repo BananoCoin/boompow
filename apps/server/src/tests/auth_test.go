@@ -14,7 +14,7 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/repository"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/testing"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 func TestAuthMiddleware(t *testing.T) {
