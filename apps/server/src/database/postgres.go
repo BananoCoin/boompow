@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"gorm.io/driver/postgres"
@@ -26,6 +27,13 @@ func NewConnection(config *Config) (*gorm.DB, error) {
 	if err != nil {
 		return db, err
 	}
+	sqlDb, err := db.DB()
+	if err != nil {
+		return db, err
+	}
+	sqlDb.SetMaxIdleConns(25)
+	sqlDb.SetMaxOpenConns(25)
+	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 	return db, nil
 }
 
