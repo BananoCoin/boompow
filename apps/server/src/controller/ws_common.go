@@ -56,7 +56,7 @@ var Upgrader = websocket.Upgrader{}
 // clients.
 type Hub struct {
 	// Registered clients.
-	Clients map[*Client]bool
+	Clients sync.Map // map[*Client]bool
 
 	// Outbound messages to the client
 	Broadcast chan []byte
@@ -72,19 +72,21 @@ type Hub struct {
 
 	// Channel to broadcast stats to
 	StatsChan *chan repository.WorkMessage
-
-	mu sync.Mutex
 }
 
 func (h *Hub) AlreadyConnected(ip string) bool {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	for c := range h.Clients {
-		if c.IPAddress == ip {
-			return true
+	ret := false
+	h.Clients.Range(func(key, value interface{}) bool {
+		client, ok := key.(*Client)
+		if ok {
+			if client.IPAddress == ip {
+				ret = true
+				return false
+			}
 		}
-	}
-	return false
+		return true
+	})
+	return ret
 }
 
 func NewHub(statsChan *chan repository.WorkMessage) *Hub {
@@ -93,29 +95,30 @@ func NewHub(statsChan *chan repository.WorkMessage) *Hub {
 		Response:   make(chan ClientWSMessage),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
-		Clients:    make(map[*Client]bool),
+		Clients:    sync.Map{},
 		StatsChan:  statsChan,
 	}
 }
 
 func (h *Hub) BlockAwardedWorker(blockAwardedChan <-chan serializableModels.ClientMessage) {
 	for ba := range blockAwardedChan {
-		func() {
-			h.mu.Lock()
-			defer h.mu.Unlock()
-			for c := range h.Clients {
+		h.Clients.Range(func(key, value interface{}) bool {
+			c, ok := key.(*Client)
+			if ok {
 				if c.Email == ba.ProviderEmail {
 					bytes, err := json.Marshal(ba)
 					if err != nil {
 						klog.Errorf("Error marshalling block awarded message %s", err)
-						break
+						return false
 					}
 					fmt.Printf("Awarding to %s", c.IPAddress)
 					database.GetRedisDB().UpdateClientScore(c.IPAddress, int(ba.DifficultyMultiplier))
 					WriteChannelSafe(c.Send, bytes)
+					return false
 				}
 			}
-		}()
+			return true
+		})
 	}
 }
 
@@ -123,19 +126,13 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			func() {
-				h.mu.Lock()
-				defer h.mu.Unlock()
-				h.Clients[client] = true
-				// Keep global state of connected clients
-				database.GetRedisDB().AddConnectedClient(client.IPAddress)
-			}()
+			h.Clients.Store(client, true)
+			// Keep global state of connected clients
+			database.GetRedisDB().AddConnectedClient(client.IPAddress)
 		case client := <-h.Unregister:
 			func() {
-				h.mu.Lock()
-				defer h.mu.Unlock()
-				if _, ok := h.Clients[client]; ok {
-					delete(h.Clients, client)
+				if _, ok := h.Clients.Load(client); ok {
+					h.Clients.Delete(client)
 					close(client.Send)
 					// Keep global state of connected clients
 					database.GetRedisDB().RemoveConnectedClient(client.IPAddress)
@@ -190,30 +187,39 @@ func (h *Hub) Run() {
 				klog.V(3).Infof("Received work response for hash %s, but no channel exists", workResponse.Hash)
 			}
 		case message := <-h.Broadcast:
-			func() {
-				h.mu.Lock()
-				defer h.mu.Unlock()
-				toExclude, err := database.GetRedisDB().FilterOverperformingClients()
-				if err != nil {
-					klog.Errorf("Error filtering overperforming clients: %v", err)
-					toExclude = []string{}
+
+			toExclude, err := database.GetRedisDB().FilterOverperformingClients()
+			if err != nil {
+				klog.Errorf("Error filtering overperforming clients: %v", err)
+				toExclude = []string{}
+			}
+			numClients := 0
+			h.Clients.Range(func(key, value interface{}) bool {
+				numClients++
+				if numClients > 5 {
+					return false
 				}
-				if len(h.Clients) < 5 {
-					toExclude = []string{}
-					klog.V(3).Infof("Not enough clients to exclude any")
-				}
-				for client := range h.Clients {
+				return true
+			})
+			if numClients < 5 {
+				toExclude = []string{}
+				klog.V(3).Infof("Not enough clients to exclude any")
+			}
+			h.Clients.Range(func(key, value interface{}) bool {
+				client, ok := key.(*Client)
+				if ok {
 					if len(toExclude) > 0 && slices.Contains(toExclude, client.IPAddress) {
-						continue
+						return true
 					}
 					select {
 					case client.Send <- message:
 					default:
 						close(client.Send)
-						delete(h.Clients, client)
+						h.Clients.Delete(client)
 					}
 				}
-			}()
+				return true
+			})
 		}
 	}
 }
