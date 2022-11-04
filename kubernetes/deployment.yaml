@@ -98,6 +98,11 @@ spec:
               secretKeyRef:
                 name: boompow
                 key: allowed_emails
+          - name: BPOW_SERVICE_TOKENS
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: service_tokens
           - name: BPOW_WALLET_ADDRESS
             value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
           - name: ENVIRONMENT

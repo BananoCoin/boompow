@@ -10,9 +10,11 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/models"
 	"github.com/bananocoin/boompow/apps/server/src/repository"
+	"github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	"github.com/bananocoin/boompow/libs/utils/net"
 	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 	"k8s.io/klog/v2"
 )
 
@@ -76,6 +78,11 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 				ctx = context.WithValue(r.Context(), userCtxKey, &UserContextValue{User: user, AuthType: "token"})
 			} else if strings.HasPrefix(header, "service:") {
 				// Service token
+				if !slices.Contains(utils.GetServiceTokens(), header) {
+					klog.Errorf("INVALID TOKEN ATTEMPT 1 %s:%s", header, net.GetIPAddress(r))
+					http.Error(w, formatGraphqlError(r.Context(), "Invalid Token"), http.StatusForbidden)
+					return
+				}
 				userID, err := database.GetRedisDB().GetServiceTokenUser(header)
 				if err != nil {
 					klog.Errorf("INVALID TOKEN ATTEMPT %s:%s", header, net.GetIPAddress(r))

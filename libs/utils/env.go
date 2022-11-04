@@ -26,6 +26,11 @@ func GetAllowedEmails() []string {
 	return strings.Split(raw, ",")
 }
 
+func GetServiceTokens() []string {
+	raw := GetEnv("BPOW_SERVICE_TOKENS", "")
+	return strings.Split(raw, ",")
+}
+
 func GetJwtKey() []byte {
 	privKey := GetEnv("PRIV_KEY", "badKey")
 	if privKey == "badKey" {
