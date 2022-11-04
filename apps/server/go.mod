@@ -17,7 +17,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
-	gorm.io/driver/postgres v1.4.5
+	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.24.1
 	k8s.io/klog/v2 v2.80.1
 )
