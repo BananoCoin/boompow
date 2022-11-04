@@ -147,36 +147,36 @@ jobs:
         with:
           args: apply -f ./kubernetes/go-deployment.yaml
 
-  deploy_cron:
-    name: 💰 Deploy Moneybags
-    needs: build_and_publish_moneybags
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
-    steps:
-      - uses: actions/checkout@master   
-      - uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.5.4"
+  # deploy_cron:
+  #   name: 💰 Deploy Moneybags
+  #   needs: build_and_publish_moneybags
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     GITHUB_RUN_ID: ${{ github.run_id }}
+  #   steps:
+  #     - uses: actions/checkout@master   
+  #     - uses: imranismail/setup-kustomize@v1
+  #       with:
+  #         kustomize-version: "3.5.4"
 
-      - name: Get branch name (merge)
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+  #     - name: Get branch name (merge)
+  #       if: github.event_name != 'pull_request'
+  #       shell: bash
+  #       run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
 
-      - name: Get branch name (pull request)
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+  #     - name: Get branch name (pull request)
+  #       if: github.event_name == 'pull_request'
+  #       shell: bash
+  #       run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
 
-      - name: Set image
-        working-directory: ./kubernetes/moneybags
-        run: |
-          kustomize edit set image replaceme=bananocoin/boompow-payments:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
-          kustomize build . > cron-deployment.yaml
-      - name: Deploy image to k8s cluster
-        uses: bbedward/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: apply -f ./kubernetes/moneybags/cron-deployment.yaml
+  #     - name: Set image
+  #       working-directory: ./kubernetes/moneybags
+  #       run: |
+  #         kustomize edit set image replaceme=bananocoin/boompow-payments:${{ env.BRANCH_NAME }}-${{ env.GITHUB_RUN_ID }}
+  #         kustomize build . > cron-deployment.yaml
+  #     - name: Deploy image to k8s cluster
+  #       uses: bbedward/kubectl@master
+  #       env:
+  #         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+  #       with:
+  #         args: apply -f ./kubernetes/moneybags/cron-deployment.yaml
