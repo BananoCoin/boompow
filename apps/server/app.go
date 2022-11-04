@@ -134,15 +134,6 @@ func runServer() {
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
-	// Rate limiting middleware
-	router.Use(httprate.Limit(
-		20,            // requests
-		1*time.Minute, // per duration
-		// an oversimplified example of rate limiting by a custom header
-		httprate.WithKeyFuncs(func(r *http.Request) (string, error) {
-			return netutils.GetIPAddress(r), nil
-		}),
-	))
 	// if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 	// 	router.Use(cors.New(cors.Options{
 	// 		AllowOriginFunc: func(origin string) bool {
@@ -157,6 +148,20 @@ func runServer() {
 	// 	}).Handler)
 	// }
 	router.Use(middleware.AuthMiddleware(userRepo))
+	// Rate limiting middleware
+	router.Use(httprate.Limit(
+		20,            // requests
+		1*time.Minute, // per duration
+		// an oversimplified example of rate limiting by a custom header
+		httprate.WithKeyFuncs(func(r *http.Request) (string, error) {
+			requester := middleware.AuthorizedServiceToken(r.Context())
+			if requester != nil {
+				// Return a random string, effectively disabling rate limiting for services
+				return uuid.New().String(), nil
+			}
+			return netutils.GetIPAddress(r), nil
+		}),
+	))
 	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 		router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("🚀 connect to http://localhost:%s/ for GraphQL playground", port)
