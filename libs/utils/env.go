@@ -21,6 +21,11 @@ func GetBannedRewards() []string {
 	return strings.Split(raw, ",")
 }
 
+func GetAllowedEmails() []string {
+	raw := GetEnv("BPOW_ALLOWED_EMAILS", "")
+	return strings.Split(raw, ",")
+}
+
 func GetJwtKey() []byte {
 	privKey := GetEnv("PRIV_KEY", "badKey")
 	if privKey == "badKey" {

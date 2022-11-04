@@ -93,6 +93,11 @@ spec:
               secretKeyRef:
                 name: boompow
                 key: banned_rewards
+          - name: BPOW_ALLOWED_EMAILS
+            valueFrom:
+              secretKeyRef:
+                name: boompow
+                key: allowed_emails
           - name: BPOW_WALLET_ADDRESS
             value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
           - name: ENVIRONMENT

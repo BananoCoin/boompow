@@ -18,10 +18,12 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
+	env "github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/auth"
 	utils "github.com/bananocoin/boompow/libs/utils/format"
 	"github.com/bananocoin/boompow/libs/utils/validation"
 	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 	klog "k8s.io/klog/v2"
 )
@@ -46,6 +48,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.UserInput
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
+	input.Email = strings.ToLower(input.Email)
+	if !slices.Contains(env.GetAllowedEmails(), input.Email) {
+		return nil, errors.New("access denied")
+	}
+
 	user := r.UserRepo.Authenticate(&input)
 	if user == nil {
 		return nil, errors.New("invalid email or password")
