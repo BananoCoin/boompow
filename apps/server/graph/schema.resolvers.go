@@ -25,7 +25,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
-	klog "k8s.io/klog/v2"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -256,67 +255,11 @@ func (r *queryResolver) GetUser(ctx context.Context) (*model.GetUserResponse, er
 	}, nil
 }
 
-// Stats is the resolver for the stats field.
-func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, error) {
-	msgs := make(chan *model.Stats, 1)
-	return msgs, nil
-
-	// Pub stats every 10 seconds
-	go func() {
-		for {
-			// Connected clients
-			nConnectedClients, err := database.GetRedisDB().GetNumberConnectedClients()
-			if err != nil {
-				klog.Infof("Error retrieving connected clients for stats sub %v", err)
-				continue
-			}
-			// Services
-			services, err := r.WorkRepo.GetServiceStats()
-			if err != nil {
-				klog.Infof("Error retrieving services for stats sub %v", err)
-				continue
-			}
-			var serviceStats []*model.StatsServiceType
-			for _, service := range services {
-				serviceStats = append(serviceStats, &model.StatsServiceType{
-					Name:     service.ServiceName,
-					Website:  service.ServiceWebsite,
-					Requests: service.TotalRequests,
-				})
-			}
-			// Top 10
-			top10, err := r.WorkRepo.GetTopContributors(100)
-			if err != nil {
-				klog.Infof("Error retrieving # services for stats sub %v", err)
-				continue
-			}
-			var top10Contributors []*model.StatsUserType
-			for _, u := range top10 {
-				top10Contributors = append(top10Contributors, &model.StatsUserType{
-					BanAddress:      u.BanAddress,
-					TotalPaidBanano: u.TotalBan,
-				})
-			}
-			// Total paid
-			totalPaidBan, err := r.PaymentRepo.GetTotalPaidBanano()
-			if err == nil {
-				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: len(services), Top10: top10Contributors, Services: serviceStats}
-			}
-			time.Sleep(10 * time.Second)
-		}
-	}()
-	return msgs, nil
-}
-
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// Subscription returns generated.SubscriptionResolver implementation.
-func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
-
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type subscriptionResolver struct{ *Resolver }

@@ -116,7 +116,3 @@ type Query {
   verifyService(input: VerifyServiceInput!): Boolean!
   getUser: GetUserResponse!
 }
-
-type Subscription {
-  stats: Stats!
-}

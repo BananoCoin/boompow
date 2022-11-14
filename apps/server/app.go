@@ -30,7 +30,6 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"k8s.io/klog/v2"
 )
@@ -106,17 +105,6 @@ func runServer() {
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
-	// Configure WebSocket with CORS
-	srv.AddTransport(&transport.Websocket{
-		Upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		},
-		KeepAlivePingInterval: 10 * time.Second,
-	})
 	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
 		srv.Use(extension.Introspection{})
 	}
