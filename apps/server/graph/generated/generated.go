@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -38,6 +39,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Subscription() SubscriptionResolver
 }
 
 type DirectiveRoot struct {
@@ -101,6 +103,10 @@ type ComplexityRoot struct {
 		TotalPaidBanano func(childComplexity int) int
 	}
 
+	Subscription struct {
+		Stats func(childComplexity int) int
+	}
+
 	User struct {
 		BanAddress func(childComplexity int) int
 		CreatedAt  func(childComplexity int) int
@@ -126,6 +132,9 @@ type QueryResolver interface {
 	VerifyEmail(ctx context.Context, input model.VerifyEmailInput) (bool, error)
 	VerifyService(ctx context.Context, input model.VerifyServiceInput) (bool, error)
 	GetUser(ctx context.Context) (*model.GetUserResponse, error)
+}
+type SubscriptionResolver interface {
+	Stats(ctx context.Context) (<-chan *model.Stats, error)
 }
 
 type executableSchema struct {
@@ -440,6 +449,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StatsUserType.TotalPaidBanano(childComplexity), true
 
+	case "Subscription.stats":
+		if e.complexity.Subscription.Stats == nil {
+			break
+		}
+
+		return e.complexity.Subscription.Stats(childComplexity), true
+
 	case "User.banAddress":
 		if e.complexity.User.BanAddress == nil {
 			break
@@ -527,6 +543,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -676,6 +709,10 @@ type Query {
   verifyEmail(input: VerifyEmailInput!): Boolean!
   verifyService(input: VerifyServiceInput!): Boolean!
   getUser: GetUserResponse!
+}
+
+type Subscription {
+  stats: Stats!
 }
 `, BuiltIn: false},
 }
@@ -2722,6 +2759,76 @@ func (ec *executionContext) fieldContext_StatsUserType_totalPaidBanano(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_stats(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_stats(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Stats(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.Stats):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalNStats2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStats(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_stats(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "connectedWorkers":
+				return ec.fieldContext_Stats_connectedWorkers(ctx, field)
+			case "totalPaidBanano":
+				return ec.fieldContext_Stats_totalPaidBanano(ctx, field)
+			case "registeredServiceCount":
+				return ec.fieldContext_Stats_registeredServiceCount(ctx, field)
+			case "top10":
+				return ec.fieldContext_Stats_top10(ctx, field)
+			case "services":
+				return ec.fieldContext_Stats_services(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Stats", field.Name)
 		},
 	}
 	return fc, nil
@@ -5578,6 +5685,26 @@ func (ec *executionContext) _StatsUserType(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "stats":
+		return ec._Subscription_stats(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
@@ -6052,6 +6179,20 @@ func (ec *executionContext) unmarshalNResendConfirmationEmailInput2githubᚗcom�
 func (ec *executionContext) unmarshalNResetPasswordInput2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐResetPasswordInput(ctx context.Context, v interface{}) (model.ResetPasswordInput, error) {
 	res, err := ec.unmarshalInputResetPasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStats2githubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStats(ctx context.Context, sel ast.SelectionSet, v model.Stats) graphql.Marshaler {
+	return ec._Stats(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStats2ᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStats(ctx context.Context, sel ast.SelectionSet, v *model.Stats) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Stats(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStatsServiceType2ᚕᚖgithubᚗcomᚋbananocoinᚋboompowᚋappsᚋserverᚋgraphᚋmodelᚐStatsServiceType(ctx context.Context, sel ast.SelectionSet, v []*model.StatsServiceType) graphql.Marshaler {
