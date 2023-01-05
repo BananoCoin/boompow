@@ -259,7 +259,6 @@ func (r *queryResolver) GetUser(ctx context.Context) (*model.GetUserResponse, er
 // Stats is the resolver for the stats field.
 func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, error) {
 	msgs := make(chan *model.Stats, 1)
-	return msgs, nil
 
 	// Pub stats every 10 seconds
 	go func() {
