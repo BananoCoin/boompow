@@ -17,6 +17,7 @@ import (
 	"github.com/bananocoin/boompow/apps/server/src/controller"
 	"github.com/bananocoin/boompow/apps/server/src/database"
 	"github.com/bananocoin/boompow/apps/server/src/middleware"
+	"github.com/bananocoin/boompow/apps/server/src/models"
 	serializableModels "github.com/bananocoin/boompow/libs/models"
 	env "github.com/bananocoin/boompow/libs/utils"
 	"github.com/bananocoin/boompow/libs/utils/auth"
@@ -25,7 +26,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
-	klog "k8s.io/klog/v2"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -263,44 +263,19 @@ func (r *subscriptionResolver) Stats(ctx context.Context) (<-chan *model.Stats, 
 	// Pub stats every 10 seconds
 	go func() {
 		for {
-			// Connected clients
-			nConnectedClients, err := database.GetRedisDB().GetNumberConnectedClients()
-			if err != nil {
-				klog.Infof("Error retrieving connected clients for stats sub %v", err)
-				continue
+			stats := models.GetStatsInstance().Stats
+			if stats == nil {
+				stats = &model.Stats{
+					ConnectedWorkers:       -1,
+					TotalPaidBanano:        "N/A",
+					RegisteredServiceCount: -1,
+					Top10:                  nil,
+					Services:               nil,
+				}
 			}
-			// Services
-			services, err := r.WorkRepo.GetServiceStats()
-			if err != nil {
-				klog.Infof("Error retrieving services for stats sub %v", err)
-				continue
-			}
-			var serviceStats []*model.StatsServiceType
-			for _, service := range services {
-				serviceStats = append(serviceStats, &model.StatsServiceType{
-					Name:     service.ServiceName,
-					Website:  service.ServiceWebsite,
-					Requests: service.TotalRequests,
-				})
-			}
-			// Top 10
-			top10, err := r.WorkRepo.GetTopContributors(100)
-			if err != nil {
-				klog.Infof("Error retrieving # services for stats sub %v", err)
-				continue
-			}
-			var top10Contributors []*model.StatsUserType
-			for _, u := range top10 {
-				top10Contributors = append(top10Contributors, &model.StatsUserType{
-					BanAddress:      u.BanAddress,
-					TotalPaidBanano: u.TotalBan,
-				})
-			}
-			// Total paid
-			totalPaidBan, err := r.PaymentRepo.GetTotalPaidBanano()
-			if err == nil {
-				msgs <- &model.Stats{ConnectedWorkers: int(nConnectedClients), TotalPaidBanano: fmt.Sprintf("%.2f", totalPaidBan), RegisteredServiceCount: len(services), Top10: top10Contributors, Services: serviceStats}
-			}
+
+			msgs <- stats
+
 			time.Sleep(10 * time.Second)
 		}
 	}()

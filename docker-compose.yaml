@@ -1,61 +1,61 @@
 version: '3.9'
 services:
-    redis:
-        container_name: bpow_redis
-        image: redis:7-alpine
-        restart: unless-stopped
-        ports:
-          - '127.0.0.1:6379:6379'
-        networks: ['app-network']
+  redis:
+    container_name: bpow_redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6379:6379'
+    networks: ['app-network']
 
-    db:
-        container_name: bpow_postgres
-        image: postgres:14
-        ports:
-            - '127.0.0.1:5433:5432'
-        restart: unless-stopped
-        environment:
-            - POSTGRES_DB=boompow
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
-            - PGDATA=/var/lib/postgresql/data/dev
-        volumes:
-            - .data/postgres:/var/lib/postgresql/data:delegated # Delegated indicates the containers view of the volume takes priority
-            - ./scripts/setup_test_db.sh:/docker-entrypoint-initdb.d/setup_test_db.sh
-        networks: ['app-network']
+  db:
+    container_name: bpow_postgres
+    image: postgres:14
+    ports:
+      - '127.0.0.1:5433:5432'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=boompow
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/dev
+    volumes:
+      - .data/postgres:/var/lib/postgresql/data:delegated # Delegated indicates the containers view of the volume takes priority
+      - ./scripts/setup_test_db.sh:/docker-entrypoint-initdb.d/setup_test_db.sh
+    networks: ['app-network']
 
-    app:
-        container_name: boompow_dev
-        security_opt:
-            - "seccomp:unconfined"        
-        environment:
-            - DB_HOST=db
-            - DB_PORT=5432
-            - DB_USER=postgres
-            - DB_PASS=postgres
-            - DB_NAME=boompow
-            - DB_MOCK_HOST=db
-            - DB_MOCK_PORT=5432
-            - DB_MOCK_USER=postgres
-            - DB_MOCK_PASS=postgres
-            - DB_SSLMODE=disable
-            - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
-            - REDIS_HOST=redis
-            - GOPRIVATE=github.com/bananocoin
-        ports:
-            - '127.0.0.1:8080:8080'
-            - '127.0.0.1:2345:2345'
-        build:
-            context: .
-            dockerfile: Dockerfile.dev
-        volumes:
-            - $PWD:/app:cached
-        restart: on-failure
-        entrypoint: /bin/zsh
-        stdin_open: true
-        tty: true
-        networks: ['app-network']
+  app:
+    container_name: boompow_dev
+    security_opt:
+      - 'seccomp:unconfined'
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - DB_NAME=boompow
+      - DB_MOCK_HOST=db
+      - DB_MOCK_PORT=5432
+      - DB_MOCK_USER=postgres
+      - DB_MOCK_PASS=postgres
+      - DB_SSLMODE=disable
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/boompow
+      - REDIS_HOST=redis
+      - GOPRIVATE=github.com/bananocoin
+    ports:
+      - '127.0.0.1:8081:8080'
+      - '127.0.0.1:2345:2345'
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - $PWD:/app:cached
+    restart: on-failure
+    entrypoint: /bin/zsh
+    stdin_open: true
+    tty: true
+    networks: ['app-network']
 
 networks:
-    app-network:
-        driver: bridge
+  app-network:
+    driver: bridge

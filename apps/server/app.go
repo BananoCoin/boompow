@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -29,6 +27,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
@@ -98,11 +97,6 @@ func runServer() {
 		PaymentRepo: paymentRepo,
 		PrecacheMap: precacheMap,
 	}}))
-	srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
-		oc := graphql.GetOperationContext(ctx)
-		fmt.Printf("around: %s %s", oc.OperationName, oc.RawQuery)
-		return next(ctx)
-	})
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
@@ -262,6 +256,13 @@ func runServer() {
 			}
 		}
 	}()
+
+	// Update stats and setup cron
+	repository.UpdateStats(paymentRepo, workRepo)
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.Every(10).Minutes().Do(func() {
+		repository.UpdateStats(paymentRepo, workRepo)
+	})
 
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
