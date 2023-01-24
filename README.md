@@ -63,7 +63,7 @@ Once you have docker installed and running, as well as docker-compose, you can s
 ```
 > dcup
 # To run the server
-> dcgo run github.com/bananocoin/boomow-next/apps/server server
+> dcgo run github.com/bananocoin/boomow-next/apps/server -runServer
 # To run the client
 > dcgo run github.com/bananocoin/boompow/apps/client
 ```

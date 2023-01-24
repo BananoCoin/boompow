@@ -16,99 +16,98 @@ spec:
         app: boompow
     spec:
       containers:
-      - name: boompow
-        image: replaceme
-        resources:
-          requests:
-            cpu: 100m
-            memory: 200Mi
-          limits:
-            cpu: 500m
-            memory: 1Gi
-        command: ["/bin/sh", "-c"]
-        args: ["boompow-server server"]
-        ports:
-          - containerPort: 8080
-        imagePullPolicy: "Always"
-        env:
-          - name: SMTP_PORT
-            value: "587"
-          - name: SMTP_SERVER
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: smtp_server                
-          - name: SMTP_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: smtp_username                
-          - name: SMTP_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: smtp_password                
-          - name: DB_HOST
-            value: postgres.kubegres          
-          - name: DB_PORT
-            value: "5432"
-          - name: DB_SSLMODE
-            value: disable
-          - name: DB_NAME
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: db_name   
-          - name: DB_USER
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: db_user  
-          - name: DB_PASS
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: db_password  
-          - name: REDIS_HOST
-            value: redis.redis
-          - name: REDIS_DB
-            value: "18" 
-          - name: PRIV_KEY
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: jwt_signing_key
-          - name: BPOW_WALLET_ID
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: wallet_id      
-          - name: BPOW_PRIZE_POOL
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: prize_pool  
-          - name: BPOW_BANNED_REWARDS
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: banned_rewards
-          - name: BPOW_ALLOWED_EMAILS
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: allowed_emails
-          - name: BPOW_SERVICE_TOKENS
-            valueFrom:
-              secretKeyRef:
-                name: boompow
-                key: service_tokens
-          - name: BPOW_WALLET_ADDRESS
-            value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
-          - name: ENVIRONMENT
-            value: production     
-          - name: BANANO_WS_URL
-            value: ws://10.255.0.1:7074
-          - name: NANO_WS_URL
-            value: ws://10.8.0.2:7078
-              
+        - name: boompow
+          image: replaceme
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          command: ['/bin/sh', '-c']
+          args: ['boompow-server -runServer']
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: 'Always'
+          env:
+            - name: SMTP_PORT
+              value: '587'
+            - name: SMTP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: smtp_server
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: smtp_username
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: smtp_password
+            - name: DB_HOST
+              value: postgres.kubegres
+            - name: DB_PORT
+              value: '5432'
+            - name: DB_SSLMODE
+              value: disable
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: db_name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: db_user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: db_password
+            - name: REDIS_HOST
+              value: redis.redis
+            - name: REDIS_DB
+              value: '18'
+            - name: PRIV_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: jwt_signing_key
+            - name: BPOW_WALLET_ID
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: wallet_id
+            - name: BPOW_PRIZE_POOL
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: prize_pool
+            - name: BPOW_BANNED_REWARDS
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: banned_rewards
+            - name: BPOW_ALLOWED_EMAILS
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: allowed_emails
+            - name: BPOW_SERVICE_TOKENS
+              valueFrom:
+                secretKeyRef:
+                  name: boompow
+                  key: service_tokens
+            - name: BPOW_WALLET_ADDRESS
+              value: ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym
+            - name: ENVIRONMENT
+              value: production
+            - name: BANANO_WS_URL
+              value: ws://10.255.0.1:7074
+            - name: NANO_WS_URL
+              value: ws://10.8.0.2:7078

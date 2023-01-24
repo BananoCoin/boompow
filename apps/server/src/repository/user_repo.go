@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ type UserRepo interface {
 	VerifyService(verifyService *model.VerifyServiceInput) (bool, error)
 	GenerateResetPasswordRequest(resetPasswordInput *model.ResetPasswordInput, doEmail bool) (string, error)
 	GenerateServiceToken() string
+	CreateService(email string, serviceName string, serviceWebsite string) (string, error)
 	GetNumberServices() (int64, error)
 	ChangePassword(email string, userInput *model.ChangePasswordInput) error
 }
@@ -88,6 +90,58 @@ func (s *UserService) CreateMockUsers() error {
 	}
 
 	return nil
+}
+
+func (s *UserService) CreateService(email string, serviceName string, serviceWebsite string) (string, error) {
+	// Validate
+	if !validation.IsValidEmail(email) {
+		return "", errors.New("Invalid email")
+	}
+	// Just gen random password
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" +
+		"abcdefghijklmnopqrstuvwxyzåäö" +
+		"0123456789")
+	length := 15
+	var b strings.Builder
+	for i := 0; i < length; i++ {
+		b.WriteRune(chars[rand.Intn(len(chars))])
+	}
+	password := b.String()
+
+	// Hash password
+	hashedPassword, err := auth.HashPassword(password)
+	if err != nil {
+		return "", err
+	}
+
+	user := &models.User{
+		Email:          strings.ToLower(email),
+		Password:       hashedPassword,
+		Type:           models.UserType(models.PROVIDER),
+		ServiceName:    &serviceName,
+		ServiceWebsite: &serviceWebsite,
+		EmailVerified:  true,
+		CanRequestWork: true,
+	}
+	err = s.Db.Create(&user).Error
+
+	if err != nil {
+		if strings.Contains(err.(*pgconn.PgError).Message, "duplicate key value violates unique constraint") {
+			return "", errors.New("Email already exists")
+		}
+		return "", errors.New("Unknown error creating user")
+	}
+
+	// Create token
+	// Generate token
+	token := s.GenerateServiceToken()
+
+	if err := database.GetRedisDB().AddServiceToken(user.ID, token); err != nil {
+		return "", fmt.Errorf("error generating token")
+	}
+
+	return token, nil
 }
 
 func (s *UserService) CreateUser(userInput *model.UserInput, doEmail bool) (*models.User, error) {

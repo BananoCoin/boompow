@@ -41,19 +41,6 @@ func usage() {
 	os.Exit(2)
 }
 
-func init() {
-	flag.Usage = usage
-	klog.InitFlags(nil)
-	flag.Set("logtostderr", "true")
-	flag.Set("stderrthreshold", "WARNING")
-	flag.Set("v", "2")
-	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
-		flag.Set("stderrthreshold", "INFO")
-		flag.Set("v", "3")
-	}
-	flag.Parse()
-}
-
 func runServer() {
 	database.GetRedisDB().WipeAllConnectedClients()
 	godotenv.Load()
@@ -267,24 +254,74 @@ func runServer() {
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Printf("Error: must specify at least 1 argument")
-		os.Exit(1)
+func createService(serviceName string, serviceURL string) {
+	godotenv.Load()
+	// Setup database conn
+	config := &database.Config{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Password: os.Getenv("DB_PASS"),
+		User:     os.Getenv("DB_USER"),
+		SSLMode:  os.Getenv("DB_SSLMODE"),
+		DBName:   os.Getenv("DB_NAME"),
 	}
-	arg := os.Args[1]
+	fmt.Println("🏡 Connecting to database...")
+	db, err := database.NewConnection(config)
+	if err != nil {
+		panic(err)
+	}
 
-	switch arg {
-	case "gqlgen":
+	userRepo := repository.NewUserService((db))
+
+	// Create user
+	token, err := userRepo.CreateService(fmt.Sprintf("%s@banano.cc", serviceName), serviceName, serviceURL)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("🔑 Service created with token: %s", token)
+}
+
+func main() {
+	flag.Usage = usage
+	klog.InitFlags(nil)
+	flag.Set("logtostderr", "true")
+	flag.Set("stderrthreshold", "WARNING")
+	flag.Set("v", "2")
+	if utils.GetEnv("ENVIRONMENT", "development") == "development" {
+		flag.Set("stderrthreshold", "INFO")
+		flag.Set("v", "3")
+	}
+	gqlGen := flag.Bool("gqlgen", false, "Run gqlgen")
+	dbReset := flag.Bool("db-reset", false, "Reset database")
+	startServer := flag.Bool("runServer", false, "Run server")
+	addService := flag.Bool("addService", false, "Add service")
+	serviceName := flag.String("serviceName", "", "Service name")
+	serviceURL := flag.String("serviceURL", "", "Service URL")
+	flag.Parse()
+
+	if *gqlGen {
 		fmt.Printf("🤖 Running graphql generate...")
 		script.Exec("bash -c 'gqlgen generate --verbose'").Stdout()
-	case "db:reset":
+		os.Exit(0)
+	}
+	if *dbReset {
 		fmt.Printf("💥 Nuking database...")
 		script.Exec("bash -c './scripts/reset_db.sh'").Stdout()
-	case "server":
-		runServer()
-	default:
-		fmt.Printf("Invalid command %s\n", arg)
-		os.Exit(1)
+		os.Exit(0)
 	}
+	if *startServer {
+		runServer()
+		os.Exit(0)
+	}
+	if *addService {
+		if *serviceName == "" || *serviceURL == "" {
+			flag.Usage()
+			os.Exit(1)
+		}
+		createService(*serviceName, *serviceURL)
+		os.Exit(0)
+	}
+	usage()
+	os.Exit(1)
 }
