@@ -103,14 +103,14 @@ func (s *WorkService) SaveOrUpdateWorkResult(workMessage WorkMessage) (*models.W
 	}
 
 	// Update timestamps
-	err = s.Db.Model(&models.User{}).Where("id = ?", provider.ID).Updates(map[string]interface{}{"last_provided_work_at": time.Now()}).Error
-	if err != nil {
-		klog.Errorf("Failed to update last_provided_work_at for provider %v", err)
-	}
-	err = s.Db.Model(&models.User{}).Where("id = ?", requester.ID).Updates(map[string]interface{}{"last_requested_work_at": time.Now()}).Error
-	if err != nil {
-		klog.Errorf("Failed to update last_requested_work_at for provider %v", err)
-	}
+	// err = s.Db.Model(&models.User{}).Where("id = ?", provider.ID).Updates(map[string]interface{}{"last_provided_work_at": time.Now()}).Error
+	// if err != nil {
+	// 	klog.Errorf("Failed to update last_provided_work_at for provider %v", err)
+	// }
+	// err = s.Db.Model(&models.User{}).Where("id = ?", requester.ID).Updates(map[string]interface{}{"last_requested_work_at": time.Now()}).Error
+	// if err != nil {
+	// 	klog.Errorf("Failed to update last_requested_work_at for provider %v", err)
+	// }
 
 	return workRequestDb, err
 }
