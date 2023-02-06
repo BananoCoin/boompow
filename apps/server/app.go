@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -86,11 +84,6 @@ func runServer() {
 		PaymentRepo: paymentRepo,
 		PrecacheMap: precacheMap,
 	}}))
-	srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
-		oc := graphql.GetOperationContext(ctx)
-		klog.Infof("around: %s %s", oc.OperationName, oc.RawQuery)
-		return next(ctx)
-	})
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
@@ -98,7 +91,7 @@ func runServer() {
 	srv.AddTransport(&transport.Websocket{
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true
+				return false
 			},
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
