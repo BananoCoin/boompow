@@ -11,6 +11,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.7.0
+	github.com/go-co-op/gocron v1.25.0
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
@@ -23,7 +24,10 @@ require (
 	k8s.io/klog/v2 v2.80.1
 )
 
-require github.com/jpillora/backoff v1.0.0 // indirect
+require (
+	github.com/jpillora/backoff v1.0.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
+)
 
 require (
 	bitbucket.org/creachadair/shell v0.0.7 // indirect

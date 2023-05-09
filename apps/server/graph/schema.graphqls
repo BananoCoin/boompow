@@ -115,8 +115,5 @@ type Query {
   verifyEmail(input: VerifyEmailInput!): Boolean!
   verifyService(input: VerifyServiceInput!): Boolean!
   getUser: GetUserResponse!
-}
-
-type Subscription {
   stats: Stats!
 }
