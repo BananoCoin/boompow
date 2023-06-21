@@ -67,7 +67,7 @@ func GetSmtpConnInformation() *SmtpConnInformation {
 }
 
 func GetTotalPrizePool() int {
-	totalPrizeRaw := GetEnv("BPOW_PRIZE_POOL", "10000")
+	totalPrizeRaw := GetEnv("BPOW_PRIZE_POOL", "1000")
 	totalPrize, err := strconv.Atoi(totalPrizeRaw)
 	if err != nil {
 		totalPrize = 0
