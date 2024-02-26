@@ -110,4 +110,4 @@ spec:
             - name: BANANO_WS_URL
               value: ws://10.255.0.1:7074
             - name: NANO_WS_URL
-              value: ws://10.8.0.2:7078
+              value: ws://10.1.0.1:7078
