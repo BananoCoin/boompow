@@ -58,12 +58,12 @@ func runServer() {
 		panic(err)
 	}
 
-	fmt.Println("🦋 Running database migrations...")
-	err = database.Migrate(db)
-	if err != nil {
-		fmt.Printf("Error running database migrations %v", err)
-		os.Exit(1)
-	}
+	// fmt.Println("🦋 Running database migrations...")
+	// err = database.Migrate(db)
+	// if err != nil {
+	// 	fmt.Printf("Error running database migrations %v", err)
+	// 	os.Exit(1)
+	// }
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -74,6 +74,7 @@ func runServer() {
 	userRepo := repository.NewUserService((db))
 	workRepo := repository.NewWorkService(db, userRepo)
 	paymentRepo := repository.NewPaymentService(db)
+	fmt.Println("Repository created")
 
 	precacheMap := &sync.Map{}
 
@@ -245,11 +246,13 @@ func runServer() {
 
 	// Update stats and setup cron
 	repository.UpdateStats(paymentRepo, workRepo)
+	fmt.Println("🕒 Setting up cron...")
 	scheduler := gocron.NewScheduler(time.UTC)
 	scheduler.Every(10).Minutes().Do(func() {
 		repository.UpdateStats(paymentRepo, workRepo)
 	})
 
+	fmt.Println("🚀 Starting server...")
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
