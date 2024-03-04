@@ -27,7 +27,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"k8s.io/klog/v2"
@@ -245,12 +244,12 @@ func runServer() {
 	}()
 
 	// Update stats and setup cron
-	repository.UpdateStats(paymentRepo, workRepo)
-	fmt.Println("🕒 Setting up cron...")
-	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.Every(10).Minutes().Do(func() {
-		repository.UpdateStats(paymentRepo, workRepo)
-	})
+	// repository.UpdateStats(paymentRepo, workRepo)
+	// fmt.Println("🕒 Setting up cron...")
+	// scheduler := gocron.NewScheduler(time.UTC)
+	// scheduler.Every(10).Minutes().Do(func() {
+	// 	repository.UpdateStats(paymentRepo, workRepo)
+	// })
 
 	fmt.Println("🚀 Starting server...")
 	log.Fatal(http.ListenAndServe(":"+port, router))
