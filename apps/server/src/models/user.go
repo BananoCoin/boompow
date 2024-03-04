@@ -22,4 +22,6 @@ type User struct {
 	LastRequestedWorkAt *time.Time   `json:"lastRequestedWorkAt"`
 	// Payments sent to this user
 	Payments []Payment `gorm:"foreignKey:PaidTo"`
+	// Banned
+	Banned bool `json:"banned" gorm:"default:false;not null"`
 }

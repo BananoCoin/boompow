@@ -96,7 +96,7 @@ func AuthMiddleware(userRepo *repository.UserService) func(http.Handler) http.Ha
 				}
 				// create user and check if user exists in db
 				user, err := userRepo.GetUser(&userUUID, nil)
-				if err != nil {
+				if err != nil || user.Banned {
 					next.ServeHTTP(w, r)
 					return
 				}
