@@ -57,12 +57,12 @@ func runServer() {
 		panic(err)
 	}
 
-	fmt.Println("🦋 Running database migrations...")
-	err = database.Migrate(db)
-	if err != nil {
-		fmt.Printf("Error running database migrations %v", err)
-		os.Exit(1)
-	}
+	// fmt.Println("🦋 Running database migrations...")
+	// err = database.Migrate(db)
+	// if err != nil {
+	// 	fmt.Printf("Error running database migrations %v", err)
+	// 	os.Exit(1)
+	// }
 
 	port := os.Getenv("PORT")
 	if port == "" {
